@@ -3729,24 +3729,9 @@ const HelpTab: React.FC = () => {
           {!devUnlocked && devClickCount >= 5 && (
             <span className="ml-1 text-gray-300">· {10 - devClickCount}...</span>
           )}
-          <span>{t.settings.helpAdminContact}</span>
         </div>
         <div>
-          {t.settings.helpOpenSource}&nbsp;
-          <a
-            href="https://github.com/aiis2/datell"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors"
-            onClick={(e) => { e.stopPropagation(); window.api?.openExternal?.('https://github.com/aiis2/datell'); }}
-          >
-            github.com/aiis2/datell
-          </a>
-        </div
-          <span>{t.settings.helpAdminContact}</span>
-        </div>
-        <div>
-          {t.settings.helpOpenSource}&nbsp;
+          {t.settings.helpOpenSource}{' '}
           <a
             href="https://github.com/aiis2/datell"
             target="_blank"
