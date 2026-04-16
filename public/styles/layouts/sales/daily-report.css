@@ -1,0 +1,10 @@
+/* 销售日报布局 — 紧凑指标汇总 */
+:root {
+  --layout-content-padding:   16px;
+  --layout-content-max-width: 1100px;
+  --layout-gap:               16px;
+  --layout-kpi-cols:          repeat(5, 1fr);
+  --layout-chart-cols:        2fr 1fr;
+  --layout-chart-gap:         16px;
+  --layout-card-padding:      16px;
+}

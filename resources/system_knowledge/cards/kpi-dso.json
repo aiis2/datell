@@ -1,0 +1,29 @@
+{
+  "id": "kpi-dso",
+  "type": "card",
+  "category": "kpi",
+  "name": "应收账款回款天数(DSO)卡",
+  "description": "展示应收账款平均回款天数，含货龄分析和逾期占比，适合财务现金流管理、信用控制、营运资本优化",
+  "tags": [
+    "kpi",
+    "DSO",
+    "days sales outstanding",
+    "应收账款",
+    "回款",
+    "货龄",
+    "信用管理"
+  ],
+  "cssClass": "kpi-risk-flag",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>应收账款天数(DSO)</div><div style='font-size:32px;font-weight:900;color:var(--color-warning)'>48 天</div><div style='font-size:11px;color:var(--text-sub);margin-top:4px'>目标 ≤40天 | 逾期占比 18%</div><div style='font-size:11px;color:var(--color-danger);margin-top:4px'>⚠ 超目标 8天</div></div>",
+  "variants": [
+    "DPO应付账款天数",
+    "DIO库存天数",
+    "现金转换周期"
+  ],
+  "relatedCards": [
+    "kpi-risk-flag",
+    "kpi-budget-variance"
+  ],
+  "htmlClassName": "card kpi-card"
+}

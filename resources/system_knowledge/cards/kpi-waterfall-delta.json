@@ -1,0 +1,30 @@
+{
+  "id": "kpi-waterfall-delta",
+  "type": "card",
+  "category": "kpi",
+  "name": "瀑布变动 KPI 卡（ECharts）",
+  "description": "ECharts 瀑布图，用于展示从基期到当期各驱动因素的增减贡献，适合利润分解/收入变动分析",
+  "tags": [
+    "kpi",
+    "waterfall",
+    "delta",
+    "bridge",
+    "variance",
+    "driver",
+    "echarts",
+    "decompose"
+  ],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"profit_waterfall\"><div class=\"card-title\">利润变动分析</div><div class=\"chart-container short\" id=\"chart_wf_kpi\"></div><script>(function(){var el=document.getElementById('chart_wf_kpi');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6','#10b981','#ef4444'];c.setOption({tooltip:{trigger:'axis'},xAxis:{type:'category',data:['基期','营收↑','成本↓','费用↑','当期']},yAxis:{type:'value'},series:[{type:'bar',stack:'total',itemStyle:{color:'transparent'},data:[0,520,0,0,0]},{type:'bar',stack:'total',data:[{value:520,itemStyle:{color:'rgba(0,0,0,0)'}},{value:80,itemStyle:{color:palette[1]}},{value:-30,itemStyle:{color:palette[2]}},{value:-20,itemStyle:{color:palette[2]}},{value:550,itemStyle:{color:palette[0]}}],label:{show:true,position:'top'}}]});})();</script></div>",
+  "variants": [
+    "利润驱动分解",
+    "成本结构变化",
+    "收入增减桥接"
+  ],
+  "relatedCards": [
+    "kpi-budget-variance",
+    "bar-waterfall"
+  ],
+  "htmlClassName": "card chart-card"
+}

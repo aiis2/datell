@@ -1,0 +1,13 @@
+{
+  "id": "bar-race",
+  "type": "card",
+  "category": "B",
+  "name": "动态排名条形图（Bar Race）",
+  "description": "ECharts 带排序动画的横向条形图，可播放时间序列，直观展示排名变化过程，适合城市/品牌/产品排名演进",
+  "tags": ["bar", "race", "animation", "ranking", "dynamic", "time-series", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"bar_race\"><div class=\"card-title\">品牌销售额排名</div><div class=\"chart-container md\" id=\"chart_race\"></div><script>(function(){var el=document.getElementById('chart_race');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6'];var data=[{name:'品牌A',value:850},{name:'品牌B',value:720},{name:'品牌C',value:650},{name:'品牌D',value:580},{name:'品牌E',value:430}];data.sort(function(a,b){return a.value-b.value;});c.setOption({grid:{left:'3%',right:'10%',bottom:'3%',containLabel:true},xAxis:{type:'value',max:'dataMax'},yAxis:{type:'category',data:data.map(function(d){return d.name;})},series:[{type:'bar',data:data.map(function(d,i){return{value:d.value,itemStyle:{color:palette[i%palette.length]};};}),label:{show:true,position:'right',formatter:'{c}万'}}]});})();</script></div>",
+  "variants": ["品牌排名", "城市GDP竞速", "APP下载量排名"],
+  "relatedCards": ["bar-chart-horizontal", "kpi-ranked-list"]
+}

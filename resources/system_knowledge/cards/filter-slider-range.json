@@ -1,0 +1,25 @@
+{
+  "id": "filter-slider-range",
+  "type": "card",
+  "name": "数值范围滑块筛选控件",
+  "category": "filter",
+  "tags": ["滑块", "范围", "slider", "range", "数值筛选", "区间筛选"],
+  "description": "数值区间选择滑块控件，用户可通过拖动两端滑块设定最小/最大值范围，实时显示当前选中区间数值，触发 filterChange 事件。适合价格区间、年龄范围、评分范围等连续值筛选。",
+  "useCases": [
+    "价格区间筛选（¥0 ~ ¥1000）",
+    "评分范围筛选（1-5分）",
+    "年龄/年限范围筛选",
+    "数值阈值区间设定"
+  ],
+  "dataSchema": {
+    "min": "最小值",
+    "max": "最大值",
+    "step": "步长",
+    "field": "对应字段名",
+    "label": "控件标签"
+  },
+  "htmlClassName": "card filter-card filter-slider",
+  "engineHint": "pure-html",
+  "interactionSupport": ["filter"],
+  "exampleHtml": "<div class=\"card filter-card\" data-card-id=\"filter_slider\">\n  <label class=\"filter-label\">价格区间</label>\n  <div style=\"display:flex;align-items:center;gap:8px;margin-top:8px\">\n    <span id=\"fs_lo\">0</span>\n    <input type=\"range\" id=\"fs_min\" min=\"0\" max=\"1000\" value=\"0\" step=\"10\" style=\"flex:1\">\n    <input type=\"range\" id=\"fs_max\" min=\"0\" max=\"1000\" value=\"1000\" step=\"10\" style=\"flex:1\">\n    <span id=\"fs_hi\">1000</span>\n  </div>\n  <script>\n  (function(){\n    var minEl=document.getElementById('fs_min'), maxEl=document.getElementById('fs_max');\n    var loEl=document.getElementById('fs_lo'), hiEl=document.getElementById('fs_hi');\n    function update(){\n      var lo=parseInt(minEl.value), hi=parseInt(maxEl.value);\n      if(lo>hi){var t=lo;lo=hi;hi=t;minEl.value=lo;maxEl.value=hi;}\n      loEl.textContent='¥'+lo; hiEl.textContent='¥'+hi;\n      document.dispatchEvent(new CustomEvent('filterChange',{detail:{field:'price',min:lo,max:hi}}));\n    }\n    minEl.addEventListener('input',update); maxEl.addEventListener('input',update);\n  })();\n  <\/script>\n</div>"
+}

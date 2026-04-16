@@ -1,0 +1,30 @@
+{
+  "id": "kpi-attrition-rate",
+  "type": "card",
+  "category": "kpi",
+  "name": "员工离职率指标卡",
+  "description": "展示员工主动/被动离职率，含月度趋势和行业基准对比，适合 HR 人才保留分析、组织健康度诊断",
+  "tags": [
+    "kpi",
+    "attrition",
+    "turnover",
+    "离职率",
+    "人才保留",
+    "HR",
+    "流失率"
+  ],
+  "cssClass": "kpi-risk-flag",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card kpi-risk-flag risk-mid' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>月度员工离职率</div><div style='font-size:32px;font-weight:900;color:var(--color-warning)'>3.8%</div><div style='font-size:11px;color:var(--text-sub);margin-top:4px'>自愿离职: 2.4% | 非自愿: 1.4%</div><div style='font-size:11px;color:var(--color-warning);margin-top:4px'>⚠ 高于行业均值 2.5%</div></div>",
+  "variants": [
+    "关键岗位流失率",
+    "试用期离职率",
+    "年度员工留存率"
+  ],
+  "relatedCards": [
+    "kpi-risk-flag",
+    "kpi-health-score",
+    "kpi-single"
+  ],
+  "htmlClassName": "card kpi-card kpi-risk-flag"
+}

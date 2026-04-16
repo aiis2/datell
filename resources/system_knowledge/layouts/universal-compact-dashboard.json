@@ -1,0 +1,20 @@
+{
+  "id": "universal-compact-dashboard",
+  "type": "layout",
+  "name": "紧凑看板",
+  "category": "universal",
+  "tags": [
+    "紧凑",
+    "高密度",
+    "小间距",
+    "运营",
+    "监控"
+  ],
+  "description": "高密度紧凑看板，缩小间距与内边距，每行可放置更多元素，适合运营监控、实时大屏等高密度信息展示。",
+  "slots": {
+    "kpiRow": "多个小型KPI卡",
+    "charts": "多列密集图表区"
+  },
+  "cssPath": "universal/compact-dashboard.css",
+  "containerClass": "layout-compact-dashboard"
+}

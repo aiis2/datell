@@ -1,0 +1,22 @@
+{
+  "id": "grid-card-list",
+  "type": "card",
+  "name": "网格内容列表卡（图文混排）",
+  "category": "structure",
+  "tags": ["网格列表", "图文卡", "内容卡", "grid list", "图标文字", "信息卡片"],
+  "description": "网格布局的内容列表卡片，每个格子包含图标（emoji或SVG）、标题和简短描述，2-3列布局可配置。适合展示核心功能点、团队成员简介、产品特性列表、关键发现列表等内容型展示场景。",
+  "useCases": [
+    "产品核心特性/功能点展示",
+    "团队成员简介网格",
+    "调研关键发现摘要",
+    "解决方案要点列表"
+  ],
+  "dataSchema": {
+    "items": "内容项数组：[{icon, title, description}]",
+    "columns": "列数（2或3，默认3）"
+  },
+  "htmlClassName": "card structure-card grid-list-card",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card structure-card\" data-card-id=\"grid_list\">\n  <h2 class=\"card-title\">核心发现</h2>\n  <div style=\"display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:12px\">\n    <div style=\"padding:12px;border:1px solid var(--border,#e2e8f0);border-radius:8px\">\n      <div style=\"font-size:1.8rem;margin-bottom:6px\">📈</div>\n      <div style=\"font-weight:600;margin-bottom:4px\">增长加速</div>\n      <div style=\"font-size:0.82rem;opacity:0.7\">Q4 GMV 同比增长 42%，创历史新高</div>\n    </div>\n    <div style=\"padding:12px;border:1px solid var(--border,#e2e8f0);border-radius:8px\">\n      <div style=\"font-size:1.8rem;margin-bottom:6px\">🎯</div>\n      <div style=\"font-weight:600;margin-bottom:4px\">目标达成</div>\n      <div style=\"font-size:0.82rem;opacity:0.7\">年度销售目标达成率 108%，超额完成</div>\n    </div>\n    <div style=\"padding:12px;border:1px solid var(--border,#e2e8f0);border-radius:8px\">\n      <div style=\"font-size:1.8rem;margin-bottom:6px\">⚠️</div>\n      <div style=\"font-weight:600;margin-bottom:4px\">成本压力</div>\n      <div style=\"font-size:0.82rem;opacity:0.7\">营销费率升至 18.5%，需关注效率</div>\n    </div>\n  </div>\n</div>"
+}

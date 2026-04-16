@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+/* Tailwind v4: Use class-based dark mode instead of prefers-color-scheme */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---- Custom Theme Tokens ---- */
+@layer base {
+  :root {
+    --color-background: #f9fafb;
+    --color-foreground: #111827;
+    --color-border: #e5e7eb;
+    --color-input: #e5e7eb;
+  }
+  .dark {
+    --color-background: #111827;
+    --color-foreground: #f9fafb;
+    --color-border: #374151;
+    --color-input: #374151;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--color-background);
+    color: var(--color-foreground);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* ---- Electron Title Bar Drag ---- */
+.app-drag-region { -webkit-app-region: drag; }
+.no-drag { -webkit-app-region: no-drag; }
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+.dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+
+/* ---- Prose Overrides for Markdown ---- */
+.prose pre { margin: 0.5rem 0; border-radius: 0.5rem; }
+.prose table { font-size: 0.8rem; }
+.prose th, .prose td { padding: 0.25rem 0.5rem; }
+
+/* ---- Bounce Animation Delays ---- */
+.bounce-delay-1 { animation-delay: 0ms; }
+.bounce-delay-2 { animation-delay: 150ms; }
+.bounce-delay-3 { animation-delay: 300ms; }
+
+/* ---- Message entrance animation ---- */
+@keyframes msg-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-msg-enter {
+  animation: msg-enter 0.22s ease-out both;
+}
+
+/* ---- Streaming prose: last block gently materializes ---- */
+@keyframes stream-block-in {
+  from { opacity: 0.55; }
+  to   { opacity: 1; }
+}
+.streaming-prose > p:last-child,
+.streaming-prose > ul:last-child,
+.streaming-prose > ol:last-child,
+.streaming-prose > h1:last-child,
+.streaming-prose > h2:last-child,
+.streaming-prose > h3:last-child {
+  animation: stream-block-in 0.2s ease-out both;
+}
+
+/* ---- TaskGraph SVG ---- */
+.task-graph-svg { max-width: 100%; overflow: visible; }

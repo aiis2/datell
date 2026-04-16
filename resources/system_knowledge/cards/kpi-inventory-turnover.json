@@ -1,0 +1,29 @@
+{
+  "id": "kpi-inventory-turnover",
+  "type": "card",
+  "category": "kpi",
+  "name": "库存周转率指标卡",
+  "description": "展示库存周转次数/天数，适合零售、制造、仓储的库存管理效率分析、供应链优化报告",
+  "tags": [
+    "kpi",
+    "inventory turnover",
+    "库存周转",
+    "库存",
+    "Days Stock",
+    "仓储",
+    "供应链"
+  ],
+  "cssClass": "kpi-comparison",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>库存周转天数(DSI)</div><div style='font-size:32px;font-weight:900;color:var(--text-accent)'>42 天</div><div style='font-size:11px;color:var(--color-success)'>▼ 5天 vs 上期（改善）</div><div style='font-size:11px;color:var(--text-sub);margin-top:4px'>周转次数: 8.7次/年</div></div>",
+  "variants": [
+    "原材料周转率",
+    "成品周转率",
+    "呆滞库存率"
+  ],
+  "relatedCards": [
+    "kpi-fill-rate",
+    "kpi-single"
+  ],
+  "htmlClassName": "card kpi-card"
+}

@@ -1,0 +1,38 @@
+/* 销售区域分析布局 */
+:root {
+  --layout-content-padding:   24px;
+  --layout-content-max-width: 1400px;
+  --layout-gap:               20px;
+  --layout-card-padding:      20px;
+}
+
+.layout-sales-regional {
+  display: grid;
+  grid-template-areas:
+    "filter  filter  filter"
+    "kpi     kpi     kpi"
+    "map     map     rank"
+    "table   table   table";
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto auto 1fr auto;
+  gap: var(--layout-gap);
+  padding: var(--layout-content-padding);
+  max-width: var(--layout-content-max-width);
+  margin: 0 auto;
+}
+
+.layout-sales-regional .slot-regionFilter  { grid-area: filter; }
+.layout-sales-regional .slot-summaryKpi    { grid-area: kpi; }
+.layout-sales-regional .slot-chinaMap      { grid-area: map; min-height: 360px; }
+.layout-sales-regional .slot-regionRank    { grid-area: rank; }
+.layout-sales-regional .slot-regionTable   { grid-area: table; }
+
+/* 地图容器确保足够高度 */
+.layout-sales-regional .slot-chinaMap .card-body { min-height: 320px; }
+
+@media (max-width: 1024px) {
+  .layout-sales-regional {
+    grid-template-areas: "filter" "kpi" "map" "rank" "table";
+    grid-template-columns: 1fr;
+  }
+}

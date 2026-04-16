@@ -1,0 +1,37 @@
+{
+  "id": "kpi-segmented",
+  "type": "card",
+  "category": "kpi",
+  "name": "分段占比指标卡",
+  "description": "将总量分拆为多个彩色段落的横向条形，直观展示各分类占比，适合市场份额/客户分层/渠道分布",
+  "tags": [
+    "KPI",
+    "segmented",
+    "proportion",
+    "share",
+    "breakdown",
+    "distribution",
+    "分段",
+    "占比",
+    "比例",
+    "份额",
+    "市场份额",
+    "渠道分布",
+    "客户分层",
+    "分类占比",
+    "构成",
+    "组成"
+  ],
+  "cssClass": "kpi-segmented",
+  "exampleHtml": "<div class=\"card kpi-card kpi-segmented\" data-card-id=\"market_share\"><span class=\"kpi-title\" style=\"font-size:14px;font-weight:700;display:block;margin-bottom:8px\">渠道收入占比</span><div class=\"kpi-segmented\"><div class=\"seg-bar\"><div class=\"seg\" style=\"--seg-weight:3;background:var(--palette-0)\"></div><div class=\"seg\" style=\"--seg-weight:2;background:var(--palette-1)\"></div><div class=\"seg\" style=\"--seg-weight:1;background:var(--palette-2)\"></div></div><div class=\"seg-legend\"><span class=\"seg-legend-item\"><span class=\"seg-dot\" style=\"background:var(--palette-0)\"></span>线上 50%</span><span class=\"seg-legend-item\"><span class=\"seg-dot\" style=\"background:var(--palette-1)\"></span>线下 33%</span><span class=\"seg-legend-item\"><span class=\"seg-dot\" style=\"background:var(--palette-2)\"></span>代理 17%</span></div></div></div>",
+  "variants": [
+    "市场份额",
+    "客户分层",
+    "SKU贡献占比"
+  ],
+  "relatedCards": [
+    "kpi-donut-ratio",
+    "pie-chart-donut"
+  ],
+  "htmlClassName": "card kpi-card kpi-segmented"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "ecommerce-gmv-overview",
+  "type": "layout",
+  "name": "电商 GMV 大盘总览",
+  "category": "ecommerce",
+  "tags": ["电商", "GMV", "总览", "订单", "转化", "平台大盘"],
+  "description": "电商 GMV 大盘总览布局，顶部时间筛选控件+核心GMV/订单/UV/转化率KPI，中部GMV趋势面积图+品类贡献饼图，底部渠道GMV排名横向柱状图+品类同比增长矩阵。适合电商日报/周报总览。",
+  "slots": {
+    "dateFilter": "日期范围选择筛选控件",
+    "gmvKpi": "GMV/订单量/UV/转化率4个KPI",
+    "gmvTrend": "GMV日/周趋势面积折线图",
+    "categoryPie": "品类GMV贡献饼图",
+    "channelRank": "渠道GMV排名横向柱状图",
+    "categoryMatrix": "品类同比增长对比表"
+  },
+  "cssPath": "ecommerce/gmv-overview.css",
+  "containerClass": "layout-ecommerce-gmv"
+}

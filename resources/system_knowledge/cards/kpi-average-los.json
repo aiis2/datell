@@ -1,0 +1,29 @@
+{
+  "id": "kpi-average-los",
+  "type": "card",
+  "category": "kpi",
+  "name": "平均住院天数(ALOS)指标卡",
+  "description": "展示平均住院天数，含病种分解和与标准天数对比，适合医院运营效率监控、DRG分组管理、临床路径分析",
+  "tags": [
+    "kpi",
+    "ALOS",
+    "average length of stay",
+    "平均住院",
+    "医疗",
+    "DRG",
+    "临床路径"
+  ],
+  "cssClass": "kpi-comparison",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>平均住院天数(ALOS)</div><div style='font-size:32px;font-weight:900;color:var(--text-accent)'>8.2 天</div><div style='font-size:11px;color:var(--color-success)'>▼ 0.4天 vs 上季（好转）</div><div style='font-size:11px;color:var(--text-sub);margin-top:4px'>标准天数 7.5d | 超标率 12%</div></div>",
+  "variants": [
+    "ICU滞留天数",
+    "再入院间隔",
+    "术后住院天数"
+  ],
+  "relatedCards": [
+    "kpi-single",
+    "kpi-risk-flag"
+  ],
+  "htmlClassName": "card kpi-card"
+}

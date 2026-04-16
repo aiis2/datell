@@ -1,0 +1,30 @@
+/* 通用三列仪表盘 — 适合复杂数据大屏 */
+:root {
+  --layout-content-padding:   16px;
+  --layout-content-max-width: 1600px;
+  --layout-gap:               16px;
+  --layout-kpi-cols:          repeat(6, 1fr);
+  --layout-kpi-gap:           12px;
+  --layout-chart-cols:        repeat(3, 1fr);
+  --layout-chart-gap:         16px;
+  --layout-card-padding:      16px;
+  /* 三区结构 */
+  --layout-kpi-cols-n:        3;
+  --layout-kpi-row-h:         110px;
+  --layout-kpi-card-padding:  10px 14px;
+  --layout-zone-gap:          12px;
+}
+
+@media (max-width: 1200px) {
+  :root {
+    --layout-kpi-cols:   repeat(3, 1fr);
+    --layout-chart-cols: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 800px) {
+  :root {
+    --layout-kpi-cols:   repeat(2, 1fr);
+    --layout-chart-cols: 1fr;
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "ops-incident-flow",
+  "type": "layout",
+  "name": "运维故障处理流程",
+  "category": "operations",
+  "tags": ["运维", "故障", "告警", "ITSM", "事故流程"],
+  "description": "运维故障事件处理全流程布局，顶部当前告警数量/故障等级KPI+时间轴进度，中部未处理告警列表+故障流转甘特/时序图，底部故障分类统计柱状图+MTTR/MTBF指标卡。适合运维团队复盘报告与日常故障追踪。",
+  "slots": {
+    "alertKpi": "当前告警数/P0数量/故障等级KPI",
+    "alertList": "未处理告警/事件列表（带优先级状态）",
+    "incidentTimeline": "故障处理时间轴/甘特图",
+    "categoryChart": "故障类别分布柱状图",
+    "mttrCard": "MTTR/MTBF/故障率指标卡"
+  },
+  "cssPath": "operations/incident-flow.css",
+  "containerClass": "layout-ops-incident"
+}

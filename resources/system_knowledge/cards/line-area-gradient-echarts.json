@@ -1,0 +1,24 @@
+{
+  "id": "line-area-gradient-eharts",
+  "type": "card",
+  "name": "渐变面积折线图（ECharts）",
+  "category": "chart",
+  "tags": ["面积图", "渐变", "gradient area", "ECharts", "折线面积", "视觉美观"],
+  "description": "带上下渐变填充色的单系列面积折线图，顶部颜色深、底部透明，视觉美观，适合首页或重要指标展示。线条平滑，面积渐变用 ECharts linearGradient 实现。适合突出单一核心指标的历史趋势展示。",
+  "useCases": [
+    "网站访问量趋势大图",
+    "核心指标（GMV/DAU）趋势美化展示",
+    "月度收入趋势背景图",
+    "用户增长曲线展示"
+  ],
+  "dataSchema": {
+    "dates": "时间轴数组",
+    "values": "数据数组",
+    "label": "指标名称",
+    "unit": "单位"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["datazoom"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_area_grad\">\n  <h2 class=\"card-title\">月活用户（MAU）趋势</h2>\n  <div id=\"chart_area_grad\" class=\"chart-container\" style=\"height:280px\"></div>\n  <script>\n  (function(){\n    var m=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];\n    var d=[520,580,540,635,710,780,820,865,910,960,1020,1150];\n    var chart=echarts.init(document.getElementById('chart_area_grad'));\n    chart.setOption({\n      tooltip:{trigger:'axis'},\n      xAxis:{type:'category',data:m,boundaryGap:false},\n      yAxis:{type:'value',axisLabel:{formatter:'{value}万'}},\n      series:[{type:'line',data:d,smooth:true,symbol:'none',lineStyle:{width:2.5},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(59,130,246,0.4)'},{offset:1,color:'rgba(59,130,246,0.02)'}]}}}]\n    });\n    window.__REPORT_EVENT_BUS__&&window.__REPORT_EVENT_BUS__.register('chart_area_grad',chart);\n  })();\n  <\/script>\n</div>"
+}

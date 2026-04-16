@@ -1,0 +1,26 @@
+{
+  "id": "line-sparkline-kpi",
+  "type": "card",
+  "name": "迷你趋势线（Sparkline）KPI卡",
+  "category": "kpi",
+  "tags": ["sparkline", "迷你折线", "KPI", "趋势", "迷你图", "指标卡"],
+  "description": "带内嵌迷你折线趋势图的 KPI 指标卡，左侧显示当前值和同比/环比变化，右侧嵌入小型 ECharts 折线图展示近期趋势。适合在看板上快速展示带趋势背景的核心指标。",
+  "useCases": [
+    "每日活跃用户数带7日趋势",
+    "今日销售额带30日走势",
+    "当前库存量带周趋势",
+    "实时在线用户数带趋势"
+  ],
+  "dataSchema": {
+    "label": "指标名",
+    "value": "当前值",
+    "unit": "单位",
+    "change": "变化值",
+    "changePct": "变化百分比",
+    "sparkData": "迷你图数据数组（近期历史值）"
+  },
+  "htmlClassName": "card kpi-card kpi-sparkline",
+  "engineHint": "echarts",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card kpi-card\" data-card-id=\"kpi_sparkline\">\n  <div style=\"display:flex;justify-content:space-between;align-items:center\">\n    <div>\n      <div class=\"kpi-label\">日活用户（DAU）</div>\n      <div class=\"kpi-value\">12.8万</div>\n      <div class=\"kpi-change text-green-500\">↑ +8.3% 同比</div>\n    </div>\n    <div id=\"spark_dau\" style=\"width:120px;height:60px\"></div>\n  </div>\n  <script>\n  (function(){\n    var chart=echarts.init(document.getElementById('spark_dau'));\n    chart.setOption({\n      grid:{top:0,right:0,bottom:0,left:0},\n      xAxis:{type:'category',show:false,data:[1,2,3,4,5,6,7]},\n      yAxis:{type:'value',show:false},\n      series:[{type:'line',data:[108,112,105,118,125,120,128],symbol:'none',lineStyle:{width:2},areaStyle:{opacity:0.15},smooth:true}]\n    });\n  })();\n  <\/script>\n</div>"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "radar-performance",
+  "type": "card",
+  "name": "多维雷达能力图（竞品对比）",
+  "category": "chart",
+  "tags": ["雷达图", "spider chart", "竞品对比", "多维度", "能力图", "radar"],
+  "description": "多维度能力雷达图，支持多个系列（产品/团队/竞品）在同一极坐标上对比，清晰展示各维度的强弱对比和整体轮廓。适合产品竞品分析、团队能力评估、候选人综合评分等多维度对比场景。",
+  "useCases": [
+    "产品竞品多维度能力对比",
+    "团队/员工多维能力雷达图",
+    "供应商综合评级多维对比",
+    "业务指标多维健康度矩阵"
+  ],
+  "dataSchema": {
+    "dimensions": "雷达轴名称数组（5-8个维度）",
+    "series": "系列数组：[{name, scores:[对应维度得分]}]",
+    "maxScore": "各轴最大值（默认100）"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["highlight"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_radar\">\n  <h2 class=\"card-title\">产品竞品多维对比</h2>\n  <div id=\"chart_radar\" class=\"chart-container\" style=\"height:320px\"></div>\n  <script>\n  (function(){\n    var dims=['功能完整性','性能','易用性','安全','生态','价格竞争力'];\n    var chart=echarts.init(document.getElementById('chart_radar'));\n    chart.setOption({\n      legend:{data:['我司产品','竞品A','竞品B']},\n      radar:{indicator:dims.map(function(d){return{name:d,max:100};}),radius:'65%'},\n      series:[{type:'radar',data:[\n        {name:'我司产品',value:[85,80,90,88,75,70]},\n        {name:'竞品A',value:[75,85,70,82,90,65]},\n        {name:'竞品B',value:[70,70,80,75,65,90]}\n      ]}]\n    });\n    window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.register('chart_radar', chart);\n  })();\n  <\/script>\n</div>"
+}

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loading</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 380px;
+      height: 220px;
+      overflow: hidden;
+      border-radius: 16px;
+      background: transparent;
+      -webkit-app-region: drag;
+      user-select: none;
+    }
+
+    .splash {
+      width: 380px;
+      height: 220px;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      border-radius: 16px;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.05);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Ambient glow */
+    .splash::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #6366f1, #22d3ee);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+    }
+
+    .logo-icon svg { width: 22px; height: 22px; }
+
+    .app-name {
+      color: #f1f5f9;
+      font-size: 18px;
+      font-weight: 700;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+      letter-spacing: 0.02em;
+    }
+
+    .app-sub {
+      color: #64748b;
+      font-size: 10px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .progress-wrap {
+      width: 240px;
+      height: 3px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #6366f1, #22d3ee);
+      border-radius: 2px;
+      animation: progress 2.5s ease-in-out forwards;
+    }
+
+    @keyframes progress {
+      0%   { width: 0%; }
+      20%  { width: 35%; }
+      50%  { width: 65%; }
+      80%  { width: 85%; }
+      100% { width: 95%; }
+    }
+
+    .status-text {
+      font-size: 11px;
+      color: #475569;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+      letter-spacing: 0.05em;
+      animation: fade 1.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes fade {
+      from { opacity: 0.5; }
+      to   { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="splash">
+    <div class="logo-row">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 3v18h18" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <path d="M7 16l4-4 4 4 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+          <circle cx="7" cy="16" r="1.5" fill="#22d3ee"/>
+          <circle cx="11" cy="12" r="1.5" fill="#6366f1"/>
+          <circle cx="15" cy="16" r="1.5" fill="#22d3ee"/>
+          <circle cx="19" cy="12" r="1.5" fill="#6366f1"/>
+        </svg>
+      </div>
+      <div>
+        <div class="app-name">Datell</div>
+        <div class="app-sub">Let your data tell the story</div>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar"></div>
+    </div>
+    <div class="status-text">正在初始化…</div>
+  </div>
+</body>
+</html>

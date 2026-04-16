@@ -1,0 +1,27 @@
+{
+  "id": "kpi-dual-compare",
+  "type": "card",
+  "category": "kpi",
+  "name": "双列 KPI 对比卡",
+  "description": "左右两列展示两组指标（如当期/去年、方案A/方案B），中间竖线分隔，适合同期对比场景",
+  "tags": [
+    "kpi",
+    "compare",
+    "dual",
+    "yoy",
+    "period",
+    "vs"
+  ],
+  "cssClass": "kpi-dual-compare",
+  "exampleHtml": "<div class=\"card kpi-card kpi-dual-compare\" data-card-id=\"yoy_compare\" style=\"padding:16px\"><span class=\"kpi-title\" style=\"font-weight:700;font-size:14px;display:block;margin-bottom:12px\">年度对比</span><div class=\"kpi-dual-compare\"><div class=\"kpi-col\"><span class=\"kpi-sub\">2024年</span><span class=\"kpi-value\" style=\"font-size:26px;font-weight:900\">¥284万</span><span class=\"kpi-trend up\">+12%</span></div><div class=\"kpi-divider\"></div><div class=\"kpi-col\"><span class=\"kpi-sub\">2023年</span><span class=\"kpi-value\" style=\"font-size:26px;font-weight:900\">¥253万</span><span class=\"kpi-trend flat\">--</span></div></div></div>",
+  "variants": [
+    "年同比对比",
+    "方案AB对比",
+    "目标vs实际"
+  ],
+  "relatedCards": [
+    "kpi-comparison",
+    "kpi-single"
+  ],
+  "htmlClassName": "card kpi-card kpi-dual-compare"
+}

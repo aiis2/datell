@@ -1,0 +1,29 @@
+{
+  "id": "kpi-ebitda",
+  "type": "card",
+  "category": "kpi",
+  "name": "EBITDA 息税折摊前利润卡",
+  "description": "展示 EBITDA 绝对值和 EBITDA 利润率，含同比变化，适合企业价值评估、财务绩效分析、PE报告",
+  "tags": [
+    "kpi",
+    "EBITDA",
+    "息税折旧",
+    "利润",
+    "盈利能力",
+    "财务",
+    "估值"
+  ],
+  "cssClass": "kpi-comparison",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>EBITDA</div><div style='font-size:30px;font-weight:900;color:var(--color-primary)'>¥2,840万</div><div style='font-size:16px;font-weight:700;color:var(--text-accent);margin-top:4px'>EBITDA利润率 18.6%</div><div style='font-size:11px;color:var(--color-success)'>▲ 3.2pp vs 同期</div></div>",
+  "variants": [
+    "净利润率",
+    "经营利润",
+    "自由现金流FCF"
+  ],
+  "relatedCards": [
+    "kpi-gross-margin",
+    "kpi-single"
+  ],
+  "htmlClassName": "card kpi-card"
+}

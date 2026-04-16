@@ -1,0 +1,23 @@
+{
+  "id": "apex-multi-radialbar",
+  "type": "card",
+  "name": "ApexCharts 多指标环形进度图",
+  "category": "chart",
+  "tags": ["环形进度", "radialbar", "多指标", "ApexCharts", "目标达成", "圆形进度条"],
+  "description": "ApexCharts 多系列环形进度图（RadialBar），每个同心圆环代表一个指标的完成进度（0-100%），颜色各异，中心显示综合评分或标题。适合多 KPI 达成率一览、多维度目标进度展示。使用 generate_chart_apex 工具生成。",
+  "useCases": [
+    "多 KPI 目标达成率环形进度一览",
+    "产品健康度多维度指标圆环",
+    "季度目标各项进度并排圆环",
+    "多项技能/能力评估进度图"
+  ],
+  "dataSchema": {
+    "labels": "每个圆环的指标名称",
+    "values": "对应进度百分比数组（0-100）",
+    "colors": "选填，各环颜色（默认使用主题色系）"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "apexcharts",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_apex_radial\">\n  <h2 class=\"card-title\">Q1 目标达成率</h2>\n  <div id=\"chart_apex_radial\"></div>\n  <script>\n  (function(){\n    var options={\n      chart:{type:'radialBar',height:320,toolbar:{show:false},animations:{enabled:!window.__REPORT_PRINT_MODE__}},\n      series:[88,72,95,61],\n      labels:['GMV','DAU','复购率','NPS'],\n      colors:(window.__APEX_PALETTE__||['#3b82f6','#10b981','#f59e0b','#ef4444']).slice(0,4),\n      plotOptions:{radialBar:{hollow:{size:'30%'},dataLabels:{name:{fontSize:'14px'},value:{fontSize:'13px',formatter:function(v){return v+'%';}},total:{show:true,label:'综合',formatter:function(){return '79%';}}}}},\n      legend:{show:true,position:'bottom'}\n    };\n    var apx=new ApexCharts(document.getElementById('chart_apex_radial'),options);\n    apx.render().then(function(){\n      window.__REPORT_EVENT_BUS__&&window.__REPORT_EVENT_BUS__.registerApex('chart_apex_radial',apx);\n    });\n  })();\n  <\/script>\n</div>"
+}

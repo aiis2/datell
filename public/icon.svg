@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="128" y1="128" x2="384" y2="384" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#a5b4fc" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#60a5fa" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- Background rounded square -->
+  <rect width="512" height="512" rx="108" fill="url(#bg)"/>
+  <!-- Soft glow -->
+  <circle cx="256" cy="256" r="160" fill="url(#glow)"/>
+  <!-- Bar chart bars -->
+  <rect x="100" y="300" width="56" height="120" rx="10" fill="#ffffff" opacity="0.9"/>
+  <rect x="180" y="240" width="56" height="180" rx="10" fill="#ffffff" opacity="0.9"/>
+  <rect x="260" y="200" width="56" height="220" rx="10" fill="#ffffff" opacity="0.9"/>
+  <rect x="340" y="160" width="56" height="260" rx="10" fill="#ffffff" opacity="0.9"/>
+  <!-- AI brain/circuit circle -->
+  <circle cx="370" cy="120" r="56" fill="#ffffff" opacity="0.15"/>
+  <circle cx="370" cy="120" r="40" fill="none" stroke="#ffffff" stroke-width="4" opacity="0.9"/>
+  <!-- Neural nodes -->
+  <circle cx="370" cy="105" r="6" fill="#ffffff"/>
+  <circle cx="355" cy="130" r="6" fill="#ffffff"/>
+  <circle cx="385" cy="130" r="6" fill="#ffffff"/>
+  <!-- Neural connections -->
+  <line x1="370" y1="105" x2="355" y2="130" stroke="#ffffff" stroke-width="2.5" opacity="0.7"/>
+  <line x1="370" y1="105" x2="385" y2="130" stroke="#ffffff" stroke-width="2.5" opacity="0.7"/>
+  <line x1="355" y1="130" x2="385" y2="130" stroke="#ffffff" stroke-width="2.5" opacity="0.7"/>
+  <!-- Trend line over bars -->
+  <polyline points="128,290 208,225 288,185 368,140" fill="none" stroke="#fbbf24" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+  <!-- Sparkle dots on trend line -->
+  <circle cx="128" cy="290" r="7" fill="#fbbf24"/>
+  <circle cx="208" cy="225" r="7" fill="#fbbf24"/>
+  <circle cx="288" cy="185" r="7" fill="#fbbf24"/>
+  <circle cx="368" cy="140" r="7" fill="#fbbf24"/>
+</svg>

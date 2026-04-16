@@ -1,0 +1,29 @@
+{
+  "id": "kpi-csat",
+  "type": "card",
+  "category": "kpi",
+  "name": "客户满意度(CSAT)评分卡",
+  "description": "展示客户满意度评分，含满意/不满意比例和近期趋势，适合客服中心监控、产品体验满意度、售后服务评价",
+  "tags": [
+    "kpi",
+    "CSAT",
+    "customer satisfaction",
+    "客户满意度",
+    "客服",
+    "用户体验",
+    "评分"
+  ],
+  "cssClass": "kpi-nps",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>客户满意度(CSAT)</div><div style='font-size:36px;font-weight:900;color:var(--color-success)'>88.4%</div><div style='display:flex;height:6px;border-radius:3px;overflow:hidden;margin:8px 0;gap:1px'><div style='flex:88;background:var(--color-success)'></div><div style='flex:7;background:var(--color-warning)'></div><div style='flex:5;background:var(--color-danger)'></div></div><div style='display:flex;justify-content:space-between;font-size:10px;color:var(--text-sub)'><span>满意 88%</span><span>一般 7%</span><span>不满 5%</span></div></div>",
+  "variants": [
+    "产品评分满意度",
+    "服务评分",
+    "NPS净推荐值"
+  ],
+  "relatedCards": [
+    "kpi-nps",
+    "kpi-health-score"
+  ],
+  "htmlClassName": "card kpi-card"
+}

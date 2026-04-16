@@ -1,0 +1,30 @@
+{
+  "id": "bar-chart-horizontal",
+  "type": "card",
+  "name": "水平条形图",
+  "category": "chart",
+  "tags": [
+    "条形图",
+    "水平",
+    "排行榜",
+    "Top N",
+    "横向"
+  ],
+  "description": "水平条形图，适合展示 Top N 排行榜类数据，类别名称较长时水平展示更易阅读。",
+  "useCases": [
+    "Top 10 销售人员排名",
+    "各省市收入排行",
+    "产品畅销榜单"
+  ],
+  "dataSchema": {
+    "categories": "纵轴类别（降序）",
+    "values": "数值数组",
+    "title": "标题"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "highlight",
+    "tooltip"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "scatter-chart",
+  "type": "card",
+  "name": "散点图",
+  "category": "chart",
+  "tags": [
+    "散点图",
+    "相关性",
+    "分布",
+    "二维",
+    "回归"
+  ],
+  "description": "二维散点图，展示两个变量之间的相关关系和分布规律。适合相关性分析、数据聚类展示。",
+  "useCases": [
+    "销售额与广告投入相关性",
+    "价格与销量关系",
+    "客户价值分布"
+  ],
+  "dataSchema": {
+    "points": "散点数组（x/y/name）",
+    "title": "标题",
+    "xLabel": "X轴名",
+    "yLabel": "Y轴名"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "tooltip",
+    "zoom"
+  ]
+}

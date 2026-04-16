@@ -1,0 +1,30 @@
+{
+  "id": "sankey-flow",
+  "type": "card",
+  "name": "桑基流图",
+  "category": "chart",
+  "tags": [
+    "桑基图",
+    "流向",
+    "转化",
+    "路径",
+    "流量"
+  ],
+  "description": "桑基流图，展示从源到目标的流量流向和比例，适合转化漏斗、用户路径分析、资金流向等场景。",
+  "useCases": [
+    "用户转化流路径分析",
+    "资金流向图",
+    "供应链流量图",
+    "能源消耗流向"
+  ],
+  "dataSchema": {
+    "nodes": "节点数组（name）",
+    "links": "连接数组（source/target/value）",
+    "title": "标题"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "tooltip"
+  ]
+}

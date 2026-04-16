@@ -1,0 +1,22 @@
+{
+  "id": "finance-trading-candlestick",
+  "type": "layout",
+  "name": "交易行情看板",
+  "category": "finance",
+  "tags": [
+    "K线",
+    "股票",
+    "交易",
+    "行情",
+    "金融市场"
+  ],
+  "description": "金融交易行情专用布局，顶部价格KPI，主区K线图，底部成交量柱状图，右侧技术指标面板。",
+  "slots": {
+    "priceKpi": "价格指标KPI",
+    "candlestickChart": "K线主图",
+    "volumeChart": "成交量柱图",
+    "indicators": "技术指标面板"
+  },
+  "cssPath": "finance/trading-candlestick.css",
+  "containerClass": "layout-finance-trading"
+}

@@ -1,0 +1,27 @@
+{
+  "id": "kpi-avg-deal-size",
+  "type": "card",
+  "category": "A",
+  "name": "平均订单金额(AOV)卡",
+  "description": "展示平均成交金额/客单价，含月度趋势和分组对比，适合销售绩效分析、定价策略、电商收入分析",
+  "tags": [
+    "kpi",
+    "AOV",
+    "average order value",
+    "客单价",
+    "销售",
+    "电商"
+  ],
+  "cssClass": "kpi-comparison",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>平均订单金额(AOV)</div><div style='font-size:32px;font-weight:900;color:var(--text-accent)'>¥ 3,840</div><div style='font-size:11px;color:var(--color-success)'>▲ 8.3% vs 上月</div></div>",
+  "variants": [
+    "中位成交价",
+    "高价值客户AOV",
+    "产品线AOV"
+  ],
+  "relatedCards": [
+    "kpi-revenue-by-segment",
+    "kpi-single"
+  ]
+}

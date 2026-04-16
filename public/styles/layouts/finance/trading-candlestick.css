@@ -1,0 +1,13 @@
+/* 财务监控大屏 — 实时指标 + 多图表 */
+:root {
+  --layout-content-padding:   16px;
+  --layout-content-max-width: 1600px;
+  --layout-gap:               16px;
+  --layout-kpi-cols:          repeat(5, 1fr);
+  --layout-kpi-gap:           14px;
+  --layout-chart-cols:        repeat(3, 1fr);
+  --layout-chart-gap:         16px;
+  --layout-card-padding:      16px;
+}
+
+.chart-container { height: 300px; }

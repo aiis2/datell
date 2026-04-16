@@ -1,0 +1,22 @@
+{
+  "id": "sankey-budget-flow",
+  "type": "card",
+  "name": "预算分配流向桑基图",
+  "category": "chart",
+  "tags": ["桑基图", "预算", "资金分配", "sankey", "流向", "成本分摊"],
+  "description": "专为预算/成本分配设计的桑基图，从总预算到各大类，再到各子项目，形成多层分配流向图。直观展示预算的分解与去向，适合年度预算报告、成本分摊分析、资源配置优化分析。",
+  "useCases": [
+    "年度预算分配到各部门流向图",
+    "营销费用分配到各渠道流向",
+    "项目成本分摊到子项目桑基",
+    "收入来源到各业务线分配"
+  ],
+  "dataSchema": {
+    "nodes": "节点列表：[{name}]，按层级组织",
+    "links": "分配关系：[{source, target, value}]"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["highlight"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_budget_sankey\">\n  <h2 class=\"card-title\">营销预算分配流向（万元）</h2>\n  <div id=\"chart_budget_sankey\" class=\"chart-container\" style=\"height:340px\"></div>\n  <script>\n  (function(){\n    var chart=echarts.init(document.getElementById('chart_budget_sankey'));\n    chart.setOption({\n      series:[{type:'sankey',\n        data:[{name:'总预算'},{name:'数字营销'},{name:'品牌建设'},{name:'线下活动'},{name:'SEM'},{name:'信息流'},{name:'KOL'},{name:'广告'},{name:'赞助'},{name:'展会'}],\n        links:[\n          {source:'总预算',target:'数字营销',value:500},{source:'总预算',target:'品牌建设',value:300},{source:'总预算',target:'线下活动',value:200},\n          {source:'数字营销',target:'SEM',value:200},{source:'数字营销',target:'信息流',value:180},{source:'数字营销',target:'KOL',value:120},\n          {source:'品牌建设',target:'广告',value:180},{source:'品牌建设',target:'赞助',value:120},\n          {source:'线下活动',target:'展会',value:200}\n        ],\n        lineStyle:{curveness:0.5,opacity:0.4},label:{fontSize:11}}]\n    });\n    window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.register('chart_budget_sankey', chart);\n  })();\n  <\/script>\n</div>"
+}

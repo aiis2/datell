@@ -1,0 +1,10 @@
+/* 杂志长文布局 */
+:root {
+  --layout-content-padding:   48px;
+  --layout-content-max-width: 800px;
+  --layout-gap:               32px;
+  --layout-kpi-cols:          repeat(3, 1fr);
+  --layout-chart-cols:        1fr;
+  --layout-chart-gap:         28px;
+  --layout-card-padding:      28px;
+}

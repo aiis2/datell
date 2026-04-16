@@ -1,0 +1,13 @@
+{
+  "id": "line-smooth",
+  "type": "card",
+  "category": "B",
+  "name": "平滑曲线折线图",
+  "description": "ECharts 带smooth:true的平滑折线图，比普通折线更圆润流畅，适合展示连续趋势走势",
+  "tags": ["line", "smooth", "curve", "trend", "echarts", "continuous"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"line_smooth\"><div class=\"card-title\">用户增长趋势</div><div class=\"chart-container md\" id=\"chart_line_smooth\"></div><script>(function(){var el=document.getElementById('chart_line_smooth');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6'];c.setOption({color:palette,tooltip:{trigger:'axis'},grid:{left:'3%',right:'4%',bottom:'3%',containLabel:true},xAxis:{type:'category',boundaryGap:false,data:['Jan','Feb','Mar','Apr','May','Jun','Jul']},yAxis:{type:'value'},series:[{name:'MAU',type:'line',smooth:true,data:[12000,14500,13200,16800,18400,19200,22000],lineStyle:{width:2.5}}]});})();</script></div>",
+  "variants": ["用户增长", "收入趋势", "活跃度曲线"],
+  "relatedCards": ["line-chart-single", "line-area-gradient"]
+}

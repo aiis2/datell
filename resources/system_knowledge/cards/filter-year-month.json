@@ -1,0 +1,12 @@
+{
+  "id": "filter-year-month",
+  "type": "card",
+  "category": "E",
+  "name": "年月快切筛选卡",
+  "description": "按钮组形式快速切换年份或月份，激活高亮，支持单选/多选，联动图表通过 __REPORT_EVENT_BUS__",
+  "tags": ["filter", "year", "month", "button-group", "date", "period", "toggle"],
+  "cssClass": "filter-btn-group",
+  "exampleHtml": "<div class=\"card filter-card\" data-filter-id=\"month_selector\" data-filter-type=\"year-month\" style=\"padding:12px 16px\"><label class=\"filter-label\">月份快速切换</label><div class=\"filter-controls\"><div class=\"filter-btn-group\" data-filter-id=\"month_selector\" data-filter-type=\"year-month\"><button class=\"filter-btn\" data-value=\"1\">1月</button><button class=\"filter-btn\" data-value=\"2\">2月</button><button class=\"filter-btn\" data-value=\"3\">3月</button><button class=\"filter-btn active\" data-value=\"4\">4月</button><button class=\"filter-btn\" data-value=\"5\">5月</button><button class=\"filter-btn\" data-value=\"6\">6月</button></div></div></div>",
+  "variants": ["季度切换", "年份切换", "月份多选"],
+  "relatedCards": ["filter-dropdown", "filter-global-panel"]
+}

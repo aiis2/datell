@@ -1,0 +1,13 @@
+{
+  "id": "filter-date-range",
+  "type": "card",
+  "category": "E",
+  "name": "日期范围选择器",
+  "description": "开始日期+结束日期双输入框组成的日期范围筛选控件，支持快速预设（今日/近7天/近30天等），与 __REPORT_EVENT_BUS__ 联动",
+  "tags": ["filter", "date", "range", "picker", "start", "end", "period"],
+  "cssClass": "filter-date-range",
+  "filterType": "date-range",
+  "exampleHtml": "<div class=\"card\" data-card-id=\"date_filter\" data-filter-id=\"date_range\"><div class=\"filter-label\">时间范围</div><div class=\"filter-date-range\"><div class=\"date-inputs\"><input type=\"date\" value=\"2024-01-01\"><span class=\"date-sep\">至</span><input type=\"date\" value=\"2024-03-31\"></div><div class=\"quick-presets\"><button class=\"preset-btn\">今日</button><button class=\"preset-btn\">近7天</button><button class=\"preset-btn active\">本季度</button><button class=\"preset-btn\">本年</button></div></div></div>",
+  "variants": ["订单时段筛选", "报表周期选择", "活动时间范围"],
+  "relatedCards": ["filter-year-month", "filter-global-panel"]
+}

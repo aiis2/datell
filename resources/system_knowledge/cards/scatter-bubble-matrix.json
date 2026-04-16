@@ -1,0 +1,24 @@
+{
+  "id": "scatter-bubble-matrix",
+  "type": "card",
+  "name": "气泡散点矩阵图",
+  "category": "chart",
+  "tags": ["散点图", "气泡图", "矩阵", "四象限", "对比分析", "portfolio"],
+  "description": "气泡散点矩阵图，X/Y 轴分别代表两个核心指标，气泡大小表示第三个指标（如市值/销量），用四象限参考线将数据分成四个区间。适合产品/客户/投资标的的二维评估矩阵分析。",
+  "useCases": [
+    "产品-利润率 vs 增长率矩阵（波士顿矩阵）",
+    "客户价值 vs 活跃度气泡图",
+    "项目优先级 ROI vs 工作量矩阵",
+    "投资标的风险 vs 收益矩阵"
+  ],
+  "dataSchema": {
+    "data": "数据点数组：[{name, x, y, size, category}]",
+    "xLabel": "X轴指标名称",
+    "yLabel": "Y轴指标名称",
+    "sizeLabel": "气泡大小指标名称（第三维）"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["highlight"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_bubble_matrix\">\n  <h2 class=\"card-title\">产品增长率 vs 利润率矩阵</h2>\n  <div id=\"chart_bubble_matrix\" class=\"chart-container\" style=\"height:320px\"></div>\n  <script>\n  (function(){\n    var chart=echarts.init(document.getElementById('chart_bubble_matrix'));\n    var data=[\n      ['产品A',25,32,80],['产品B',8,18,120],['产品C',42,12,60],['产品D',18,28,200],['产品E',35,22,45]\n    ];\n    chart.setOption({\n      grid:{top:30,right:50},\n      tooltip:{formatter:function(p){return p.data[0]+'<br/>增长率:'+p.data[1]+'%<br/>利润率:'+p.data[2]+'%<br/>销量:'+p.data[3];}},\n      xAxis:{name:'增长率(%)',type:'value',min:0,splitLine:{lineStyle:{type:'dashed'}}},\n      yAxis:{name:'利润率(%)',type:'value',min:0,splitLine:{lineStyle:{type:'dashed'}}},\n      series:[{type:'scatter',data:data.map(function(d){return{name:d[0],value:[d[1],d[2],d[3]]};}) ,symbolSize:function(d){return Math.sqrt(d[2])*5;}, label:{show:true,formatter:function(p){return p.name;},position:'top',fontSize:11}}],\n      markLine:{data:[{xAxis:20},{yAxis:20}]}\n    });\n    window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.register('chart_bubble_matrix', chart);\n  })();\n  <\/script>\n</div>"
+}

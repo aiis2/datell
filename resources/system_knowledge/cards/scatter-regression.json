@@ -1,0 +1,13 @@
+{
+  "id": "scatter-regression",
+  "type": "card",
+  "category": "B",
+  "name": "带回归线散点图",
+  "description": "ECharts 散点图叠加趋势回归线（markLine），展示两变量间的相关关系和趋势，适合相关性分析",
+  "tags": ["scatter", "regression", "trend", "correlation", "linear", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"scatter_reg\"><div class=\"card-title\">客单价 vs 复购率</div><div class=\"chart-container md\" id=\"chart_scatter_reg\"></div><script>(function(){var el=document.getElementById('chart_scatter_reg');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6'];var data=[[200,0.32],[350,0.45],[480,0.52],[620,0.58],[150,0.28],[900,0.71],[720,0.63],[280,0.39]];c.setOption({color:palette,tooltip:{trigger:'item',formatter:function(p){return '客单价: ¥'+p.data[0]+'<br/>复购率: '+(p.data[1]*100).toFixed(0)+'%';}},grid:{left:'3%',right:'4%',bottom:'3%',containLabel:true},xAxis:{type:'value',name:'客单价（元）',nameLocation:'end'},yAxis:{type:'value',name:'复购率',axisLabel:{formatter:function(v){return (v*100).toFixed(0)+'%';}}},series:[{type:'scatter',data:data,symbolSize:10,itemStyle:{color:palette[0],opacity:0.75}},{type:'line',markLine:{lineStyle:{color:palette[0],opacity:0.5},data:[{type:'average',name:'均值',xAxis:'average'},{type:'average',name:'均值',yAxis:'average'}]}}]});})();</script></div>",
+  "variants": ["价格vs转化率", "广告投入vs销量", "活跃度vs留存"],
+  "relatedCards": ["scatter-chart", "bubble-chart"]
+}

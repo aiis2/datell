@@ -1,0 +1,30 @@
+{
+  "id": "kpi-deployment-freq",
+  "type": "card",
+  "category": "kpi",
+  "name": "部署频率(DORA)指标卡",
+  "description": "展示代码部署频率、变更前置时间等 DORA 四项关键指标，适合研发效能报告、DevOps 成熟度评估",
+  "tags": [
+    "kpi",
+    "DORA",
+    "deployment frequency",
+    "部署频率",
+    "DevOps",
+    "研发效能",
+    "变更",
+    "CI/CD"
+  ],
+  "cssClass": "kpi-composite",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card kpi-composite' style='padding:16px'><div style='font-size:12px;color:var(--text-sub);margin-bottom:6px'>DORA 核心指标</div><div style='display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px'><div><div style='font-weight:700;font-size:18px;color:var(--color-success)'>5.2次/天</div><div style='color:var(--text-sub)'>部署频率</div></div><div><div style='font-weight:700;font-size:18px;color:var(--color-success)'>1.8h</div><div style='color:var(--text-sub)'>变更前置时间</div></div><div><div style='font-weight:700;font-size:18px;color:var(--color-success)'>98.8%</div><div style='color:var(--text-sub)'>变更成功率</div></div><div><div style='font-weight:700;font-size:18px;color:var(--color-warning)'>24min</div><div style='color:var(--text-sub)'>故障恢复(MTTR)</div></div></div></div>",
+  "variants": [
+    "变更失败率",
+    "故障恢复时间MTTR",
+    "代码覆盖率"
+  ],
+  "relatedCards": [
+    "kpi-composite",
+    "kpi-health-score"
+  ],
+  "htmlClassName": "card kpi-card kpi-composite"
+}

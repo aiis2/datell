@@ -1,0 +1,28 @@
+{
+  "id": "text-summary",
+  "type": "card",
+  "name": "富文本摘要卡片",
+  "category": "narrative",
+  "tags": [
+    "文字",
+    "摘要",
+    "说明",
+    "分析结论",
+    "文本"
+  ],
+  "description": "结构化富文本卡片，包含标题、要点列表和结论段落。适合 AI 分析结论展示、报告文字摘要。",
+  "useCases": [
+    "AI智能分析结论",
+    "报表执行摘要",
+    "数据说明卡片",
+    "关键发现总结"
+  ],
+  "dataSchema": {
+    "title": "卡片标题",
+    "highlights": "要点数组（字符串列表）",
+    "summary": "结论段落文本"
+  },
+  "htmlClassName": "card text-card",
+  "engineHint": "pure-html",
+  "interactionSupport": []
+}

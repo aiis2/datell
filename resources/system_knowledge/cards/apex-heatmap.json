@@ -1,0 +1,23 @@
+{
+  "id": "apex-heatmap",
+  "type": "card",
+  "name": "热力图（带数值标注）— ApexCharts",
+  "category": "chart",
+  "tags": ["热力图", "heatmap", "数值标注", "矩阵", "ApexCharts", "密度分布"],
+  "description": "使用 ApexCharts heatmap 类型实现带数值标注的热力图，每格颜色深浅代表数值大小，并可在格内显示具体数字。适合展示时间 × 类别的密度分布，如每周/每月活跃度矩阵、相关性矩阵等。使用 generate_chart_apex 工具生成。",
+  "useCases": [
+    "用户每周各时段活跃度热力图",
+    "产品功能使用频率矩阵",
+    "月度销售额 × 地区交叉分析",
+    "指标相关性强度矩阵"
+  ],
+  "dataSchema": {
+    "series": "系列数组，每个 series 对应一行，data 为各列数值",
+    "categories": "X 轴类别（列标签），如星期/小时",
+    "rowLabels": "Y 轴行标签（series.name）"
+  },
+  "htmlClassName": "card chart-card apex-chart-card",
+  "engineHint": "apexcharts",
+  "interactionSupport": ["highlight", "filter"],
+  "exampleHtml": "<div class=\"card chart-card apex-chart-card\" data-card-id=\"chart_heatmap_example\">\n  <h2 class=\"card-title\">周活跃度热力图</h2>\n  <div id=\"chart_heatmap_example\" class=\"chart-container\" style=\"height:320px\"></div>\n  <script>\n  (function(){\n    var days = ['周一','周二','周三','周四','周五','周六','周日'];\n    var series = ['深夜','凌晨','早晨','上午','下午','傍晚','晚上','夜间'].map(function(name) {\n      return { name: name, data: days.map(function() { return Math.floor(Math.random()*100); }) };\n    });\n    var options = {\n      chart: { type: 'heatmap', height: 320, toolbar: { show: false }, animations: { enabled: !window.__REPORT_PRINT_MODE__ } },\n      dataLabels: { enabled: true, style: { fontSize: '10px' } },\n      colors: [(window.__APEX_PALETTE__ || ['#3b82f6'])[0]],\n      series: series,\n      xaxis: { categories: days },\n      tooltip: { y: { formatter: function(v) { return v + ' 次'; } } }\n    };\n    var chart = new ApexCharts(document.getElementById('chart_heatmap_example'), options);\n    chart.render().then(function(){ window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.registerApex('chart_heatmap_example', chart); });\n  })();\n  <\/script>\n</div>"
+}

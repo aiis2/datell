@@ -1,0 +1,13 @@
+{
+  "id": "bar-polar",
+  "type": "card",
+  "category": "B",
+  "name": "极坐标条形图",
+  "description": "ECharts 极坐标系柱状图，以圆形放射状排列，视觉冲击力强，适合季节/星期/循环类周期对比",
+  "tags": ["bar", "polar", "radial", "circular", "period", "cycle", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"bar_polar\"><div class=\"card-title\">各月销售额（极坐标）</div><div class=\"chart-container md\" id=\"chart_polar\"></div><script>(function(){var el=document.getElementById('chart_polar');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6'];c.setOption({polar:{radius:[30,'75%']},angleAxis:{type:'category',data:['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],startAngle:90},radiusAxis:{},tooltip:{trigger:'axis'},series:[{type:'bar',data:[520,480,530,610,580,640,700,660,590,620,710,780],coordinateSystem:'polar',itemStyle:{color:palette[0],opacity:0.8}}]});})();</script></div>",
+  "variants": ["月度周期对比", "星期流量分布", "小时热度"],
+  "relatedCards": ["radar-chart", "bar-chart-basic"]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "drawdown-chart",
+  "type": "card",
+  "name": "最大回撤图（Drawdown）",
+  "category": "chart",
+  "tags": ["回撤", "drawdown", "净值", "风险", "金融", "投资组合"],
+  "description": "展示投资组合或策略的净值曲线与回撤区间，回撤区间用阴影面积标注，便于直观评估最大亏损幅度和回撤持续时间。适用于基金/量化策略业绩分析报表。",
+  "useCases": [
+    "基金净值与最大回撤",
+    "量化策略回测业绩展示",
+    "投资组合风险评估",
+    "ETF历史最大亏损区间标注"
+  ],
+  "dataSchema": {
+    "dates": "日期数组（X轴）",
+    "nav": "净值数组（从1.0起始）",
+    "drawdown": "回撤幅度数组（0到-1之间的负数，代表各日期相对历史峰值的亏损比例）"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["datazoom", "highlight"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_drawdown\">\n  <h2 class=\"card-title\">净值与回撤</h2>\n  <div id=\"chart_drawdown\" class=\"chart-container\" style=\"height:320px\"></div>\n  <script>\n  (function(){\n    var d=['Q1','Q2','Q3','Q4','Q5','Q6','Q7','Q8'];\n    var nav=[1,1.08,1.15,1.05,0.98,1.02,1.12,1.20];\n    var maxNav=1;\n    var dd=nav.map(function(v){maxNav=Math.max(maxNav,v);return Math.round((v/maxNav-1)*100)/100;});\n    var chart=echarts.init(document.getElementById('chart_drawdown'));\n    chart.setOption({\n      grid:[{top:20,height:'50%'},{top:'65%',height:'30%'}],\n      xAxis:[{type:'category',data:d},{type:'category',data:d,gridIndex:1}],\n      yAxis:[{type:'value',gridIndex:0},{type:'value',gridIndex:1,axisLabel:{formatter:function(v){return (v*100).toFixed(0)+'%';}}}],\n      series:[\n        {name:'净值',type:'line',data:nav,smooth:true,areaStyle:{opacity:0.1}},\n        {name:'回撤',type:'line',data:dd,smooth:true,xAxisIndex:1,yAxisIndex:1,areaStyle:{color:'#ef4444',opacity:0.3},lineStyle:{color:'#ef4444'},itemStyle:{color:'#ef4444'}}\n      ]\n    });\n    window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.register('chart_drawdown', chart);\n  })();\n  <\/script>\n</div>"
+}

@@ -1,0 +1,29 @@
+{
+  "id": "kpi-gmv-breakdown",
+  "type": "card",
+  "category": "kpi",
+  "name": "GMV 商品交易总额指标卡",
+  "description": "展示 GMV 及按渠道/品类的分解，含同比环比，适合电商平台收入概览、多渠道销售分析",
+  "tags": [
+    "kpi",
+    "GMV",
+    "商品交易总额",
+    "电商",
+    "平台",
+    "渠道",
+    "销售额"
+  ],
+  "cssClass": "kpi-segmented",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>本月 GMV</div><div style='font-size:30px;font-weight:900;color:var(--color-primary)'>¥ 2,840万</div><div style='font-size:11px;color:var(--color-success)'>▲ 23.4% YoY</div><div style='display:flex;gap:6px;margin-top:8px;font-size:10px'><span style='background:var(--bg-card-alt);padding:2px 6px;border-radius:4px'>PC 45%</span><span style='background:var(--bg-card-alt);padding:2px 6px;border-radius:4px'>APP 38%</span><span style='background:var(--bg-card-alt);padding:2px 6px;border-radius:4px'>小程序 17%</span></div></div>",
+  "variants": [
+    "商品件数",
+    "有效订单量",
+    "SKU贡献排名"
+  ],
+  "relatedCards": [
+    "kpi-avg-deal-size",
+    "kpi-conversion-rate"
+  ],
+  "htmlClassName": "card kpi-card"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "finance-pnl-report",
+  "type": "layout",
+  "name": "财务损益报告",
+  "category": "finance",
+  "tags": ["财务", "损益表", "利润", "收入", "成本", "PnL"],
+  "description": "财务损益报告标准布局，顶部4列核心财务KPI（营收/毛利/净利/费用率），中部左侧利润表格式表+右侧趋势折线图，底部费用分类柱状图+同比桥接图。适合季度/年度损益分析报告。",
+  "slots": {
+    "kpiRow": "4个财务核心KPI（营收/毛利/净利润/费用率）",
+    "incomeStatement": "利润表格式表（科目/本期/上期/同比）",
+    "revenueTrend": "月度收入+利润趋势折线图",
+    "costBreakdown": "费用类别柱状图",
+    "bridgeChart": "利润同比桥接瀑布图"
+  },
+  "cssPath": "finance/pnl-report.css",
+  "containerClass": "layout-finance-pnl"
+}

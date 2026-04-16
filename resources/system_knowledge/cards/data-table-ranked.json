@@ -1,0 +1,32 @@
+{
+  "id": "data-table-ranked",
+  "type": "card",
+  "name": "排行榜表格",
+  "category": "table",
+  "tags": [
+    "表格",
+    "排行榜",
+    "Top N",
+    "排名",
+    "数据表"
+  ],
+  "description": "带排名序号、高亮Top3的数据表格，适合展示销售排行、用户积分排名等 Top N 场景。",
+  "useCases": [
+    "销售人员业绩排行",
+    "产品畅销榜单",
+    "客户价值排名",
+    "城市指标排行"
+  ],
+  "dataSchema": {
+    "columns": "列定义（key/label）",
+    "rows": "数据行数组",
+    "title": "标题",
+    "topN": "高亮前N名（默认3）"
+  },
+  "htmlClassName": "card data-table",
+  "engineHint": "pure-html",
+  "interactionSupport": [
+    "sort",
+    "highlight"
+  ]
+}

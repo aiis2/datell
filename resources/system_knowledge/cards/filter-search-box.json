@@ -1,0 +1,12 @@
+{
+  "id": "filter-search-box",
+  "type": "card",
+  "category": "E",
+  "name": "快速搜索筛选卡",
+  "description": "带放大镜图标的内联搜索框，300ms防抖后通过 filterChange 事件广播关键词，适合大数据量列表快速筛选",
+  "tags": ["filter", "search", "keyword", "input", "text", "quick-filter"],
+  "cssClass": "filter-search-box",
+  "exampleHtml": "<div class=\"card filter-card\" style=\"padding:12px 16px\"><label class=\"filter-label\">搜索客户</label><div class=\"filter-search-box\" data-filter-id=\"customer_search\" data-filter-type=\"search\"><span class=\"filter-search-icon\"><svg class=\"icon\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><use href=\"./vendor/icons.svg#icon-search\"></use></svg></span><input class=\"filter-search-input\" type=\"text\" placeholder=\"输入客户名称或编号...\"></div></div>",
+  "variants": ["产品搜索", "员工搜索", "订单编号查询"],
+  "relatedCards": ["filter-dropdown", "filter-checkbox-group"]
+}

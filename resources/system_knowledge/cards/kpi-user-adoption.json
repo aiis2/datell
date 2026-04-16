@@ -1,0 +1,29 @@
+{
+  "id": "kpi-user-adoption",
+  "type": "card",
+  "category": "kpi",
+  "name": "功能/系统采用率指标卡",
+  "description": "展示新功能或系统的用户采用率，含采用漏斗和增长趋势，适合产品功能上线后效果监控、系统推广看板",
+  "tags": [
+    "kpi",
+    "user adoption",
+    "功能采用率",
+    "系统推广",
+    "产品",
+    "feature adoption",
+    "用户行为"
+  ],
+  "cssClass": "kpi-target-bar",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>新功能采用率</div><div style='font-size:32px;font-weight:900;color:var(--color-primary)'>43.8%</div><div class='kpi-target-bar-wrap' style='margin:8px 0'><div class='kpi-target-bar-fill' style='--bar-pct:43.8%'></div></div><div style='display:flex;justify-content:space-between;font-size:11px;color:var(--text-sub)'><span>目标 60% (90天)</span><span>上线第30天</span></div></div>",
+  "variants": [
+    "DAU用户活跃度",
+    "月度登录率",
+    "核心功能使用频率"
+  ],
+  "relatedCards": [
+    "kpi-dau-mau",
+    "kpi-milestone-progress"
+  ],
+  "htmlClassName": "card kpi-card"
+}

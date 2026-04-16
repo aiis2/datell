@@ -1,0 +1,31 @@
+{
+  "id": "kpi-d30-retention",
+  "type": "card",
+  "category": "kpi",
+  "name": "D30 用户留存率指标卡",
+  "description": "展示注册后 D1/D7/D30 用户留存率，适合产品留存分析、游戏/App 生命周期监控、增长黑客看板",
+  "tags": [
+    "kpi",
+    "retention",
+    "留存率",
+    "D30",
+    "D7",
+    "D1",
+    "产品留存",
+    "用户生命周期",
+    "增长"
+  ],
+  "cssClass": "kpi-cohort-retention",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub);margin-bottom:6px'>用户留存率（注册后）</div><div style='display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center'><div><div style='font-size:26px;font-weight:900;color:var(--color-success)'>68%</div><div style='font-size:11px;color:var(--text-sub)'>D1留存</div></div><div><div style='font-size:26px;font-weight:900;color:var(--color-primary)'>42%</div><div style='font-size:11px;color:var(--text-sub)'>D7留存</div></div><div><div style='font-size:26px;font-weight:900;color:var(--color-warning)'>28%</div><div style='font-size:11px;color:var(--text-sub)'>D30留存</div></div></div></div>",
+  "variants": [
+    "D90留存",
+    "付费留存率",
+    "功能留存率"
+  ],
+  "relatedCards": [
+    "kpi-cohort-retention",
+    "kpi-churn-rate"
+  ],
+  "htmlClassName": "card kpi-card"
+}

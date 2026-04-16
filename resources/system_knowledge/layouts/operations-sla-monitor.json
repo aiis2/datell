@@ -1,0 +1,21 @@
+{
+  "id": "operations-sla-monitor",
+  "type": "layout",
+  "name": "SLA 服务监控看板",
+  "category": "operations",
+  "tags": [
+    "SLA",
+    "服务质量",
+    "监控",
+    "运维",
+    "达标率"
+  ],
+  "description": "SLA服务水平协议监控布局，顶部达标率KPI，中部SLA趋势图+违规清单，底部服务分类汇总。",
+  "slots": {
+    "slaKpi": "达标率/可用率KPI",
+    "trendChart": "SLA趋势图",
+    "violationList": "违规记录列表"
+  },
+  "cssPath": "operations/sla-monitor.css",
+  "containerClass": "layout-operations-sla"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "map-china-choropleth",
+  "type": "card",
+  "name": "中国地图省级热力图",
+  "category": "chart",
+  "tags": ["地图", "中国", "省级", "热力图", "choropleth", "地理", "区域分布"],
+  "description": "中国省级行政区划热力地图，根据各省数值用颜色深浅表示数据大小（Choropleth），hoverhover省份显示 tooltip。使用 ECharts geo 组件和注册的中国地图 JSON 数据渲染。注意：需要提前加载 china.js 地图文件。",
+  "useCases": [
+    "各省销售额/用户数分布热力图",
+    "区域业务覆盖度可视化",
+    "省级门店/网点分布密度",
+    "地区业绩指标颜色区分"
+  ],
+  "dataSchema": {
+    "data": "省份数据：[{name:'广东', value:1200}]，name 需与 echarts china.js 省名一致",
+    "unit": "数值单位",
+    "colorRange": "[min色, max色] 颜色渐变区间"
+  },
+  "htmlClassName": "card chart-card chart-map",
+  "engineHint": "echarts",
+  "interactionSupport": ["highlight", "filter"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_china_map\">\n  <h2 class=\"card-title\">各省销售额分布（万元）</h2>\n  <div id=\"chart_china_map\" class=\"chart-container\" style=\"height:380px\"></div>\n  <script>\n  (function(){\n    var chart=echarts.init(document.getElementById('chart_china_map'));\n    var data=[\n      {name:'广东',value:1200},{name:'浙江',value:900},{name:'江苏',value:850},{name:'山东',value:720},{name:'河南',value:580},{name:'四川',value:560},{name:'湖北',value:480},{name:'湖南',value:440},{name:'福建',value:420},{name:'北京',value:410}\n    ];\n    chart.setOption({\n      tooltip:{trigger:'item',formatter:'{b}: {c}万元'},\n      visualMap:{min:0,max:1200,left:'left',top:'bottom',text:['高','低'],calculable:true,inRange:{color:['#e0f2fe','#0369a1']}},\n      series:[{type:'map',map:'china',data:data,emphasis:{label:{show:true}}}]\n    });\n    chart.on('click',function(p){if(p.name)window.__REPORT_EVENT_BUS__&&window.__REPORT_EVENT_BUS__.emit({type:'filter',cardId:'chart_china_map',payload:{field:'province',value:p.name}});});\n    window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.register('chart_china_map', chart);\n  })();\n  <\/script>\n</div>"
+}

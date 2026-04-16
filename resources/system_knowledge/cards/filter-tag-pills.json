@@ -1,0 +1,12 @@
+{
+  "id": "filter-tag-pills",
+  "type": "card",
+  "category": "E",
+  "name": "已激活标签栏",
+  "description": "展示当前已激活的筛选条件为可删除 pill 标签，点击 × 移除单项并派发 filterChange，适合高级筛选的状态展示",
+  "tags": ["filter", "tags", "pills", "active-filters", "chips", "selected"],
+  "cssClass": "filter-tag-pills",
+  "exampleHtml": "<div class=\"card\" style=\"padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap\"><span style=\"font-size:12px;color:var(--text-sub)\">当前筛选：</span><div class=\"filter-tag-pills\" data-filter-id=\"active_filters\"><div class=\"filter-pill\" data-value=\"east\">华东区 <button class=\"pill-remove\">&#215;</button></div><div class=\"filter-pill\" data-value=\"q3\">2024 Q3 <button class=\"pill-remove\">&#215;</button></div><div class=\"filter-pill\" data-value=\"product_a\">产品线A <button class=\"pill-remove\">&#215;</button></div></div><button class=\"filter-reset-button\" style=\"margin-left:auto\">清除全部</button></div>",
+  "variants": ["高级筛选已选项展示", "标签式条件管理", "快速条件移除"],
+  "relatedCards": ["filter-global-panel", "filter-checkbox-group"]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "table-exception-list",
+  "type": "card",
+  "name": "异常/告警列表",
+  "category": "table",
+  "tags": ["异常", "告警", "exception", "alert", "监控", "表格", "问题清单"],
+  "description": "带颜色级别标签（高/中/低）的异常或告警列表表格，每行包含时间、级别标签、描述、责任人、状态等字段。颜色编码红/黄/绿区分严重程度，支持状态标签。适用于运维监控、销售预警、质量管理等场景。",
+  "useCases": [
+    "系统异常/错误告警列表",
+    "销售预警（低于目标的SKU/区域）",
+    "质量缺陷问题清单",
+    "合规风险预警列表"
+  ],
+  "dataSchema": {
+    "time": "时间戳或日期",
+    "level": "告警级别：HIGH|MEDIUM|LOW",
+    "description": "异常描述",
+    "owner": "责任人",
+    "status": "状态：处理中|已解决|待处理"
+  },
+  "htmlClassName": "card table-card exception-list",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card table-card\" data-card-id=\"table_exception\">\n  <h2 class=\"card-title\">异常告警列表</h2>\n  <table class=\"data-table\">\n    <thead><tr><th>时间</th><th>级别</th><th>描述</th><th>责任人</th><th>状态</th></tr></thead>\n    <tbody>\n      <tr><td>10:23</td><td><span class=\"badge badge-red\">高</span></td><td>华东区库存低于安全线</td><td>张三</td><td>处理中</td></tr>\n      <tr><td>09:15</td><td><span class=\"badge badge-yellow\">中</span></td><td>支付成功率跌至94%</td><td>李四</td><td>待处理</td></tr>\n    </tbody>\n  </table>\n</div>"
+}

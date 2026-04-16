@@ -1,0 +1,23 @@
+{
+  "id": "bar-negative-positive",
+  "type": "card",
+  "name": "正负值混合柱状图",
+  "category": "chart",
+  "tags": ["正负值", "盈亏", "柱状图", "增减", "收支", "超额/缺口"],
+  "description": "正值用绿色（或蓝色）柱向上，负值用红色柱向下的单系列柱状图，X轴居中为0。适合展示月度利润盈亏、环比增减额、超额/缺口分析等混合正负值的分布。",
+  "useCases": [
+    "月度净利润盈亏分布",
+    "销售额环比增减（正/负月份）",
+    "各城市超额/缺口分析",
+    "现金流入/流出净额"
+  ],
+  "dataSchema": {
+    "categories": "时间或分类标签数组",
+    "values": "混合正负数值数组",
+    "unit": "单位"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["highlight"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_posneg\">\n  <h2 class=\"card-title\">月度净利润（万元）</h2>\n  <div id=\"chart_posneg\" class=\"chart-container\" style=\"height:280px\"></div>\n  <script>\n  (function(){\n    var m=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];\n    var d=[80,-20,45,120,-35,90,150,180,-10,200,250,320];\n    var chart=echarts.init(document.getElementById('chart_posneg'));\n    chart.setOption({\n      tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},\n      xAxis:{type:'category',data:m},\n      yAxis:{type:'value',axisLabel:{formatter:'{value}万'}},\n      series:[{type:'bar',data:d.map(function(v){return{value:v,itemStyle:{color:v>=0?'#10b981':'#ef4444'}};}),label:{show:true,position:function(p){return p.data.value>=0?'top':'bottom';},formatter:function(p){return p.data.value+'万';}}}]\n    });\n    window.__REPORT_EVENT_BUS__&&window.__REPORT_EVENT_BUS__.register('chart_posneg',chart);\n  })();\n  <\/script>\n</div>"
+}

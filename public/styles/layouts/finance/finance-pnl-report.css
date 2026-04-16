@@ -1,0 +1,55 @@
+/* 财务损益报告布局 */
+:root {
+  --layout-content-padding:   32px;
+  --layout-content-max-width: 1200px;
+  --layout-gap:               24px;
+  --layout-kpi-cols:          repeat(4, 1fr);
+  --layout-kpi-gap:           16px;
+  --layout-chart-cols:        repeat(2, 1fr);
+  --layout-chart-gap:         24px;
+  --layout-card-padding:      24px;
+}
+
+.layout-finance-pnl {
+  display: grid;
+  grid-template-areas:
+    "kpi    kpi    kpi    kpi"
+    "table  table  trend  trend"
+    "cost   cost   bridge bridge";
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: auto 1fr auto;
+  gap: var(--layout-gap);
+  padding: var(--layout-content-padding);
+  max-width: var(--layout-content-max-width);
+  margin: 0 auto;
+}
+
+.layout-finance-pnl .slot-kpiRow         { grid-area: kpi; }
+.layout-finance-pnl .slot-incomeStatement { grid-area: table; }
+.layout-finance-pnl .slot-revenueTrend   { grid-area: trend; }
+.layout-finance-pnl .slot-costBreakdown  { grid-area: cost; }
+.layout-finance-pnl .slot-bridgeChart    { grid-area: bridge; }
+
+/* 损益表专项样式 */
+.data-table .profit    { color: var(--color-success); font-weight: 600; }
+.data-table .loss      { color: var(--color-danger);  font-weight: 600; }
+.data-table .total-row td { font-weight: 700; border-top: 2px solid var(--border-table); }
+.data-table .section-header td {
+  background: var(--bg-table-header);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 900px) {
+  .layout-finance-pnl {
+    grid-template-areas:
+      "kpi"
+      "table"
+      "trend"
+      "cost"
+      "bridge";
+    grid-template-columns: 1fr;
+  }
+}

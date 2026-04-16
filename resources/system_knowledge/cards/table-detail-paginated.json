@@ -1,0 +1,12 @@
+{
+  "id": "table-detail-paginated",
+  "type": "card",
+  "category": "C",
+  "name": "分页明细表格",
+  "description": "带分页控件的明细数据表格，支持每页行数切换、上下翻页，适合大量明细数据展示",
+  "tags": ["table", "detail", "paginated", "data", "list", "page", "navigation"],
+  "cssClass": "detail-table paginated",
+  "exampleHtml": "<div class=\"card\" data-card-id=\"paginated_table\"><div style=\"font-size:14px;font-weight:700;margin-bottom:8px\">订单明细</div><table class=\"data-table\" style=\"width:100%;border-collapse:collapse\"><thead><tr><th>订单号</th><th>客户</th><th>金额</th><th>状态</th></tr></thead><tbody><tr><td>ORD-2401</td><td>张三</td><td>¥1,280</td><td><span class=\"trend-up\">已完成</span></td></tr><tr><td>ORD-2402</td><td>李四</td><td>¥650</td><td><span style=\"color:var(--color-warning)\">处理中</span></td></tr><tr><td>ORD-2403</td><td>王五</td><td>¥2,100</td><td><span class=\"trend-up\">已完成</span></td></tr></tbody></table><div class=\"detail-table\"><div class=\"table-pagination\"><span>共 128 条 第 1/13 页</span><div class=\"pagination-buttons\"><button class=\"page-btn\">«</button><button class=\"page-btn active\">1</button><button class=\"page-btn\">2</button><button class=\"page-btn\">3</button><button class=\"page-btn\">»</button></div></div></div></div>",
+  "variants": ["订单明细", "交易记录", "用户列表"],
+  "relatedCards": ["data-table-basic", "data-table-ranked"]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "macd-chart",
+  "type": "card",
+  "name": "MACD 指标图",
+  "category": "chart",
+  "tags": ["MACD", "技术分析", "金融", "均线差值", "信号线", "柱状图"],
+  "description": "MACD（指数平滑移动平均线差）技术指标图，包含 DIFF 线（快线）、DEA 线（慢线/信号线）以及柱状图（MACD 柱）。常与 K 线图配合，用于判断趋势转向和买卖信号。",
+  "useCases": [
+    "股票技术分析MACD指标",
+    "趋势反转判断信号图",
+    "加密货币买卖信号监控",
+    "量化策略回测展示"
+  ],
+  "dataSchema": {
+    "dates": "日期数组",
+    "diff": "DIFF（快线）数值数组",
+    "dea": "DEA（慢线/信号线）数值数组",
+    "macd": "MACD柱数值数组（diff - dea 的2倍）"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["datazoom"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_macd\">\n  <h2 class=\"card-title\">MACD 指标</h2>\n  <div id=\"chart_macd\" class=\"chart-container\" style=\"height:260px\"></div>\n  <script>\n  (function(){\n    var d=['01/02','01/03','01/04','01/05','01/08','01/09','01/10','01/11'];\n    var diff=[0.12,0.23,0.31,0.18,0.05,-0.08,-0.22,-0.15];\n    var dea=[0.08,0.12,0.18,0.18,0.15,0.10,0.02,-0.05];\n    var macd=diff.map(function(v,i){return (v-dea[i])*2;});\n    var chart=echarts.init(document.getElementById('chart_macd'));\n    chart.setOption({\n      grid:{top:20,bottom:30},\n      xAxis:{type:'category',data:d},\n      yAxis:{type:'value'},\n      series:[\n        {name:'MACD柱',type:'bar',data:macd,itemStyle:{color:function(p){return p.value>=0?'#10b981':'#ef4444';}}},\n        {name:'DIFF',type:'line',data:diff,smooth:true,lineStyle:{width:1.5}},\n        {name:'DEA',type:'line',data:dea,smooth:true,lineStyle:{width:1.5,type:'dashed'}}\n      ],\n      legend:{bottom:5},\n      dataZoom:[{type:'inside'}]\n    });\n    window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.register('chart_macd', chart);\n  })();\n  <\/script>\n</div>"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "line-dual-axis",
+  "type": "card",
+  "category": "B",
+  "name": "双Y轴折线图",
+  "description": "ECharts 双Y轴组合图，左轴一个量级指标（如收入），右轴另一个量级指标（如增长率），适合展示两个量纲不同的指标关联",
+  "tags": ["line", "dual-axis", "combo", "y-axis", "secondary", "echarts", "two-scale"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"dual_axis\"><div class=\"card-title\">收入与增长率（双轴）</div><div class=\"chart-container md\" id=\"chart_dual_axis\"></div><script>(function(){var el=document.getElementById('chart_dual_axis');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6','#f59e0b'];c.setOption({color:palette,tooltip:{trigger:'axis'},legend:{bottom:0},grid:{left:'3%',right:'8%',bottom:'15%',containLabel:true},xAxis:{type:'category',data:['Q1','Q2','Q3','Q4']},yAxis:[{type:'value',name:'收入(万)'},{type:'value',name:'增长率',axisLabel:{formatter:'{value}%'}}],series:[{name:'收入',type:'bar',data:[520,648,730,810],itemStyle:{color:palette[0],opacity:0.8}},{name:'增长率',type:'line',yAxisIndex:1,data:[12.5,24.6,12.7,11.0],lineStyle:{color:palette[1] || '#f59e0b',width:2},itemStyle:{color:palette[1] || '#f59e0b'},smooth:true}]});})();</script></div>",
+  "variants": ["收入+增长率", "访问量+转化率", "量价关系"],
+  "relatedCards": ["combo-bar-line", "line-chart-multi"]
+}

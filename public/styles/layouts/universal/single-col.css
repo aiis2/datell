@@ -1,0 +1,14 @@
+/* 通用单列布局 — 适合文章/摘要报告 */
+:root {
+  --layout-content-padding:   32px;
+  --layout-content-max-width: 860px;
+  --layout-gap:               28px;
+  --layout-kpi-cols:          repeat(auto-fit, minmax(180px, 1fr));
+  --layout-chart-cols:        1fr;
+  --layout-chart-gap:         24px;
+  --layout-card-padding:      28px;
+  /* 三区结构 */
+  --layout-kpi-cols-n:        2;
+  --layout-kpi-row-h:         100px;
+  --layout-zone-gap:          20px;
+}

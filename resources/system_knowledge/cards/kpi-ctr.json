@@ -1,0 +1,29 @@
+{
+  "id": "kpi-ctr",
+  "type": "card",
+  "category": "kpi",
+  "name": "点击率(CTR)指标卡",
+  "description": "展示广告/链接点击率，含印象数和点击数对比，适合数字营销效果监控、A/B测试结果、邮件营销分析",
+  "tags": [
+    "kpi",
+    "CTR",
+    "click through rate",
+    "点击率",
+    "广告",
+    "营销",
+    "转化"
+  ],
+  "cssClass": "kpi-comparison",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>广告点击率(CTR)</div><div style='font-size:32px;font-weight:900;color:var(--color-primary)'>3.24%</div><div style='display:flex;gap:16px;margin-top:8px;font-size:11px;color:var(--text-sub)'><span>曝光 12,450</span><span>点击 403</span></div><span style='font-size:11px;color:var(--color-success)'>▲ 0.8pp vs 上周</span></div>",
+  "variants": [
+    "邮件打开率",
+    "链接点击率",
+    "横幅CTR"
+  ],
+  "relatedCards": [
+    "kpi-conversion-rate",
+    "kpi-single"
+  ],
+  "htmlClassName": "card kpi-card"
+}

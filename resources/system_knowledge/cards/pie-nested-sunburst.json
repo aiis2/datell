@@ -1,0 +1,21 @@
+{
+  "id": "pie-nested-sunburst",
+  "type": "card",
+  "name": "嵌套饼图/旭日图",
+  "category": "chart",
+  "tags": ["旭日图", "嵌套饼图", "sunburst", "层级占比", "多级分类", "树状占比"],
+  "description": "旭日图（Sunburst）或多层嵌套饼图，内圈为大类，外圈为子类，展示多级层级结构的占比关系。视觉美观，能同时展示层级和比例两个维度。适合品类层级、地域分级、费用分类等多级维度的占比分析。",
+  "useCases": [
+    "品类（大类/中类/SKU）销售占比",
+    "费用分类（部门/科目）构成旭日图",
+    "地域（大区/省/市）销售占比",
+    "用户来源（平台/渠道/活动）层级占比"
+  ],
+  "dataSchema": {
+    "data": "嵌套树结构：[{name, value, children:[{name, value}]}]"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["highlight"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_sunburst\">\n  <h2 class=\"card-title\">品类销售额占比（旭日图）</h2>\n  <div id=\"chart_sunburst\" class=\"chart-container\" style=\"height:340px\"></div>\n  <script>\n  (function(){\n    var chart=echarts.init(document.getElementById('chart_sunburst'));\n    chart.setOption({\n      series:[{type:'sunburst',data:[\n        {name:'服装',value:0,children:[{name:'女装',value:350},{name:'男装',value:280},{name:'童装',value:120}]},\n        {name:'食品',value:0,children:[{name:'零食',value:220},{name:'生鲜',value:180},{name:'饮料',value:150}]},\n        {name:'家电',value:0,children:[{name:'小家电',value:200},{name:'大家电',value:160}]}\n      ],radius:[0,'85%'],label:{rotate:'radial',fontSize:11},levels:[{},{r0:'15%',r:'40%',label:{align:'right'}},{r0:'45%',r:'70%'},{r0:'75%',r:'85%',label:{position:'outside'}}]}]\n    });\n  })();\n  <\/script>\n</div>"
+}

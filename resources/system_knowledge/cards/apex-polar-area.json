@@ -1,0 +1,22 @@
+{
+  "id": "apex-polar-area",
+  "type": "card",
+  "name": "极坐标面积图 — ApexCharts",
+  "category": "chart",
+  "tags": ["极坐标", "polarArea", "雷达图变体", "多维度对比", "ApexCharts"],
+  "description": "使用 ApexCharts polarArea 类型实现多维度极坐标面积图。每个扇区面积代表指标值大小，适合展示多个类别的相对比例关系，视觉效果优于普通饼图。使用 generate_chart_apex 工具生成。",
+  "useCases": [
+    "多维度能力雷达对比（非连接版）",
+    "各渠道流量占比",
+    "多类别销售额分布",
+    "各部门预算分配"
+  ],
+  "dataSchema": {
+    "series": "各扇区数值数组，如 [42, 47, 52, 58, 65]",
+    "labels": "各扇区标签数组，如 ['设计','开发','测试','运营','市场']"
+  },
+  "htmlClassName": "card chart-card apex-chart-card",
+  "engineHint": "apexcharts",
+  "interactionSupport": ["highlight"],
+  "exampleHtml": "<div class=\"card chart-card apex-chart-card\" data-card-id=\"chart_polar_example\">\n  <h2 class=\"card-title\">各部门资源分配</h2>\n  <div id=\"chart_polar_example\" class=\"chart-container\" style=\"height:320px\"></div>\n  <script>\n  (function(){\n    var options = {\n      chart: { type: 'polarArea', height: 320, animations: { enabled: !window.__REPORT_PRINT_MODE__ } },\n      colors: window.__APEX_PALETTE__ || ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6'],\n      series: [42, 47, 52, 58, 65],\n      labels: ['设计','开发','测试','运营','市场'],\n      stroke: { width: 1 },\n      fill: { opacity: 0.8 },\n      legend: { position: 'bottom' }\n    };\n    var chart = new ApexCharts(document.getElementById('chart_polar_example'), options);\n    chart.render().then(function(){ window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.registerApex('chart_polar_example', chart); });\n  })();\n  <\/script>\n</div>"
+}

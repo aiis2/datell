@@ -1,0 +1,29 @@
+{
+  "id": "kpi-readmission-rate",
+  "type": "card",
+  "category": "kpi",
+  "name": "30天再入院率指标卡",
+  "description": "展示出院后30天内再入院率，含主要病种分解，是医疗质量核心指标，适合质量安全委员会报告、JCI评审",
+  "tags": [
+    "kpi",
+    "readmission",
+    "再入院率",
+    "医疗质量",
+    "JCI",
+    "出院",
+    "临床质量"
+  ],
+  "cssClass": "kpi-risk-flag",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card kpi-risk-flag risk-mid' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>30天再入院率</div><div style='font-size:32px;font-weight:900;color:var(--color-warning)'>7.8%</div><div style='font-size:11px;color:var(--color-warning)'>⚠ 高于目标 5%</div><div style='font-size:11px;color:var(--text-sub);margin-top:4px'>主因：心衰19% | 肺炎14%</div></div>",
+  "variants": [
+    "90天再入院率",
+    "计划外重返ICU",
+    "急诊复诊率"
+  ],
+  "relatedCards": [
+    "kpi-risk-flag",
+    "kpi-health-score"
+  ],
+  "htmlClassName": "card kpi-card kpi-risk-flag"
+}

@@ -1,0 +1,10 @@
+/* 患者数据总览布局 */
+:root {
+  --layout-content-padding:   24px;
+  --layout-content-max-width: 1200px;
+  --layout-gap:               22px;
+  --layout-kpi-cols:          repeat(4, 1fr);
+  --layout-chart-cols:        repeat(2, 1fr);
+  --layout-chart-gap:         22px;
+  --layout-card-padding:      22px;
+}

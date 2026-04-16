@@ -1,0 +1,32 @@
+{
+  "id": "kpi-milestone-progress",
+  "type": "card",
+  "name": "里程碑进度 KPI",
+  "category": "kpi",
+  "tags": [
+    "里程碑",
+    "进度",
+    "milestone",
+    "OKR",
+    "目标",
+    "KPI"
+  ],
+  "description": "展示目标里程碑完成进度的 KPI 卡，包含目标名称、进度百分比（进度条）、当前状态标签（按时/滞后/完成）和到期日倒计时。适合 OKR 目标管理、项目进度报表、季度目标追踪。",
+  "useCases": [
+    "OKR关键结果进度追踪",
+    "项目阶段完成情况",
+    "季度销售目标完成率",
+    "产品路线图里程碑状态"
+  ],
+  "dataSchema": {
+    "title": "里程碑/目标名称",
+    "progress": "完成百分比（0-100）",
+    "status": "'on-track'|'at-risk'|'completed'|'overdue'",
+    "dueDate": "到期日",
+    "owner": "负责人"
+  },
+  "htmlClassName": "card kpi-card",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card kpi-card\" data-card-id=\"kpi_milestone\">\n  <div class=\"kpi-label\">Q2 新用户增长目标</div>\n  <div class=\"kpi-value\">68%</div>\n  <div class=\"kpi-progress\"><div class=\"kpi-progress-bar\" style=\"width:68%;background:#f59e0b\"></div></div>\n  <div class=\"kpi-sub\"><span class=\"badge badge-yellow\">进行中</span> 到期：2024-06-30 | 负责人：王五</div>\n</div>"
+}

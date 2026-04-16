@@ -1,0 +1,45 @@
+{
+  "id": "kpi-trend",
+  "type": "card",
+  "name": "趋势图标 KPI 卡",
+  "category": "kpi",
+  "tags": [
+    "KPI",
+    "趋势",
+    "图标",
+    "涨跌",
+    "增减",
+    "指标",
+    "环比",
+    "同比",
+    "环比变化",
+    "同比变化",
+    "涨跌幅",
+    "增长率",
+    "同期",
+    "核心指标",
+    "增长",
+    "变化量"
+  ],
+  "description": "带趋势图标和涨跌徽章的 KPI 卡片，右上角展示业务图标，下方显示数值和涨跌百分比。适合需要强调增减方向的核心 KPI，如订单量、销售额环比变化。",
+  "useCases": [
+    "订单量 + 环比增减",
+    "推广转化率 + 同比变化",
+    "库存周转率 + 趋势方向",
+    "用户增量 + 同比涨跌"
+  ],
+  "dataSchema": {
+    "value": "当前值",
+    "label": "指标名称",
+    "trend": "涨跌百分比（正为涨/负为跌）",
+    "trendLabel": "涨跌周期标签（如「环比」「同比」）",
+    "icon": "图标名，来自 Tabler Icons（如 shopping-cart / users / chart-bar）",
+    "unit": "单位"
+  },
+  "htmlClassName": "card kpi-card kpi-trend",
+  "engineHint": "pure-html",
+  "interactionSupport": [
+    "highlight"
+  ],
+  "exampleHtml": "<div class=\"card kpi-card kpi-trend\" data-card-id=\"kpi_orders\">\n  <div style=\"display:flex;align-items:center;justify-content:space-between\">\n    <span class=\"kpi-title\">本周订单</span>\n    <span style=\"width:28px;height:28px;border-radius:8px;background:var(--color-primary,#3b82f6);opacity:0.12;display:flex;align-items:center;justify-content:center;flex-shrink:0\">\n      <svg class=\"icon\" width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"var(--color-primary,#3b82f6)\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><use href=\"./vendor/icons.svg#icon-shopping-cart\"></use></svg>\n    </span>\n  </div>\n  <span class=\"kpi-value\">8,342 <span style=\"font-size:14px;font-weight:400;color:var(--text-sub)\">单</span></span>\n  <span class=\"kpi-trend up\">\n    <svg class=\"icon\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><use href=\"./vendor/icons.svg#icon-trending-up\"></use></svg>\n    +12.3% 环比\n  </span>\n</div>"
+}

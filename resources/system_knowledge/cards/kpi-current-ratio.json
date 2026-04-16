@@ -1,0 +1,29 @@
+{
+  "id": "kpi-current-ratio",
+  "type": "card",
+  "category": "kpi",
+  "name": "流动比率(流动性)指标卡",
+  "description": "展示流动比率和速动比率，可含行业基准线，适合财务健康分析、信贷风险评估、银行合规报告",
+  "tags": [
+    "kpi",
+    "current ratio",
+    "流动比率",
+    "速动比率",
+    "流动性",
+    "偿债能力",
+    "财务健康"
+  ],
+  "cssClass": "kpi-composite",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card kpi-composite' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>流动性指标</div><div style='display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px'><div><div style='font-size:26px;font-weight:900;color:var(--color-primary)'>2.34</div><div style='font-size:11px;color:var(--text-sub)'>流动比率</div></div><div><div style='font-size:26px;font-weight:900;color:var(--color-success)'>1.82</div><div style='font-size:11px;color:var(--text-sub)'>速动比率</div></div></div><div style='font-size:11px;color:var(--text-sub);margin-top:8px'>行业均值: 1.8 | 2.0</div></div>",
+  "variants": [
+    "资产负债率",
+    "利息保障倍数",
+    "现金比率"
+  ],
+  "relatedCards": [
+    "kpi-health-score",
+    "kpi-single"
+  ],
+  "htmlClassName": "card kpi-card kpi-composite"
+}

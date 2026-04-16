@@ -1,0 +1,12 @@
+{
+  "id": "filter-dropdown",
+  "type": "card",
+  "category": "E",
+  "name": "下拉维度筛选卡",
+  "description": "通过原生 <select> 下拉选择单一维度值（地区、产品类别、销售员等），联动图表数据",
+  "tags": ["filter", "dropdown", "select", "dimension", "category", "region"],
+  "cssClass": "filter-select filter-dropdown",
+  "exampleHtml": "<div class=\"card filter-card\" style=\"padding:12px 16px\"><label class=\"filter-label\">地区筛选</label><div class=\"filter-dropdown\"><select class=\"filter-select\" data-filter-id=\"region_filter\" data-filter-type=\"dropdown\"><option value=\"all\">全部地区</option><option value=\"east\">华东区</option><option value=\"south\">华南区</option><option value=\"north\">华北区</option><option value=\"west\">西南区</option></select></div></div>",
+  "variants": ["产品类别筛选", "销售员筛选", "时间粒度切换"],
+  "relatedCards": ["filter-year-month", "filter-checkbox-group"]
+}

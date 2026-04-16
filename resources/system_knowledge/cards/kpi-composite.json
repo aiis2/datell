@@ -1,0 +1,30 @@
+{
+  "id": "kpi-composite",
+  "type": "card",
+  "category": "kpi",
+  "name": "综合评分仪表 KPI 卡（ECharts）",
+  "description": "ECharts 仪表盘（gauge），展示综合评分/健康指数/满意度等0-100或自定义区间的总体得分",
+  "tags": [
+    "kpi",
+    "composite",
+    "gauge",
+    "score",
+    "index",
+    "health",
+    "echarts",
+    "overall"
+  ],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"composite_score\"><div class=\"card-title\">综合健康指数</div><div class=\"chart-container short\" id=\"chart_composite\"></div><script>(function(){var el=document.getElementById('chart_composite');if(!el)return;var c=echarts.init(el);var score=76;var palette=window.__REPORT_PALETTE__||['#3b82f6'];c.setOption({series:[{type:'gauge',radius:'85%',startAngle:200,endAngle:-20,min:0,max:100,splitNumber:5,axisLine:{lineStyle:{width:18,color:[[0.3,'#ef4444'],[0.6,'#f59e0b'],[1,palette[0]]]}},pointer:{width:4,length:'65%'},detail:{formatter:'{value}分',fontSize:22,fontWeight:'bold',color:'var(--text-accent)',offsetCenter:[0,'35%']},data:[{value:score,name:'健康指数'}],title:{offsetCenter:[0,'55%'],fontSize:12,color:'var(--text-sub)'}}]});})();</script></div>",
+  "variants": [
+    "客户健康指数",
+    "品牌综合评分",
+    "运营健康度"
+  ],
+  "relatedCards": [
+    "gauge-chart",
+    "kpi-ring-progress"
+  ],
+  "htmlClassName": "card chart-card"
+}

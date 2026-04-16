@@ -1,0 +1,30 @@
+{
+  "id": "map-geo",
+  "type": "card",
+  "name": "地理地图（省市分布）",
+  "category": "chart",
+  "tags": [
+    "地图",
+    "地理",
+    "省市",
+    "区域",
+    "热力地图",
+    "分布"
+  ],
+  "description": "中国地图省市分布图，颜色深浅表示各省市数据大小，适合展示地域分布特征。",
+  "useCases": [
+    "全国各省销售额分布",
+    "用户地域热力图",
+    "门店覆盖地图"
+  ],
+  "dataSchema": {
+    "regions": "地区数据数组（name/value）",
+    "title": "标题"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "tooltip",
+    "highlight"
+  ]
+}

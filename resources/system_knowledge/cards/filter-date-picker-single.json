@@ -1,0 +1,23 @@
+{
+  "id": "filter-date-picker-single",
+  "type": "card",
+  "name": "单日期选择器",
+  "category": "filter",
+  "tags": ["日期选择", "单日期", "日历", "筛选", "date-picker"],
+  "description": "单日期选择器控件，内置 HTML date input，用户选择某一日期后触发 filterChange 事件，联动更新图表数据。适合「查看某日报表」等精确日期筛选场景。",
+  "useCases": [
+    "指定日期日报查询",
+    "某日交易记录查询",
+    "单日生产数据显示",
+    "历史某日对比基准选择"
+  ],
+  "dataSchema": {
+    "label": "控件标签文字",
+    "field": "筛选字段名称",
+    "defaultDate": "默认日期，如 'today' 或 '2024-01-01'"
+  },
+  "htmlClassName": "card filter-card filter-date-single",
+  "engineHint": "pure-html",
+  "interactionSupport": ["filter"],
+  "exampleHtml": "<div class=\"card filter-card\" data-card-id=\"filter_date_single\">\n  <label class=\"filter-label\">选择日期</label>\n  <input type=\"date\" class=\"filter-date-input\" value=\"2024-01-01\">\n  <script>\n  (function(){\n    document.querySelector('[data-card-id=\"filter_date_single\"] input[type=date]').addEventListener('change', function(e){\n      document.dispatchEvent(new CustomEvent('filterChange', { detail: { field: 'date', value: e.target.value } }));\n    });\n  })();\n  <\/script>\n</div>"
+}

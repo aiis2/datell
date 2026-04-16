@@ -1,0 +1,24 @@
+{
+  "id": "bar-benchmark-comparison",
+  "type": "card",
+  "name": "基准对比柱状图（含行业基准线）",
+  "category": "chart",
+  "tags": ["基准线", "行业均值", "benchmark", "对比", "柱状图", "参考线"],
+  "description": "带行业/目标基准参考线的柱状图，每根柱显示各分类的实际值，图上叠加水平虚线/标注表示行业均值、目标线或历史均值。适合将自身指标与行业标准、目标值或历史均值进行对比的场景。",
+  "useCases": [
+    "各部门成本率 vs 行业均值基准",
+    "城市转化率 vs 行业基准线",
+    "渠道 ROI vs 目标值对比",
+    "员工绩效 vs 团队平均基准"
+  ],
+  "dataSchema": {
+    "categories": "分类数组",
+    "values": "实际值数组",
+    "benchmarks": "[{value, label, color}] 一条或多条参考线",
+    "unit": "单位"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["highlight"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_benchmark\">\n  <h2 class=\"card-title\">各渠道 ROI vs 行业基准（3.0x）</h2>\n  <div id=\"chart_benchmark\" class=\"chart-container\" style=\"height:300px\"></div>\n  <script>\n  (function(){\n    var cats=['搜索','直播','信息流','社交','邮件','自然'];\n    var vals=[4.2,5.8,2.6,3.1,1.8,8.5];\n    var chart=echarts.init(document.getElementById('chart_benchmark'));\n    chart.setOption({\n      tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},\n      xAxis:{type:'category',data:cats},\n      yAxis:{type:'value',name:'ROI（倍）'},\n      series:[{\n        type:'bar',\n        data:vals.map(function(v){return{value:v,itemStyle:{color:v>=3?'#10b981':'#ef4444'}};},),\n        barWidth:'50%',\n        label:{show:true,position:'top',formatter:'{c}x'},\n        markLine:{data:[{yAxis:3.0,name:'行业基准 3.0x',lineStyle:{color:'#f59e0b',type:'dashed',width:2},label:{formatter:'行业基准 3.0x',position:'end'}}]}\n      }]\n    });\n    window.__REPORT_EVENT_BUS__&&window.__REPORT_EVENT_BUS__.register('chart_benchmark',chart);\n  })();\n  <\/script>\n</div>"
+}

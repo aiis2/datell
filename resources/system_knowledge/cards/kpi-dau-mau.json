@@ -1,0 +1,31 @@
+{
+  "id": "kpi-dau-mau",
+  "type": "card",
+  "category": "kpi",
+  "name": "DAU/MAU 用户活跃留存卡",
+  "description": "展示日活/月活比（Stickiness）、DAU月环比变化，适合产品增长分析、用户活跃度仪表板、投资者报告",
+  "tags": [
+    "kpi",
+    "DAU",
+    "MAU",
+    "日活",
+    "月活",
+    "stickiness",
+    "用户活跃",
+    "增长",
+    "产品"
+  ],
+  "cssClass": "kpi-composite",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card kpi-composite' style='padding:16px'><div style='font-size:12px;color:var(--text-sub);margin-bottom:6px'>用户活跃指标</div><div style='display:grid;grid-template-columns:1fr 1fr;gap:10px'><div><div style='font-size:26px;font-weight:900;color:var(--color-primary)'>84.2K</div><div style='font-size:11px;color:var(--text-sub)'>DAU 日活</div></div><div><div style='font-size:26px;font-weight:900;color:var(--text-accent)'>520K</div><div style='font-size:11px;color:var(--text-sub)'>MAU 月活</div></div></div><div style='margin-top:10px'><div style='font-size:20px;font-weight:700;color:var(--color-success)'>Stickiness 16.2%</div><div style='font-size:11px;color:var(--text-sub)'>DAU/MAU 粘性比率</div></div></div>",
+  "variants": [
+    "WAU周活",
+    "小时活跃用户",
+    "新老用户活跃比"
+  ],
+  "relatedCards": [
+    "kpi-churn-rate",
+    "kpi-cohort-retention"
+  ],
+  "htmlClassName": "card kpi-card kpi-composite"
+}

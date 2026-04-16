@@ -1,0 +1,29 @@
+{
+  "id": "treemap",
+  "type": "card",
+  "name": "矩形树图",
+  "category": "chart",
+  "tags": [
+    "树图",
+    "占比",
+    "层级",
+    "分类",
+    "面积编码"
+  ],
+  "description": "矩形树图，用面积大小直观表示各分类的数量占比，支持多层嵌套层级结构展示。",
+  "useCases": [
+    "产品分类销售占比树图",
+    "部门费用构成",
+    "SKU 库存分布"
+  ],
+  "dataSchema": {
+    "items": "树形数据（name/value/children）",
+    "title": "标题"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "highlight",
+    "drilldown"
+  ]
+}

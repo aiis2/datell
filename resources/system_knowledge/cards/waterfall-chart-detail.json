@@ -1,0 +1,22 @@
+{
+  "id": "waterfall-chart-detail",
+  "type": "card",
+  "name": "瀑布图（收支桥接分析）",
+  "category": "chart",
+  "tags": ["瀑布图", "waterfall", "桥接图", "增减分析", "收支", "bridge chart", "利润分析"],
+  "description": "瀑布图/桥接图，展示从起始值经过多个正向/负向增量变化到最终值的过程。用蓝色柱表示增加，红色柱表示减少，透明柱作为浮动基座。适合财务利润分析、成本拆解、收入增减因子分析等场景。",
+  "useCases": [
+    "净利润从毛利拆解桥接图",
+    "销售额同比增减因子分析",
+    "项目成本构成瀑布图",
+    "预算 vs 实际差异桥接"
+  ],
+  "dataSchema": {
+    "items": "项目数组：[{name, value, type:'total'|'increase'|'decrease'}]",
+    "unit": "数值单位（百万元等）"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["highlight"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_waterfall\">\n  <h2 class=\"card-title\">Q1 利润桥接分析（百万元）</h2>\n  <div id=\"chart_waterfall\" class=\"chart-container\" style=\"height:320px\"></div>\n  <script>\n  (function(){\n    var names=['去年利润','收入增加','成本节约','费用增加','税率变化','今年利润'];\n    var vals=[200, 80, 30, -45, -15, 250];\n    var floats=[0,200,280,-45+280,280+30-45,-1];\n    floats=[0,200,280,265,265+30-45,0];\n    var chart=echarts.init(document.getElementById('chart_waterfall'));\n    var barColors=vals.map(function(v,i){return i===0||i===vals.length-1?'#3b82f6':v>0?'#10b981':'#ef4444';});\n    chart.setOption({\n      tooltip:{trigger:'axis'},\n      xAxis:{type:'category',data:names},\n      yAxis:{type:'value'},\n      series:[\n        {type:'bar',stack:'wf',data:floats,itemStyle:{color:'transparent'}},\n        {type:'bar',stack:'wf',data:vals.map(Math.abs),itemStyle:{color:function(p){return barColors[p.dataIndex];}},label:{show:true,position:'top'}}\n      ]\n    });\n    window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.register('chart_waterfall', chart);\n  })();\n  <\/script>\n</div>"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "org-chart-team",
+  "type": "card",
+  "name": "团队组织架构图",
+  "category": "structure",
+  "tags": ["组织架构", "org chart", "团队", "层级", "汇报关系", "树图"],
+  "description": "用 ECharts Tree 图展示的团队组织架构图，支持展开/折叠节点，节点显示职位名称和姓名，层级颜色区分。适合在报告中展示部门组织结构、项目团队架构、汇报层级关系。",
+  "useCases": [
+    "部门/公司组织架构可视化",
+    "项目团队角色分工",
+    "IT 系统权限层级展示",
+    "管理汇报关系图"
+  ],
+  "dataSchema": {
+    "tree": "树节点结构：{name, title, children:[...]} 无限层级嵌套"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_org\">\n  <h2 class=\"card-title\">产品团队组织架构</h2>\n  <div id=\"chart_org\" class=\"chart-container\" style=\"height:360px\"></div>\n  <script>\n  (function(){\n    var data={name:'张总\\nCPO',children:[\n      {name:'李明\\n产品总监',children:[{name:'王芳\\n高级PM'},{name:'陈杰\\n产品专员'}]},\n      {name:'赵磊\\n设计总监',children:[{name:'周丽\\nUI主管'},{name:'钱勇\\nUX设计师'}]},\n      {name:'孙伟\\n技术总监',children:[{name:'吴平\\n前端负责人'},{name:'郑超\\n后端负责人'}]}\n    ]};\n    var chart=echarts.init(document.getElementById('chart_org'));\n    chart.setOption({\n      series:[{type:'tree',data:[data],top:'5%',left:'10%',bottom:'5%',right:'20%',symbolSize:40,orient:'LR',label:{position:'left',rotate:0,align:'right,',fontSize:11},leaves:{label:{position:'right',align:'left'}},expandAndCollapse:true,animationDuration:550}]\n    });\n  })();\n  <\/script>\n</div>"
+}

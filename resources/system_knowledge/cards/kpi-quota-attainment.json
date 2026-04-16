@@ -1,0 +1,28 @@
+{
+  "id": "kpi-quota-attainment",
+  "type": "card",
+  "category": "A",
+  "name": "销售配额完成率进度环",
+  "description": "使用进度环展示销售团队或个人相对配额的完成率，适合 CRM 看板、销售激励追踪、月度业绩报告",
+  "tags": [
+    "kpi",
+    "quota",
+    "配额",
+    "完成率",
+    "销售达成",
+    "绩效",
+    "进度环"
+  ],
+  "cssClass": "kpi-ring-progress",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px;text-align:center'><div style='font-size:12px;color:var(--text-sub)'>配额完成率</div><div class='kpi-ring-wrap' style='margin:8px 0'><svg viewBox='0 0 64 64' width='80' height='80'><circle cx='32' cy='32' r='28' fill='none' stroke='var(--bg-card-alt)' stroke-width='8'/><circle cx='32' cy='32' r='28' fill='none' stroke='var(--color-primary)' stroke-width='8' stroke-dasharray='123 176' stroke-linecap='round' transform='rotate(-90 32 32)'/></svg></div><div style='font-size:24px;font-weight:900'>78%</div></div>",
+  "variants": [
+    "团队配额达成",
+    "产品线配额",
+    "区域配额排名"
+  ],
+  "relatedCards": [
+    "kpi-milestone-progress",
+    "kpi-target-bar"
+  ]
+}

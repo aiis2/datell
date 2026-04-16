@@ -1,0 +1,23 @@
+{
+  "id": "filter-date-quarter",
+  "type": "card",
+  "name": "季度选择筛选控件",
+  "category": "filter",
+  "tags": ["季度", "Q1 Q2 Q3 Q4", "筛选", "期间", "时间粒度", "quarter"],
+  "description": "年 + 季度二级联动筛选控件，用户先选年份再选季度（Q1/Q2/Q3/Q4），支持全季度（全年）选项，触发 filterChange 事件携带 year 和 quarter 字段。适合财务季报、业绩季度对比等按季度筛选分析的场景。",
+  "useCases": [
+    "财务报表季度切换筛选",
+    "业绩同比对比的季度选择",
+    "季度报告自动化生成时间范围",
+    "跨年度季度数据联动筛选"
+  ],
+  "dataSchema": {
+    "yearRange": "可选年份范围 [2020, 2024]",
+    "field": "{ yearField:'year', quarterField:'quarter' }",
+    "showAll": "是否显示「全年」选项（默认true）"
+  },
+  "htmlClassName": "card filter-card filter-quarter",
+  "engineHint": "pure-html",
+  "interactionSupport": ["filter"],
+  "exampleHtml": "<div class=\"card filter-card\" data-card-id=\"filter_quarter\">\n  <label class=\"filter-label\">报告季度</label>\n  <div style=\"display:flex;gap:8px;margin-top:8px\">\n    <select id=\"fq_year\" class=\"filter-select\">\n      <option value=\"2024\">2024年</option>\n      <option value=\"2023\">2023年</option>\n      <option value=\"2022\">2022年</option>\n    </select>\n    <div class=\"filter-btn-group\" id=\"fq_qtr\">\n      <button class=\"filter-btn\" data-q=\"\">全年</button>\n      <button class=\"filter-btn active\" data-q=\"Q1\">Q1</button>\n      <button class=\"filter-btn\" data-q=\"Q2\">Q2</button>\n      <button class=\"filter-btn\" data-q=\"Q3\">Q3</button>\n      <button class=\"filter-btn\" data-q=\"Q4\">Q4</button>\n    </div>\n  </div>\n  <script>\n  (function(){\n    function emit(){\n      var y=document.getElementById('fq_year').value;\n      var q=document.querySelector('#fq_qtr .active')&&document.querySelector('#fq_qtr .active').dataset.q;\n      document.dispatchEvent(new CustomEvent('filterChange',{detail:{year:y,quarter:q||null}}));\n    }\n    document.getElementById('fq_year').addEventListener('change',emit);\n    document.getElementById('fq_qtr').addEventListener('click',function(e){\n      var btn=e.target.closest('[data-q]'); if(!btn) return;\n      this.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});\n      btn.classList.add('active');\n      emit();\n    });\n  })();\n  <\/script>\n</div>"
+}

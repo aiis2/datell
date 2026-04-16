@@ -1,0 +1,36 @@
+/* theme-glassmorphism.css — 毛玻璃视觉主题（含视觉效果）*/
+:root {
+  --bg-body:         radial-gradient(circle at 10% 20%, #0a192f 0%, #020c1b 100%);
+  --bg-header:       transparent;
+  --text-header:     #fff;
+  --border-header:   none;
+  --bg-card:         rgba(255,255,255,0.03);
+  --bg-card-alt:     rgba(255,255,255,0.06);
+  --radius-card:     16px;
+  --shadow-card:     0 8px 32px rgba(0,0,0,0.3);
+  --border-card:     1px solid rgba(255,255,255,0.1);
+  --text-main:       #e2e8f0;
+  --text-sub:        #94a3b8;
+  --text-accent:     #00f2fe;
+  --color-primary:   #4facfe;
+  --color-success:   #4ade80;
+  --color-danger:    #f87171;
+  --bg-table-header: rgba(255,255,255,0.05);
+  --border-table:    rgba(255,255,255,0.1);
+  --bg-table-hover:  rgba(255,255,255,0.08);
+}
+
+/* 毛玻璃卡片效果（视觉效果，留在主题文件）*/
+.card {
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-top:  1px solid rgba(255,255,255,0.2);
+  border-left: 1px solid rgba(255,255,255,0.2);
+}
+
+/* 渐变标题文字（视觉效果）*/
+.report-title {
+  background: -webkit-linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

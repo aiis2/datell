@@ -1,0 +1,20 @@
+/* theme-business.css — 经典商务风（纯视觉变量）*/
+:root {
+  --bg-body:         #f8f9fa;
+  --bg-header:       linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  --text-header:     #ffffff;
+  --bg-card:         #ffffff;
+  --bg-card-alt:     #f8f9fa;
+  --radius-card:     8px;
+  --shadow-card:     0 4px 12px rgba(0,0,0,0.05);
+  --border-card:     1px solid #e9ecef;
+  --text-main:       #2b2d42;
+  --text-sub:        #6c757d;
+  --text-accent:     #1e3c72;
+  --color-primary:   #1e3c72;
+  --color-success:   #28a745;
+  --color-danger:    #dc3545;
+  --bg-table-header: #f8f9fa;
+  --border-table:    #dee2e6;
+  --bg-table-hover:  #e9ecef;
+}

@@ -1,0 +1,30 @@
+{
+  "id": "kpi-repeat-purchase",
+  "type": "card",
+  "category": "kpi",
+  "name": "复购率/用户复购指标卡",
+  "description": "展示用户复购率和平均复购间隔天数，适合电商用户价值分析、会员体系效果评估、RFM 用户分层报告",
+  "tags": [
+    "kpi",
+    "repeat purchase",
+    "复购率",
+    "回购",
+    "RFM",
+    "用户价值",
+    "留存",
+    "会员"
+  ],
+  "cssClass": "kpi-comparison",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>用户复购率</div><div style='font-size:32px;font-weight:900;color:var(--color-primary)'>38.6%</div><div style='font-size:11px;color:var(--color-success)'>▲ 4.2pp vs 同期</div><div style='font-size:11px;color:var(--text-sub);margin-top:4px'>平均复购间隔: 42天</div></div>",
+  "variants": [
+    "会员复购率",
+    "月复购用户数",
+    "高价值客户占比"
+  ],
+  "relatedCards": [
+    "kpi-churn-rate",
+    "kpi-cac-ltv"
+  ],
+  "htmlClassName": "card kpi-card"
+}

@@ -1,0 +1,29 @@
+{
+  "id": "kpi-social-engagement",
+  "type": "card",
+  "category": "kpi",
+  "name": "社媒互动率指标卡",
+  "description": "展示社交媒体互动率、粉丝增长和内容触达，适合品牌社媒监控、内容运营日报、KOL合作效果评估",
+  "tags": [
+    "kpi",
+    "social media",
+    "社媒",
+    "互动率",
+    "粉丝",
+    "engagement",
+    "内容运营"
+  ],
+  "cssClass": "kpi-comparison",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>社媒互动率</div><div style='font-size:30px;font-weight:900;color:var(--color-primary)'>5.82%</div><div style='display:flex;gap:12px;margin-top:6px;font-size:11px'><span style='color:var(--text-sub)'>粉丝 +1,240 本月</span><span style='color:var(--color-success)'>▲ 8.3% YoY</span></div></div>",
+  "variants": [
+    "微信互动率",
+    "微博互动率",
+    "抖音完播率"
+  ],
+  "relatedCards": [
+    "kpi-single",
+    "kpi-change-indicator"
+  ],
+  "htmlClassName": "card kpi-card"
+}

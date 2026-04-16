@@ -1,0 +1,13 @@
+{
+  "id": "bar-stacked-100pct",
+  "type": "card",
+  "category": "B",
+  "name": "百分比堆叠柱状图",
+  "description": "ECharts 百分比堆叠柱状图，每列总和为100%，用于对比各类别内部结构占比随时间/维度的变化",
+  "tags": ["bar", "stacked", "100%", "percentage", "proportion", "composition", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"bar_stacked_100\"><div class=\"card-title\">各渠道收入占比</div><div class=\"chart-container md\" id=\"chart_bar_stacked_100\"></div><script>(function(){var el=document.getElementById('chart_bar_stacked_100');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6','#10b981','#f59e0b'];c.setOption({color:palette,tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},legend:{bottom:0},grid:{left:'3%',right:'4%',bottom:'15%',containLabel:true},xAxis:{type:'category',data:['Q1','Q2','Q3','Q4']},yAxis:{type:'value',max:100,axisLabel:{formatter:'{value}%'}},series:[{name:'线上',type:'bar',stack:'total',emphasis:{focus:'series'},data:[40,45,50,48]},{name:'线下',type:'bar',stack:'total',emphasis:{focus:'series'},data:[35,30,28,32]},{name:'代理',type:'bar',stack:'total',emphasis:{focus:'series'},data:[25,25,22,20]}]});})();</script></div>",
+  "variants": ["渠道结构", "产品组合占比", "收入来源分布"],
+  "relatedCards": ["bar-chart-stacked", "kpi-segmented"]
+}

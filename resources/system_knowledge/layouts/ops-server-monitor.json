@@ -1,0 +1,17 @@
+{
+  "id": "ops-server-monitor",
+  "type": "layout",
+  "name": "服务器性能监控",
+  "category": "operations",
+  "tags": ["服务器", "监控", "CPU", "内存", "响应时间", "运维"],
+  "description": "服务器/基础设施性能监控看板，顶部集群健康度状态KPI（在线实例/CPU均值/内存均值/告警数），中部CPU使用率实时折线图+内存趋势面积图，底部各主机性能状态表+磁盘/网络指标卡。适合运维团队实时看板与性能复盘报告。",
+  "slots": {
+    "clusterKpi": "集群在线/CPU/内存/告警总数KPI",
+    "cpuChart": "CPU使用率实时趋势折线图（多实例）",
+    "memChart": "内存使用率趋势面积图",
+    "hostTable": "各主机性能指标状态表",
+    "diskNetKpi": "磁盘/网络IO指标卡"
+  },
+  "cssPath": "operations/server-monitor.css",
+  "containerClass": "layout-ops-server"
+}

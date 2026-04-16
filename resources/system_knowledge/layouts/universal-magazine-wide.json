@@ -1,0 +1,21 @@
+{
+  "id": "universal-magazine-wide",
+  "type": "layout",
+  "name": "杂志宽屏布局",
+  "category": "universal",
+  "tags": [
+    "杂志",
+    "宽屏",
+    "2fr 1fr",
+    "主辅",
+    "编辑"
+  ],
+  "description": "杂志风宽屏布局，主内容区占2/3，侧边辅助信息占1/3，适合内容详实的分析报告。",
+  "slots": {
+    "mainContent": "主图表/内容（2/3宽）",
+    "sidebar": "侧边辅助信息（1/3宽）",
+    "fullRow": "全宽行（可选）"
+  },
+  "cssPath": "universal/magazine-wide.css",
+  "containerClass": "layout-magazine-wide"
+}

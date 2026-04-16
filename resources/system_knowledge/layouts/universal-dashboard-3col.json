@@ -1,0 +1,21 @@
+{
+  "id": "universal-dashboard-3col",
+  "type": "layout",
+  "name": "三列仪表盘",
+  "category": "universal",
+  "tags": [
+    "三列",
+    "仪表盘",
+    "大屏",
+    "看板",
+    "高密度"
+  ],
+  "description": "宽屏三列仪表盘，6个KPI一行，图表3列，适合大屏展示或信息密度较高的综合报表。",
+  "slots": {
+    "kpiRow": "6个KPI指标卡",
+    "charts": "3列图表区",
+    "table": "数据表（可选）"
+  },
+  "cssPath": "universal/dashboard-3col.css",
+  "containerClass": "layout-dashboard-3col"
+}

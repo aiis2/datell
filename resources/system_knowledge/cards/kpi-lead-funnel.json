@@ -1,0 +1,31 @@
+{
+  "id": "kpi-lead-funnel",
+  "type": "card",
+  "category": "kpi",
+  "name": "线索漏斗转化指标卡",
+  "description": "多行展示 MQL→SQL→机会→签单 各阶段线索数量与转化率，适合市场销售协同分析、渠道效果评估",
+  "tags": [
+    "kpi",
+    "leads",
+    "MQL",
+    "SQL",
+    "线索",
+    "漏斗",
+    "转化",
+    "获客"
+  ],
+  "cssClass": "kpi-multi-row",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card kpi-multi-row' style='padding:16px'><div style='font-weight:700;margin-bottom:8px;font-size:13px'>本月线索漏斗</div><div class='kpi-row'><span class='kpi-row-label'>市场线索(MQL)</span><span class='kpi-row-value'>340</span></div><div class='kpi-row'><span class='kpi-row-label'>销售线索(SQL)</span><span class='kpi-row-value'>126</span><span class='kpi-row-change' style='color:var(--text-sub)'>37%↓</span></div><div class='kpi-row'><span class='kpi-row-label'>商机</span><span class='kpi-row-value'>54</span></div><div class='kpi-row'><span class='kpi-row-label'>成交</span><span class='kpi-row-value' style='color:var(--color-success)'>18</span><span class='kpi-row-change' style='color:var(--color-success)'>33%↓</span></div></div>",
+  "variants": [
+    "获客渠道分布",
+    "内容触达漏斗",
+    "付费流量转化"
+  ],
+  "relatedCards": [
+    "kpi-pipeline-value",
+    "kpi-win-rate",
+    "kpi-conversion-rate"
+  ],
+  "htmlClassName": "card kpi-card kpi-multi-row"
+}

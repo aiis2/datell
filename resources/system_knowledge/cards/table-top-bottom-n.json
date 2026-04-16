@@ -1,0 +1,24 @@
+{
+  "id": "table-top-bottom-n",
+  "type": "card",
+  "name": "TOP N / BOTTOM N 对比表", 
+  "category": "table",
+  "tags": ["TOP N", "最佳最差", "对比表", "排名对比", "头部尾部", "双列排名"],
+  "description": "並排展示 TOP N 与 BOTTOM N 两列的对比表，左列为表现最优的 N 项，右列为表现最差的 N 项，每项显示名称、指标值和变化趋势。适合渠道/城市/产品线表现两极对比分析。",
+  "useCases": [
+    "TOP 5 城市 vs BOTTOM 5 城市销售对比",
+    "最佳表现渠道 vs 最差渠道对比",
+    "产品 SKU 表现最好/最差对比",
+    "员工绩效最高/最低分组对比"
+  ],
+  "dataSchema": {
+    "topItems": "[{name, value, change}] 前N名数组",
+    "bottomItems": "[{name, value, change}] 后N名数组",
+    "metric": "指标名称",
+    "n": "展示数量（默认5）"
+  },
+  "htmlClassName": "card table-card top-bottom-table",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card table-card\" data-card-id=\"table_topbot\">\n  <h2 class=\"card-title\">城市销售 TOP5 vs BOTTOM5</h2>\n  <div style=\"display:grid;grid-template-columns:1fr 1fr;gap:16px\">\n    <div>\n      <div style=\"font-weight:700;margin-bottom:8px;color:var(--accent)\">🏆 TOP 5</div>\n      <table class=\"data-table\" style=\"font-size:12px\"><thead><tr><th>城市</th><th>销售额</th><th>同比</th></tr></thead><tbody>\n        <tr><td>上海</td><td>850万</td><td class=\"text-green-500\">↑+32%</td></tr>\n        <tr><td>北京</td><td>780万</td><td class=\"text-green-500\">↑+28%</td></tr>\n        <tr><td>深圳</td><td>620万</td><td class=\"text-green-500\">↑+15%</td></tr>\n        <tr><td>广州</td><td>580万</td><td class=\"text-green-500\">↑+10%</td></tr>\n        <tr><td>成都</td><td>420万</td><td class=\"text-green-500\">↑+8%</td></tr>\n      </tbody></table>\n    </div>\n    <div>\n      <div style=\"font-weight:700;margin-bottom:8px;color:#ef4444\">⚠️ BOTTOM 5</div>\n      <table class=\"data-table\" style=\"font-size:12px\"><thead><tr><th>城市</th><th>销售额</th><th>同比</th></tr></thead><tbody>\n        <tr><td>拉萨</td><td>12万</td><td class=\"text-red-500\">↓-18%</td></tr>\n        <tr><td>银川</td><td>18万</td><td class=\"text-red-500\">↓-12%</td></tr>\n        <tr><td>西宁</td><td>25万</td><td class=\"text-red-500\">↓-8%</td></tr>\n        <tr><td>呼和浩特</td><td>32万</td><td class=\"text-red-500\">↓-5%</td></tr>\n        <tr><td>海口</td><td>38万</td><td class=\"text-green-500\">↑+2%</td></tr>\n      </tbody></table>\n    </div>\n  </div>\n</div>"
+}

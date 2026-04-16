@@ -1,0 +1,17 @@
+{
+  "id": "sales-daily-report",
+  "type": "layout",
+  "name": "销售日报看板",
+  "category": "sales",
+  "tags": ["销售", "日报", "当日业绩", "目标达成", "销售看板"],
+  "description": "销售日报看板布局，适合每日刷新的销售团队看板。顶部当日目标达成进度条KPI（今日目标/当前值/完成率），中部各成员当日业绩横向柱状图+当日成单流水列表，底部本月累计趋势折线+月度目标缺口分析。",
+  "slots": {
+    "dailyProgress": "当日目标达成进度KPI卡（含进度条）",
+    "memberLeaderboard": "销售成员当日业绩排行横向柱状图",
+    "dealList": "当日成单/商机流水表格",
+    "monthlyTrend": "本月累计业绩趋势折线图",
+    "targetGap": "月度目标缺口分析"
+  },
+  "cssPath": "sales/daily-report.css",
+  "containerClass": "layout-sales-daily"
+}

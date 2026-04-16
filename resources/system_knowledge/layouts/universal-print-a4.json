@@ -1,0 +1,21 @@
+{
+  "id": "universal-print-a4",
+  "type": "layout",
+  "name": "A4 打印布局",
+  "category": "universal",
+  "tags": [
+    "打印",
+    "A4",
+    "PDF",
+    "文档",
+    "排版"
+  ],
+  "description": "A4纸张打印优化布局（794px宽），自动分页，无阴影，适合生成可打印PDF报告。",
+  "slots": {
+    "header": "报告标题与日期",
+    "body": "正文内容单列",
+    "footer": "页脚签名（可选）"
+  },
+  "cssPath": "universal/print-a4.css",
+  "containerClass": "layout-print-a4"
+}

@@ -1,0 +1,30 @@
+/* theme-tech.css (深色科技风) */
+:root {
+  --bg-body: #0f172a;
+  --bg-header: #0b1120;
+  --text-header: #e2e8f0;
+  --border-header: 1px solid #1e293b;
+  
+  --bg-card: #1e293b;
+  --radius-card: 12px;
+  --shadow-card: 0 10px 25px rgba(0,0,0,0.5);
+  --border-card: 1px solid #334155;
+  
+  --text-main: #f1f5f9;
+  --text-sub: #94a3b8;
+  --text-accent: #38bdf8;
+  
+  --color-success: #34d399;
+  --color-danger: #f87171;
+  
+  --bg-table-header: #0f172a;
+  --border-table: #334155;
+  --bg-table-hover: #1e293b;
+}
+
+/* 玻璃拟态强化卡片 */
+.card {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}

@@ -1,0 +1,12 @@
+/* 地理分布布局 — 地图为主体 */
+:root {
+  --layout-content-padding:   16px;
+  --layout-content-max-width: 1500px;
+  --layout-gap:               16px;
+  --layout-kpi-cols:          repeat(3, 1fr);
+  --layout-chart-cols:        2fr 1fr;
+  --layout-chart-gap:         16px;
+  --layout-card-padding:      16px;
+}
+
+.chart-container.map { height: 500px; }

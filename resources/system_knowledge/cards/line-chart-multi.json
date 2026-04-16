@@ -1,0 +1,32 @@
+{
+  "id": "line-chart-multi",
+  "type": "card",
+  "name": "多线对比折线图",
+  "category": "chart",
+  "tags": [
+    "折线图",
+    "多线",
+    "趋势对比",
+    "多系列",
+    "比较"
+  ],
+  "description": "多条折线对比图，在同一坐标轴展示多个指标的时序趋势，方便对比走势差异。",
+  "useCases": [
+    "多产品销售趋势对比",
+    "本年vs去年同期趋势",
+    "多地区增长曲线对比"
+  ],
+  "dataSchema": {
+    "dates": "时间轴",
+    "series": "多系列（name+data）",
+    "title": "标题"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "highlight",
+    "tooltip",
+    "legend",
+    "zoom"
+  ]
+}

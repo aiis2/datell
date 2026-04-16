@@ -1,0 +1,27 @@
+{
+  "id": "kpi-bullet-card",
+  "type": "card",
+  "category": "kpi",
+  "name": "子弹图 KPI 卡",
+  "description": "以子弹图形式展示实际值、目标值与达标范围，适合 OKR 目标进度等场景",
+  "tags": [
+    "kpi",
+    "bullet",
+    "target",
+    "progress",
+    "OKR",
+    "goal"
+  ],
+  "cssClass": "kpi-bullet-card",
+  "exampleHtml": "<div class=\"card kpi-card kpi-bullet-card\" data-card-id=\"sales_target_bullet\"><span class=\"kpi-title\">销售目标完成</span><span class=\"kpi-value\" style=\"font-size:26px;font-weight:800\">82%</span><div class=\"kpi-bullet-track\"><div class=\"kpi-bullet-range\" style=\"--range-pct:90%\"></div><div class=\"kpi-bullet-actual\" style=\"--actual-pct:82%\"></div><div class=\"kpi-bullet-target\" style=\"--target-pct:85%\"></div></div><div style=\"display:flex;justify-content:space-between;font-size:11px;color:var(--text-sub);margin-top:4px\"><span>实际 820万</span><span>目标 1000万</span></div></div>",
+  "variants": [
+    "OKR进度",
+    "季度目标",
+    "预算执行"
+  ],
+  "relatedCards": [
+    "kpi-progress-card",
+    "kpi-comparison-card"
+  ],
+  "htmlClassName": "card kpi-card kpi-bullet-card"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "operations-logistics-map",
+  "type": "layout",
+  "name": "物流配送地图",
+  "category": "operations",
+  "tags": [
+    "物流",
+    "地图",
+    "配送",
+    "区域覆盖",
+    "运营"
+  ],
+  "description": "物流运营布局，主区地理配送地图，右侧配送KPI与路线效率，底部近期订单明细。",
+  "slots": {
+    "geoMap": "配送区域地图",
+    "logisticsKpi": "配送KPI",
+    "orderTable": "近期订单明细"
+  },
+  "cssPath": "operations/logistics-map.css",
+  "containerClass": "layout-operations-logistics"
+}

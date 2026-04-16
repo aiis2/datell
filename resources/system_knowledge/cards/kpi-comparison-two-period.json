@@ -1,0 +1,42 @@
+{
+  "id": "kpi-comparison-two-period",
+  "type": "card",
+  "name": "双期对比 KPI 卡（本期 vs 上期）",
+  "category": "kpi",
+  "tags": [
+    "双期对比",
+    "本期vs上期",
+    "KPI",
+    "当前值",
+    "历史对比",
+    "环比同比",
+    "对比",
+    "两期",
+    "本月上月",
+    "今年去年",
+    "前后对比",
+    "期间对比",
+    "同期对比"
+  ],
+  "description": "并列展示本期与上期数值的双列对比 KPI 卡，包含两列数字（本期/上期），下方显示变化量和变化率。适合重要指标的前后期横向对比，使数据变化更直观清晰。",
+  "useCases": [
+    "本月 vs 上月核心指标对比",
+    "今年 vs 去年同期指标对比",
+    "实验组 vs 对照组 KPI 对比",
+    "Q1 vs Q4 预算执行对比"
+  ],
+  "dataSchema": {
+    "label": "指标名称",
+    "currentLabel": "本期标签（如 本月）",
+    "previousLabel": "上期标签（如 上月）",
+    "currentValue": "本期值",
+    "previousValue": "上期值",
+    "unit": "单位",
+    "change": "变化量",
+    "changePct": "变化百分比"
+  },
+  "htmlClassName": "card kpi-card kpi-two-period",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card kpi-card kpi-two-period\" data-card-id=\"kpi_two_period\">\n  <div class=\"kpi-label\">月度 GMV</div>\n  <div style=\"display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px\">\n    <div style=\"text-align:center;padding:10px;border-radius:6px;background:var(--accent-bg,#eff6ff)\">\n      <div style=\"font-size:0.75rem;opacity:0.6\">本月</div>\n      <div class=\"kpi-value\" style=\"font-size:1.6rem\">¥12.8亿</div>\n    </div>\n    <div style=\"text-align:center;padding:10px;border-radius:6px;background:var(--surface,#f8fafc)\">\n      <div style=\"font-size:0.75rem;opacity:0.6\">上月</div>\n      <div class=\"kpi-value\" style=\"font-size:1.6rem;opacity:0.65\">¥10.5亿</div>\n    </div>\n  </div>\n  <div class=\"kpi-change text-green-500\" style=\"text-align:center;margin-top:8px\">↑ +¥2.3亿 &nbsp;(+21.9%)</div>\n</div>"
+}

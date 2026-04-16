@@ -1,0 +1,28 @@
+{
+  "id": "kpi-percentile",
+  "type": "card",
+  "category": "kpi",
+  "name": "百分位排名 KPI 卡",
+  "description": "用渐变色轨道＋指针标注当前值在全量分布中的百分位位置，适合排名/超越率/绩效评级",
+  "tags": [
+    "kpi",
+    "percentile",
+    "rank",
+    "distribution",
+    "position",
+    "benchmark",
+    "performance"
+  ],
+  "cssClass": "kpi-percentile",
+  "exampleHtml": "<div class=\"card kpi-card kpi-percentile\" data-card-id=\"sales_percentile\"><div class=\"kpi-title\" style=\"font-size:13px;color:var(--text-sub);margin-bottom:4px\">销售额百分位</div><div class=\"pct-label\">P82</div><div class=\"pct-desc\">超越同期全渠道 82% 的门店</div><div class=\"pct-track\" style=\"margin-top:8px\"><div class=\"pct-marker\" style=\"--pct-pos:82%\"></div></div></div>",
+  "variants": [
+    "绩效百分位",
+    "行业基准位置",
+    "用户活跃度排位"
+  ],
+  "relatedCards": [
+    "kpi-ranked-list",
+    "kpi-single"
+  ],
+  "htmlClassName": "card kpi-card kpi-percentile"
+}

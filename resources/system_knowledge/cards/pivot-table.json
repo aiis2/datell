@@ -1,0 +1,31 @@
+{
+  "id": "pivot-table",
+  "type": "card",
+  "name": "透视表（交叉分析）",
+  "category": "table",
+  "tags": [
+    "透视表",
+    "交叉分析",
+    "数据集",
+    "汇总",
+    "矩阵表格"
+  ],
+  "description": "多维交叉透视表，行列双维度汇总，支持小计/合计行。适合月度×地区×产品的多维数据汇总分析。",
+  "useCases": [
+    "月份×地区销售矩阵",
+    "产品×渠道交叉汇总",
+    "部门×费用类型透视"
+  ],
+  "dataSchema": {
+    "rows": "行维度",
+    "cols": "列维度",
+    "values": "数值字段",
+    "title": "标题"
+  },
+  "htmlClassName": "card data-table",
+  "engineHint": "pure-html",
+  "interactionSupport": [
+    "sort",
+    "highlight"
+  ]
+}

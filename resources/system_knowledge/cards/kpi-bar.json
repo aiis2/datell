@@ -1,0 +1,35 @@
+{
+  "id": "kpi-bar",
+  "type": "card",
+  "name": "柱状图 KPI 卡",
+  "category": "kpi",
+  "tags": [
+    "KPI",
+    "柱状图",
+    "迷你图",
+    "对比",
+    "周期",
+    "趋势",
+    "ECharts"
+  ],
+  "description": "KPI 卡片，底部附带一组迷你竖向柱状图（通常 6-12 个数据点），直观呈现多周期数值对比，最后一根柱子高亮为当期值。适合展示周度/月度销售额对比、渠道成交量、各部门业绩分布等场景。",
+  "useCases": [
+    "周销售额 + 近7周柱状图对比",
+    "门店客流量 + 月度分布",
+    "各渠道成交 + 多期对比",
+    "任务完成量 + 分布对比"
+  ],
+  "dataSchema": {
+    "value": "当前期最新值",
+    "label": "指标名称",
+    "trend": "涨跌百分比（可选）",
+    "chartData": "柱状数组（如 [60,75,55,85,70,68,92]）",
+    "unit": "单位"
+  },
+  "htmlClassName": "card kpi-card kpi-bar-kpi",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "highlight"
+  ],
+  "exampleHtml": "<div class=\"card kpi-card kpi-bar-kpi\" data-card-id=\"kpi_weekly_sales\">\n  <span class=\"kpi-title icon-text\">\n    <svg class=\"icon\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><use href=\"./vendor/icons.svg#icon-chart-bar\"></use></svg>\n    周销售额\n  </span>\n  <span class=\"kpi-value\">¥45.6万</span>\n  <span class=\"kpi-trend down\">\n    <svg class=\"icon\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><use href=\"./vendor/icons.svg#icon-trending-down\"></use></svg>\n    -3.2% 环比\n  </span>\n  <div id=\"kpi_weekly_sales_bar\" style=\"width:100%;height:48px;margin-top:6px\"></div>\n  <script>\n  document.addEventListener('DOMContentLoaded', function() {\n    var el = document.getElementById('kpi_weekly_sales_bar'); if (!el) return;\n    var c = echarts.init(el);\n    c.setOption({ animation:false, grid:{top:2,bottom:2,left:0,right:0}, xAxis:{type:'category',show:false,data:['w1','w2','w3','w4','w5','w6','w7']}, yAxis:{type:'value',show:false}, series:[{type:'bar',barMaxWidth:14,data:[60,75,55,85,70,68,{value:92,itemStyle:{color:'var(--color-primary,#3b82f6)',opacity:1}}],itemStyle:{color:'var(--color-primary,#3b82f6)',opacity:0.45},borderRadius:[2,2,0,0]}] });\n  });\n  </script>\n</div>"
+}

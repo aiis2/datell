@@ -1,0 +1,29 @@
+{
+  "id": "kpi-bed-occupancy",
+  "type": "card",
+  "category": "kpi",
+  "name": "床位占用率指标卡",
+  "description": "展示病床占用率，含在院人数/总床位数和日趋势，适合医院运营监控、病区管理、资源效率分析",
+  "tags": [
+    "kpi",
+    "bed occupancy",
+    "床位占用率",
+    "医院",
+    "病床",
+    "运营",
+    "资源利用"
+  ],
+  "cssClass": "kpi-capacity-util",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>病床占用率</div><div style='font-size:32px;font-weight:900;color:var(--color-warning)'>88.4%</div><div class='kpi-target-bar-wrap' style='margin:8px 0'><div class='kpi-target-bar-fill' style='--bar-pct:88.4%;background:var(--color-warning)'></div></div><div style='display:flex;justify-content:space-between;font-size:11px;color:var(--text-sub)'><span>在院: 442 / 总床: 500</span><span>目标 ≤85%</span></div></div>",
+  "variants": [
+    "ICU占用率",
+    "急诊等待时间",
+    "手术室利用率"
+  ],
+  "relatedCards": [
+    "kpi-capacity-util",
+    "kpi-risk-flag"
+  ],
+  "htmlClassName": "card kpi-card"
+}

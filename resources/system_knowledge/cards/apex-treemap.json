@@ -1,0 +1,21 @@
+{
+  "id": "apex-treemap",
+  "type": "card",
+  "name": "矩形树图 — ApexCharts",
+  "category": "chart",
+  "tags": ["树图", "treemap", "矩形面积", "层级数据", "ApexCharts", "占比可视化"],
+  "description": "使用 ApexCharts treemap 类型实现矩形树图，每个矩形面积正比于数值大小，颜色区分类别，适合展示多维度占比关系，如产品线收入构成、部门人员分布、页面流量来源等。使用 generate_chart_apex 工具生成。",
+  "useCases": [
+    "产品线收入占比可视化",
+    "各部门人员编制分布",
+    "网站页面流量来源",
+    "SKU 销量分布树图"
+  ],
+  "dataSchema": {
+    "series": "系列数组，每个 series 含 name（类别）和 data（[{x:名称, y:数值}]）"
+  },
+  "htmlClassName": "card chart-card apex-chart-card",
+  "engineHint": "apexcharts",
+  "interactionSupport": ["highlight"],
+  "exampleHtml": "<div class=\"card chart-card apex-chart-card\" data-card-id=\"chart_treemap_example\">\n  <h2 class=\"card-title\">产品线收入分布</h2>\n  <div id=\"chart_treemap_example\" class=\"chart-container\" style=\"height:320px\"></div>\n  <script>\n  (function(){\n    var options = {\n      chart: { type: 'treemap', height: 320, toolbar: { show: false }, animations: { enabled: !window.__REPORT_PRINT_MODE__ } },\n      colors: window.__APEX_PALETTE__ || ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6'],\n      series: [{\n        data: [\n          { x: 'SaaS产品', y: 218 }, { x: '硬件销售', y: 149 }, { x: '咨询服务', y: 184 },\n          { x: '培训课程', y: 55 },  { x: '技术支持', y: 84 },  { x: '数据服务', y: 31 }\n        ]\n      }],\n      dataLabels: { enabled: true, formatter: function(text, op) { return [text, op.value + 'w']; } },\n      tooltip: { y: { formatter: function(v) { return v + '万元'; } } }\n    };\n    var chart = new ApexCharts(document.getElementById('chart_treemap_example'), options);\n    chart.render().then(function(){ window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.registerApex('chart_treemap_example', chart); });\n  })();\n  <\/script>\n</div>"
+}

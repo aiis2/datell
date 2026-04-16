@@ -1,0 +1,30 @@
+{
+  "id": "kpi-nrr",
+  "type": "card",
+  "category": "kpi",
+  "name": "净收入留存率(NRR/NDR)卡",
+  "description": "展示净收入留存率（扩张/流失抵消后留存）和扩张收入，适合 SaaS 订阅制收入健康分析、投资人报告",
+  "tags": [
+    "kpi",
+    "NRR",
+    "net revenue retention",
+    "净收入留存",
+    "SaaS",
+    "扩张收入",
+    "MRR",
+    "ARR"
+  ],
+  "cssClass": "kpi-comparison",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>净收入留存率(NRR)</div><div style='font-size:36px;font-weight:900;color:var(--color-success)'>118%</div><div style='display:flex;gap:12px;margin-top:8px;font-size:11px'><span style='color:var(--color-success)'>扩张 +¥180K</span><span style='color:var(--color-danger)'>流失 -¥52K</span></div></div>",
+  "variants": [
+    "GRR总收入留存率",
+    "扩张MRR",
+    "缩减MRR"
+  ],
+  "relatedCards": [
+    "kpi-churn-rate",
+    "kpi-arpu"
+  ],
+  "htmlClassName": "card kpi-card"
+}

@@ -1,0 +1,34 @@
+/* theme-neo-brutalism.css — 新粗野主义视觉主题 */
+:root {
+  --bg-body:         #ffeb3b;
+  --bg-header:       #fff;
+  --text-header:     #000;
+  --border-header:   3px solid #000;
+  --bg-card:         #ffffff;
+  --bg-card-alt:     #eeeeee;
+  --radius-card:     0px;
+  --shadow-card:     6px 6px 0px #000000;
+  --border-card:     3px solid #000000;
+  --text-main:       #000000;
+  --text-sub:        #333333;
+  --text-accent:     #e91e63;
+  --color-primary:   #e91e63;
+  --color-success:   #00e676;
+  --color-danger:    #ff1744;
+  --bg-table-header: #eeeeee;
+  --border-table:    #000000;
+  --bg-table-hover:  #ffe082;
+}
+
+/* 视觉效果：强调粗野标题 */
+.report-title {
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* 悬浮偏移（视觉反馈）*/
+.card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 8px 0px #000000;
+  transition: all 0.15s ease-in-out;
+}

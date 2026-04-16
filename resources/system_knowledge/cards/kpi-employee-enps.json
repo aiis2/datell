@@ -1,0 +1,29 @@
+{
+  "id": "kpi-employee-enps",
+  "type": "card",
+  "category": "kpi",
+  "name": "员工净推荐值(eNPS)卡",
+  "description": "展示员工 eNPS 分数与推荐者/中立者/批评者占比，适合员工满意度调研结果展示、组织文化健康诊断",
+  "tags": [
+    "kpi",
+    "eNPS",
+    "employee satisfaction",
+    "员工满意度",
+    "员工敬业度",
+    "HR",
+    "组织文化"
+  ],
+  "cssClass": "kpi-nps",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>员工满意度(eNPS)</div><div style='font-size:36px;font-weight:900;color:var(--color-success)'>+38</div><div style='display:flex;height:8px;border-radius:4px;overflow:hidden;margin:10px 0;gap:2px'><div style='flex:58;background:var(--color-success)'></div><div style='flex:22;background:var(--color-warning)'></div><div style='flex:20;background:var(--color-danger)'></div></div><div style='display:flex;justify-content:space-between;font-size:10px;color:var(--text-sub)'><span>推荐 58%</span><span>中立 22%</span><span>反对 20%</span></div></div>",
+  "variants": [
+    "参与度分数",
+    "幸福感指数",
+    "管理满意度"
+  ],
+  "relatedCards": [
+    "kpi-nps",
+    "kpi-health-score"
+  ],
+  "htmlClassName": "card kpi-card"
+}

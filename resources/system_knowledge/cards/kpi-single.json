@@ -1,0 +1,39 @@
+{
+  "id": "kpi-single",
+  "type": "card",
+  "name": "单值 KPI 指标卡",
+  "category": "kpi",
+  "tags": [
+    "KPI",
+    "指标",
+    "单值",
+    "核心数据",
+    "看板",
+    "仪表",
+    "关键指标",
+    "总计",
+    "汇总",
+    "单个指标",
+    "数值卡片"
+  ],
+  "description": "展示单个核心指标数值，带图标和单位标注。适合首屏核心指标展示，如总收入、用户总数、完成率等单一量化指标。",
+  "useCases": [
+    "销售总额展示",
+    "用户总数展示",
+    "完成率百分比",
+    "当日订单量",
+    "月度收入汇总"
+  ],
+  "dataSchema": {
+    "value": "指标数值（数字）",
+    "label": "指标名称",
+    "unit": "单位（如 元、万元、人、次、%）",
+    "icon": "图标名称（可选）"
+  },
+  "htmlClassName": "card kpi-card kpi-single",
+  "engineHint": "pure-html",
+  "interactionSupport": [
+    "highlight"
+  ],
+  "exampleHtml": "<div class=\"card kpi-card kpi-single\" data-card-id=\"kpi_total_revenue\">\n  <span class=\"kpi-title icon-text\">\n    <svg class=\"icon\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><use href=\"./vendor/icons.svg#icon-currency-yen\"></use></svg>\n    总收入\n  </span>\n  <span class=\"kpi-value\">¥2,840,000 <span style=\"font-size:14px;font-weight:400;color:var(--text-sub)\">元</span></span>\n  <span class=\"kpi-trend up\">\n    <svg class=\"icon\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><use href=\"./vendor/icons.svg#icon-trending-up\"></use></svg>\n    +12.5% 同比\n  </span>\n  <span class=\"kpi-sub\">较上季度增长</span>\n</div>"
+}

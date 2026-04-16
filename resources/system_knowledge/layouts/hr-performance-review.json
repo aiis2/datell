@@ -1,0 +1,17 @@
+{
+  "id": "hr-performance-review",
+  "type": "layout",
+  "name": "HR 绩效评估报告",
+  "category": "hr",
+  "tags": ["HR", "绩效", "员工评估", "KPI考核", "人力资源"],
+  "description": "HR 绩效评估报告布局，支持团队整体或个人评估两种模式。顶部部门/周期筛选+团队整体分布KPI，中部绩效分级分布柱状图+部门对比雷达图，底部员工明细绩效等级表+晋升/预警名单。适合季度/年度绩效复盘报告。",
+  "slots": {
+    "deptFilter": "部门/考核周期筛选控件",
+    "distributionKpi": "绩效分布KPI（优秀/达标/待改进比例）",
+    "performanceDist": "绩效等级分布柱状图",
+    "radarCompare": "各部门多维度绩效雷达图对比",
+    "employeeTable": "员工绩效明细表（含等级/建议）"
+  },
+  "cssPath": "hr/performance.css",
+  "containerClass": "layout-hr-performance"
+}

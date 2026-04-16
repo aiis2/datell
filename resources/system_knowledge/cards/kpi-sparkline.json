@@ -1,0 +1,42 @@
+{
+  "id": "kpi-sparkline",
+  "type": "card",
+  "name": "迷你趋势 KPI 卡",
+  "category": "kpi",
+  "tags": [
+    "KPI",
+    "迷你图",
+    "趋势",
+    "折线",
+    "精简",
+    "时间序列",
+    "时序",
+    "趋势线",
+    "近7日",
+    "近30日",
+    "日活趋势",
+    "销售趋势",
+    "变化曲线",
+    "波动",
+    "迷你折线",
+    "指标趋势"
+  ],
+  "description": "紧凑型 KPI 卡片，主值旁附带一条 7-30 天的迷你折线趋势图，直观呈现波动方向。适合周报/月报的核心指标速览。",
+  "useCases": [
+    "销售额+近7日趋势",
+    "DAU 日活+近30天波动",
+    "库存量+趋势预警"
+  ],
+  "dataSchema": {
+    "value": "当前值",
+    "label": "指标名",
+    "trend": "趋势数据数组（如[12,15,10,18,20]）",
+    "unit": "单位"
+  },
+  "htmlClassName": "card kpi-card kpi-sparkline",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "highlight"
+  ],
+  "exampleHtml": "<!-- ⚠️ 每张 kpi-sparkline 的 data-card-id 和容器 id 必须唯一：将 kpi_YOUR_METRIC 替换为实际指标标识符（如 kpi_dau、kpi_gmv）-->\n<div class=\"card kpi-card kpi-sparkline\" data-card-id=\"kpi_YOUR_METRIC\">\n  <span class=\"kpi-title icon-text\">\n    <svg class=\"icon\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><use href=\"./vendor/icons.svg#icon-users\"></use></svg>\n    日活用户\n  </span>\n  <span class=\"kpi-value\">128万 <span style=\"font-size:14px;font-weight:400;color:var(--text-sub)\">人</span></span>\n  <span class=\"kpi-trend up\">\n    <svg class=\"icon\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><use href=\"./vendor/icons.svg#icon-trending-up\"></use></svg>\n    +8% 今日\n  </span>\n  <div id=\"kpi_YOUR_METRIC_spark\" style=\"width:100%;height:48px;margin-top:6px\"></div>\n  <script>\n  document.addEventListener('DOMContentLoaded', function() {\n    var el = document.getElementById('kpi_YOUR_METRIC_spark'); if (!el) return;\n    var c = echarts.init(el);\n    c.setOption({ grid:{top:2,bottom:2,left:0,right:0}, xAxis:{type:'category',show:false,data:['d1','d2','d3','d4','d5','d6','d7']}, yAxis:{type:'value',show:false}, series:[{type:'line',smooth:true,data:[85,92,88,105,98,112,128],lineStyle:{color:'var(--color-primary,#3b82f6)',width:1.5},areaStyle:{color:'var(--color-primary,#3b82f6)',opacity:0.12},symbol:'none'}] });\n  });\n  </script>\n</div>"
+}

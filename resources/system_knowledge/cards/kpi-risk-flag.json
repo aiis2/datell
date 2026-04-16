@@ -1,0 +1,27 @@
+{
+  "id": "kpi-risk-flag",
+  "type": "card",
+  "category": "kpi",
+  "name": "风险预警 KPI 卡",
+  "description": "右侧彩色竖条指示风险等级（高危红/中危橙/正常绿），适合舆情预警、库存预警、异常检测",
+  "tags": [
+    "kpi",
+    "risk",
+    "warning",
+    "alert",
+    "flag",
+    "danger"
+  ],
+  "cssClass": "kpi-risk-flag",
+  "exampleHtml": "<div class=\"card kpi-card kpi-risk-flag\" data-card-id=\"inventory_risk\" style=\"padding:16px\"><span class=\"kpi-risk-label\">库存风险</span><span class=\"kpi-value\" style=\"font-size:28px;font-weight:900\">12件</span><span class=\"kpi-sub\">SKU-A2301 低于安全库存</span><span class=\"kpi-trend down\">-40% 本周补货</span></div>",
+  "variants": [
+    "低库存预警",
+    "收入下滑预警",
+    "质量缺陷预警"
+  ],
+  "relatedCards": [
+    "kpi-traffic-light",
+    "insight-callout"
+  ],
+  "htmlClassName": "card kpi-card kpi-risk-flag"
+}

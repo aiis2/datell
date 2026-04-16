@@ -1,0 +1,28 @@
+{
+  "id": "kpi-ranked-list",
+  "type": "card",
+  "category": "kpi",
+  "name": "排名进度列表卡",
+  "description": "最多10项，每项含排名序号、名称标签、横向进度条与数值，适合产品/区域/人员排行",
+  "tags": [
+    "kpi",
+    "ranking",
+    "ranked",
+    "list",
+    "top",
+    "leaderboard",
+    "progress"
+  ],
+  "cssClass": "kpi-ranked-list",
+  "exampleHtml": "<div class=\"card kpi-card kpi-ranked-list\" data-card-id=\"region_ranking\" style=\"padding:16px\"><span class=\"kpi-title\" style=\"font-weight:700;font-size:14px;display:block;margin-bottom:12px\">区域销售排名</span><div class=\"kpi-ranked-list\"><div class=\"rank-item\"><span class=\"rank-num rank-1\">1</span><span class=\"rank-label\">华东区</span><div class=\"rank-bar-wrap\"><div class=\"rank-bar-fill\" style=\"--bar-pct:100%\"></div></div><span class=\"rank-value\">¥320万</span></div><div class=\"rank-item\"><span class=\"rank-num rank-2\">2</span><span class=\"rank-label\">华南区</span><div class=\"rank-bar-wrap\"><div class=\"rank-bar-fill\" style=\"--bar-pct:78%\"></div></div><span class=\"rank-value\">¥250万</span></div><div class=\"rank-item\"><span class=\"rank-num rank-3\">3</span><span class=\"rank-label\">华北区</span><div class=\"rank-bar-wrap\"><div class=\"rank-bar-fill\" style=\"--bar-pct:62%\"></div></div><span class=\"rank-value\">¥198万</span></div><div class=\"rank-item\"><span class=\"rank-num\">4</span><span class=\"rank-label\">西南区</span><div class=\"rank-bar-wrap\"><div class=\"rank-bar-fill\" style=\"--bar-pct:44%\"></div></div><span class=\"rank-value\">¥140万</span></div></div></div>",
+  "variants": [
+    "产品销量排名",
+    "销售员业绩",
+    "门店排名"
+  ],
+  "relatedCards": [
+    "data-table-ranked",
+    "kpi-multi-row"
+  ],
+  "htmlClassName": "card kpi-card kpi-ranked-list"
+}

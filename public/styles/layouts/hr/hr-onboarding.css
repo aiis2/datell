@@ -1,0 +1,52 @@
+/* HR 入职进度追踪布局 */
+:root {
+  --layout-content-padding:   24px;
+  --layout-content-max-width: 1200px;
+  --layout-gap:               20px;
+  --layout-card-padding:      20px;
+}
+
+.layout-hr-onboarding {
+  display: grid;
+  grid-template-areas:
+    "kpi     kpi     kpi"
+    "gantt   gantt   stage"
+    "tasks   tasks   tasks";
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--layout-gap);
+  padding: var(--layout-content-padding);
+  max-width: var(--layout-content-max-width);
+  margin: 0 auto;
+}
+
+.layout-hr-onboarding .slot-batchKpi         { grid-area: kpi; }
+.layout-hr-onboarding .slot-onboardingGantt  { grid-area: gantt; min-height: 280px; }
+.layout-hr-onboarding .slot-stageCompletion  { grid-area: stage; }
+.layout-hr-onboarding .slot-taskTable        { grid-area: tasks; }
+
+/* 任务状态样式 */
+.task-status-done    { color: var(--color-success); font-weight: 600; }
+.task-status-pending { color: var(--color-warning); }
+.task-status-overdue { color: var(--color-danger); font-weight: 600; }
+
+/* 进度条 */
+.onboarding-progress-bar {
+  height: 8px;
+  background: var(--bg-progress-track, rgba(0,0,0,0.1));
+  border-radius: 4px;
+  overflow: hidden;
+}
+.onboarding-progress-bar .fill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+@media (max-width: 900px) {
+  .layout-hr-onboarding {
+    grid-template-areas: "kpi" "gantt" "stage" "tasks";
+    grid-template-columns: 1fr;
+  }
+}

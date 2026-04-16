@@ -1,0 +1,28 @@
+{
+  "id": "kpi-sales-velocity",
+  "type": "card",
+  "category": "A",
+  "name": "销售速度/成交周期卡",
+  "description": "展示平均销售周期天数及各阶段耗时，适合销售流程优化、漏斗健康分析、效能提升报告",
+  "tags": [
+    "kpi",
+    "sales velocity",
+    "成交周期",
+    "销售速度",
+    "CRM",
+    "销售效率",
+    "pipeline"
+  ],
+  "cssClass": "kpi-change-indicator",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>平均成交周期</div><div style='font-size:32px;font-weight:900;color:var(--text-accent)'>32 天</div><div style='font-size:11px;color:var(--color-success)'>▼ 4天 (-11%) vs 上季</div></div>",
+  "variants": [
+    "SMB成交周期",
+    "大客户成交周期",
+    "销售速率指数"
+  ],
+  "relatedCards": [
+    "kpi-win-rate",
+    "kpi-pipeline-value"
+  ]
+}

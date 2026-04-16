@@ -1,0 +1,29 @@
+{
+  "id": "kpi-cart-abandonment",
+  "type": "card",
+  "category": "kpi",
+  "name": "购物车弃单率指标卡",
+  "description": "展示购物车弃单率百分比，含主要弃单原因，适合电商漏斗优化、结账流程改进、用户行为分析",
+  "tags": [
+    "kpi",
+    "cart abandonment",
+    "弃单率",
+    "购物车",
+    "电商",
+    "结账",
+    "转化优化"
+  ],
+  "cssClass": "kpi-risk-flag",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>购物车弃单率</div><div style='font-size:32px;font-weight:900;color:var(--color-warning)'>68.4%</div><div style='font-size:11px;color:var(--text-sub);margin-top:4px'>弃单↓3.2% MoM</div><div style='font-size:11px;color:var(--color-success)'>✓ 高于行业均值70%(好)</div></div>",
+  "variants": [
+    "结账弃单率",
+    "收藏转化率",
+    "复购率"
+  ],
+  "relatedCards": [
+    "kpi-conversion-rate",
+    "kpi-win-rate"
+  ],
+  "htmlClassName": "card kpi-card"
+}

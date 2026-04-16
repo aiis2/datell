@@ -1,0 +1,29 @@
+{
+  "id": "kpi-refund-rate",
+  "type": "card",
+  "category": "kpi",
+  "name": "退款率/取消率指标卡",
+  "description": "展示订单退款率和主要退款原因，可按商品/店铺/区域分解，适合电商运营质量监控、店铺健康度报告",
+  "tags": [
+    "kpi",
+    "refund rate",
+    "退款率",
+    "取消率",
+    "电商",
+    "订单质量",
+    "店铺健康"
+  ],
+  "cssClass": "kpi-risk-flag",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card kpi-risk-flag' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>退款率</div><div style='font-size:32px;font-weight:900;color:var(--color-warning)'>2.8%</div><div style='font-size:11px;color:var(--text-sub);margin-top:4px'>主因：质量差34% | 描述不符26%</div></div>",
+  "variants": [
+    "售后服务率",
+    "差评率",
+    "投诉率"
+  ],
+  "relatedCards": [
+    "kpi-return-rate",
+    "kpi-csat"
+  ],
+  "htmlClassName": "card kpi-card kpi-risk-flag"
+}

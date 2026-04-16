@@ -1,0 +1,40 @@
+/* theme-editorial.css (极简杂志风) */
+:root {
+  --font-family: 'Georgia', 'Times New Roman', Times, serif; /* 衬线字体 */
+  --bg-body: #ffffff;
+  --bg-header: #ffffff;
+  --text-header: #111111;
+  --border-header: 1px solid #111111;
+  
+  --bg-card: #ffffff;
+  --radius-card: 0px;
+  --shadow-card: none;
+  --border-card: 1px solid #eeeeee;
+  
+  --text-main: #222222;
+  --text-sub: #777777;
+  --text-accent: #000000;
+  
+  --color-success: #4caf50;
+  --color-danger: #d32f2f;
+  
+  --bg-table-header: #ffffff;
+  --border-table: 1px solid #222222;
+  --bg-table-hover: #fafafa;
+}
+
+.report-header {
+  border-bottom: 2px solid #111111;
+  text-align: center;
+}
+
+.report-title {
+  font-weight: normal;
+  font-size: 32px;
+  letter-spacing: 1px;
+}
+
+.kpi-value {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 300;
+}

@@ -1,0 +1,38 @@
+{
+  "id": "kpi-rank-badge",
+  "type": "card",
+  "name": "排名徽章 KPI 卡",
+  "category": "kpi",
+  "tags": [
+    "排名",
+    "徽章",
+    "badge",
+    "KPI",
+    "名次",
+    "排行榜",
+    "TOP",
+    "排行",
+    "第一名",
+    "冠军",
+    "排序",
+    "位次"
+  ],
+  "description": "展示当前排名/名次的 KPI 徽章卡，配合大号排名数字（如 #3）、排名描述、总参与数量和环比变化（上升N名/下降N名/持平）。颜色根据排名分层（前3名金/银/铜，其他默认）。适合城市/渠道/销售员排名报告。",
+  "useCases": [
+    "品牌市场排名情况",
+    "区域/城市业绩排名",
+    "销售员当月排行榜名次",
+    "产品在品类中的市场排名"
+  ],
+  "dataSchema": {
+    "rank": "当前排名（数字）",
+    "total": "总排名数（如共30个城市）",
+    "label": "排名说明",
+    "rankChange": "排名变化（正数=上升，负数=下降，0=持平）",
+    "period": "评比周期"
+  },
+  "htmlClassName": "card kpi-card kpi-rank",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card kpi-card kpi-rank\" data-card-id=\"kpi_rank\" style=\"text-align:center\">\n  <div class=\"kpi-label\">华东区 Q1 销售排名</div>\n  <div style=\"font-size:3.5rem;font-weight:900;color:#f59e0b;line-height:1.1\">#2</div>\n  <div class=\"kpi-sub\">共 12 个大区 · Q1 2024</div>\n  <div class=\"kpi-change text-green-500\" style=\"margin-top:4px\">↑ 上升 1 名（vs Q4 2023）</div>\n</div>"
+}

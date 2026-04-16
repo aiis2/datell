@@ -1,0 +1,22 @@
+{
+  "id": "funnel-conversion-multi",
+  "type": "card",
+  "name": "多阶段转化漏斗图",
+  "category": "chart",
+  "tags": ["漏斗图", "转化率", "funnel", "转化漏斗", "流失分析", "用户路径"],
+  "description": "多阶段转化漏斗图，展示用户从初始状态到最终转化各阶段的数量和转化率，相邻阶段间显示通过率/流失率，支持自定义颜色渐变。适合电商购物漏斗、注册激活漏斗、销售线索转化漏斗。",
+  "useCases": [
+    "电商购物漏斗（浏览→加购→下单→支付）",
+    "销售线索转化漏斗（MQL→SQL→商机→成单）",
+    "用户注册激活漏斗",
+    "广告投放漏斗（曝光→点击→转化）"
+  ],
+  "dataSchema": {
+    "stages": "漏斗阶段数组：[{name, value, color?}]，按量从大到小",
+    "showRate": "true=在相邻阶段间显示转化率"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["highlight"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_funnel\">\n  <h2 class=\"card-title\">用户购买转化漏斗</h2>\n  <div id=\"chart_funnel\" class=\"chart-container\" style=\"height:320px\"></div>\n  <script>\n  (function(){\n    var data=[\n      {name:'访问',value:10000},{name:'浏览商品',value:6500},{name:'加入购物车',value:3200},{name:'提交订单',value:1800},{name:'完成支付',value:1250}\n    ];\n    var chart=echarts.init(document.getElementById('chart_funnel'));\n    chart.setOption({\n      tooltip:{trigger:'item',formatter:function(p){var prev=data[p.dataIndex-1];var rate=prev?Math.round(p.data.value/prev.value*100)+'%':'-';return p.name+'<br/>'+p.data.value+' 人<br/>转化率: '+rate;}},\n      series:[{type:'funnel',data:data,label:{formatter:function(p){return p.name+'\\n'+p.data.value;}},sort:'descending',gap:4,width:'80%',left:'10%'}]\n    });\n    chart.on('click',function(p){window.__REPORT_EVENT_BUS__&&window.__REPORT_EVENT_BUS__.emit({type:'highlight',cardId:'chart_funnel',payload:p.data});});\n    window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.register('chart_funnel', chart);\n  })();\n  <\/script>\n</div>"
+}

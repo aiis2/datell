@@ -1,0 +1,23 @@
+{
+  "id": "apex-range-bar",
+  "type": "card",
+  "name": "时间线/甘特范围柱图 — ApexCharts",
+  "category": "chart",
+  "tags": ["时间线", "甘特图", "范围柱", "任务进度", "ApexCharts", "rangeBar", "项目管理"],
+  "description": "使用 ApexCharts rangeBar 类型实现项目甘特图或事件时间线。每条数据代表一个有开始和结束时间的任务或事件，适合展示多阶段项目进度、工期排布、活动日程。使用 generate_chart_apex 工具生成。",
+  "useCases": [
+    "项目各阶段任务甘特图",
+    "员工排班时间表",
+    "活动日程/会议日历",
+    "上线里程碑时间轴"
+  ],
+  "dataSchema": {
+    "series": "任务系列数组，每条含 name 和 data（[{x:任务名, y:[开始时间ms, 结束时间ms]}]）",
+    "labels_format": "x 轴时间格式，如 'yyyy-MM-dd'",
+    "barHeight": "柱高百分比，默认 '70%'"
+  },
+  "htmlClassName": "card chart-card apex-chart-card",
+  "engineHint": "apexcharts",
+  "interactionSupport": ["highlight"],
+  "exampleHtml": "<div class=\"card chart-card apex-chart-card\" data-card-id=\"chart_gantt_example\">\n  <h2 class=\"card-title\">项目任务甘特图</h2>\n  <div id=\"chart_gantt_example\" class=\"chart-container\" style=\"height:320px\"></div>\n  <script>\n  (function(){\n    var options = {\n      chart: { type: 'rangeBar', height: 320, toolbar: { show: false }, animations: { enabled: !window.__REPORT_PRINT_MODE__ } },\n      colors: window.__APEX_PALETTE__ || ['#3b82f6','#10b981','#f59e0b','#8b5cf6'],\n      series: [\n        { name: '设计阶段', data: [{ x: '需求分析', y: [new Date('2024-01-01').getTime(), new Date('2024-01-15').getTime()] }, { x: 'UI设计', y: [new Date('2024-01-10').getTime(), new Date('2024-01-25').getTime()] }] },\n        { name: '开发阶段', data: [{ x: '前端开发', y: [new Date('2024-01-20').getTime(), new Date('2024-02-15').getTime()] }, { x: '后端开发', y: [new Date('2024-01-18').getTime(), new Date('2024-02-20').getTime()] }] }\n      ],\n      plotOptions: { bar: { horizontal: true, barHeight: '70%' } },\n      xaxis: { type: 'datetime', labels: { format: 'MM/dd' } },\n      tooltip: { x: { format: 'yyyy-MM-dd' } }\n    };\n    var chart = new ApexCharts(document.getElementById('chart_gantt_example'), options);\n    chart.render().then(function(){ window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.registerApex('chart_gantt_example', chart); });\n  })();\n  <\/script>\n</div>"
+}

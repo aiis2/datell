@@ -1,0 +1,24 @@
+{
+  "id": "annotation-highlight-text",
+  "type": "card",
+  "name": "洞察文字注释卡",
+  "category": "structure",
+  "tags": ["注释", "洞察", "文字", "高亮", "annotation", "insight", "观点"],
+  "description": "富文本洞察注释卡片，包含大号引用数字/关键词、正文分析、重点词语高亮（黄色背景）、以及底部图标说明。适合在图表旁放置为数据阐释背景信息、观点摘要或关键发现说明，无需数据绑定。",
+  "useCases": [
+    "图表旁的关键发现注释",
+    "报告核心观点摘要卡",
+    "数据背后的业务解读",
+    "分析师点评/洞察卡片"
+  ],
+  "dataSchema": {
+    "stat": "突出显示的大字数字/数据点",
+    "statLabel": "大字旁的简短说明",
+    "body": "正文分析段落（支持 <mark> 高亮）",
+    "icon": "右侧图标（emoji或图标文字）"
+  },
+  "htmlClassName": "card annotation-card insight-card",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card annotation-card\" data-card-id=\"anno_insight\">\n  <div style=\"display:flex;gap:16px;align-items:flex-start\">\n    <div style=\"font-size:3rem;font-weight:800;color:var(--accent);line-height:1\">↑42%</div>\n    <div>\n      <div style=\"font-size:0.85rem;color:var(--text-muted);margin-bottom:4px\">同比增幅（Q4 vs LY Q4）</div>\n      <p style=\"font-size:0.9rem;line-height:1.6\">本季度增长主要来自<mark>华南区新渠道拓展</mark>，其中直播电商渠道同比提升 <mark>127%</mark>，贡献了总增量的 63%。传统线下渠道维持稳定，暂无明显下滑风险。</p>\n    </div>\n    <div style=\"font-size:2rem;opacity:0.4\">💡</div>\n  </div>\n</div>"
+}

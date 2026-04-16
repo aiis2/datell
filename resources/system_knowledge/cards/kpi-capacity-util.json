@@ -1,0 +1,30 @@
+{
+  "id": "kpi-capacity-util",
+  "type": "card",
+  "category": "kpi",
+  "name": "产能利用率仪表 KPI（ECharts）",
+  "description": "ECharts 仪表盘展示产能利用率/服务器负载/仓库占用率等容量百分比指标，配色随区间变化（低绿-中黄-高红）",
+  "tags": [
+    "kpi",
+    "capacity",
+    "utilization",
+    "gauge",
+    "load",
+    "occupancy",
+    "echarts",
+    "resource"
+  ],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"capacity_util\"><div class=\"card-title\">产能利用率</div><div class=\"chart-container short\" id=\"chart_capacity\"></div><script>(function(){var el=document.getElementById('chart_capacity');if(!el)return;var c=echarts.init(el);var val=84;var clr=val>=90?'#ef4444':val>=75?'#f59e0b':'#10b981';c.setOption({series:[{type:'gauge',startAngle:200,endAngle:-20,min:0,max:100,radius:'85%',progress:{show:true,roundCap:true,width:16,itemStyle:{color:clr}},axisLine:{lineStyle:{width:16,color:[[1,'rgba(0,0,0,0.06)']]}},axisTick:{show:false},splitLine:{show:false},axisLabel:{show:false},pointer:{show:false},detail:{formatter:'{value}%',fontSize:26,fontWeight:'bold',color:'var(--text-accent)',offsetCenter:[0,'10%']},title:{offsetCenter:[0,'35%'],fontSize:12,color:'var(--text-sub)'},data:[{value:val,name:'利用率'}]}]});})();</script></div>",
+  "variants": [
+    "工厂产能",
+    "服务器CPU负载",
+    "仓储占用率"
+  ],
+  "relatedCards": [
+    "kpi-composite",
+    "gauge-chart"
+  ],
+  "htmlClassName": "card chart-card"
+}

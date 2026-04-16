@@ -1,0 +1,24 @@
+{
+  "id": "table-pivot-summary",
+  "type": "card",
+  "name": "透视汇总表格",
+  "category": "table",
+  "tags": ["透视表", "汇总", "pivot", "交叉表", "多维汇总", "合计行"],
+  "description": "类似 Pivot Table 的多维汇总表格，行为一个维度（如产品类别），列为另一个维度（如月份/渠道），单元格为汇总指标（如销售额），末行末列显示合计。支持列宽自适应，适合多维度交叉数据分析。",
+  "useCases": [
+    "产品 × 渠道销售额透视",
+    "地区 × 月份收入交叉表",
+    "部门 × 费用类型支出矩阵",
+    "SKU × 门店库存分布表"
+  ],
+  "dataSchema": {
+    "rowDim": "行维度字段名及标签",
+    "colDim": "列维度字段名及标签",
+    "metric": "汇总指标字段名（数字）",
+    "showTotal": "true=显示行/列合计"
+  },
+  "htmlClassName": "card table-card table-pivot",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card table-card\" data-card-id=\"table_pivot\">\n  <h2 class=\"card-title\">区域 × 季度销售额（万元）</h2>\n  <div class=\"table-wrapper\">\n    <table class=\"data-table\">\n      <thead><tr><th>区域</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th class=\"total\">合计</th></tr></thead>\n      <tbody>\n        <tr><td>华北</td><td>120</td><td>135</td><td>148</td><td>162</td><td class=\"total\">565</td></tr>\n        <tr><td>华东</td><td>180</td><td>195</td><td>210</td><td>228</td><td class=\"total\">813</td></tr>\n        <tr><td>华南</td><td>98</td><td>110</td><td>125</td><td>138</td><td class=\"total\">471</td></tr>\n        <tr><td>西部</td><td>65</td><td>72</td><td>80</td><td>88</td><td class=\"total\">305</td></tr>\n        <tr class=\"total\"><td>合计</td><td>463</td><td>512</td><td>563</td><td>616</td><td class=\"total\">2154</td></tr>\n      </tbody>\n    </table>\n  </div>\n</div>"
+}

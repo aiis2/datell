@@ -1,0 +1,12 @@
+{
+  "id": "timeline-horizontal",
+  "type": "card",
+  "category": "D",
+  "name": "水平时间轴卡",
+  "description": "节点等宽排三方，每节点含圆点、日期、标题、说明，适合项目计划、历史回顾、产品演进",
+  "tags": ["timeline", "horizontal", "project", "milestone", "history", "roadmap"],
+  "cssClass": "timeline-horizontal",
+  "exampleHtml": "<div class=\"card\" data-card-id=\"product_roadmap\" style=\"padding:16px\"><h2 class=\"card-title\">产品路线图</h2><div class=\"timeline-horizontal\"><div class=\"th-item\"><div class=\"th-dot\" style=\"background:var(--color-success)\"></div><div class=\"th-date\">2024 Q1</div><div class=\"th-title\">MVP上线</div><div class=\"th-desc\">核心功能发布</div></div><div class=\"th-item\"><div class=\"th-dot\" style=\"background:var(--color-success)\"></div><div class=\"th-date\">2024 Q2</div><div class=\"th-title\">用户增长</div><div class=\"th-desc\">MAU 破5万</div></div><div class=\"th-item\"><div class=\"th-dot\"></div><div class=\"th-date\">2024 Q3</div><div class=\"th-title\">功能扩展</div><div class=\"th-desc\">AI生成报表</div></div><div class=\"th-item\"><div class=\"th-dot\" style=\"background:var(--bg-card-alt)\"></div><div class=\"th-date\">2024 Q4</div><div class=\"th-title\">商业化</div><div class=\"th-desc\">企业版发布</div></div></div></div>",
+  "variants": ["项目计划时间轴", "历史事件回顾", "里程碑展示"],
+  "relatedCards": ["timeline-event", "process-steps"]
+}

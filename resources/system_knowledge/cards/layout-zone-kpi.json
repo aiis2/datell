@@ -1,0 +1,30 @@
+{
+  "id": "layout-zone-kpi",
+  "type": "card",
+  "category": "D",
+  "name": "三区结构布局说明",
+  "description": "报告三区结构：zone-kpi（KPI指标条）/ zone-filter（筛选控件行）/ zone-content（主图表区），用 .report-zones 包裹代替 .report-content",
+  "tags": ["layout", "zone", "kpi-zone", "filter-zone", "three-zone", "structure", "dashboard"],
+  "cssClass": "report-zones",
+  "renderLib": "pure-html",
+  "exampleHtml": "<div class=\"report-zones\"><div class=\"zone-kpi\"><div class=\"card card-kpi card-kpi--compact\" data-card-id=\"kpi_revenue\"><div class=\"kpi-label\">月收入</div><div class=\"kpi-value\">¥ 2.84M</div><div class=\"kpi-delta kpi-delta--up\">▲ 12.3%</div></div><div class=\"card card-kpi card-kpi--compact\" data-card-id=\"kpi_orders\"><div class=\"kpi-label\">订单数</div><div class=\"kpi-value\">1,280</div><div class=\"kpi-delta kpi-delta--up\">▲ 8.1%</div></div><div class=\"card card-kpi card-kpi--compact\" data-card-id=\"kpi_conversion\"><div class=\"kpi-label\">转化率</div><div class=\"kpi-value\">3.42%</div><div class=\"kpi-delta kpi-delta--down\">▼ 0.5%</div></div><div class=\"card card-kpi card-kpi--compact\" data-card-id=\"kpi_avg_order\"><div class=\"kpi-label\">客单价</div><div class=\"kpi-value\">¥ 221</div><div class=\"kpi-delta kpi-delta--up\">▲ 3.8%</div></div></div><div class=\"zone-filter\" data-filter-group=\"main\"><div class=\"filter-zone-item\"><label class=\"filter-zone-label\">时间</label><select class=\"filter-zone-select\" data-filter-field=\"date_range\"><option value=\"month\">本月</option><option value=\"quarter\">本季</option><option value=\"year\">本年</option></select></div><div class=\"filter-zone-item\"><label class=\"filter-zone-label\">区域</label><select class=\"filter-zone-select\" data-filter-field=\"region\"><option value=\"\">全部</option><option value=\"north\">华北</option><option value=\"south\">华南</option></select></div><button class=\"filter-zone-reset\" data-action=\"filter-reset\">重置</button></div><div class=\"zone-content\"><div class=\"card chart-card\" data-card-id=\"sales_trend\"><h2 class=\"card-title\">月度销售趋势</h2><div id=\"sales_trend\" class=\"chart-container short\"></div></div></div></div>",
+  "dataSchema": {
+    "zone-kpi": "KPI 指标区域容器",
+    "zone-filter": "筛选控件行容器（data-filter-group 标识）",
+    "zone-content": "主图表/表格区域",
+    "data-filter-field": "筛选字段名（select/input 上）",
+    "data-action=filter-reset": "重置按钮标识"
+  },
+  "slots": {
+    ".zone-kpi > .card-kpi--compact": "精简 KPI 卡片（kpi-label + kpi-value + kpi-delta）",
+    ".zone-filter .filter-zone-item": "筛选项：filter-zone-label + filter-zone-select",
+    ".zone-filter .filter-zone-reset": "重置按钮",
+    ".zone-content > .card": "图表/表格卡片"
+  },
+  "useCases": [
+    "需要顶部 KPI 横排 + 筛选行 + 主图表的三区仪表盘",
+    "销售看板/运营日报/财务月报等标准报告结构",
+    "需要联动筛选的交互式报告"
+  ],
+  "relatedCards": ["kpi-card", "filter-dropdown", "filter-date-range", "filter-year-month"]
+}

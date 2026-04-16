@@ -1,0 +1,22 @@
+{
+  "id": "medical-patient-flow",
+  "type": "layout",
+  "name": "患者就诊流程",
+  "category": "medical",
+  "tags": [
+    "医疗",
+    "患者",
+    "就诊",
+    "门诊",
+    "流量"
+  ],
+  "description": "医疗患者流程布局，顶部挂号/就诊/待诊KPI，中部科室分布热力图+等待时间趋势，底部就诊明细。",
+  "slots": {
+    "patientKpi": "就诊量KPI",
+    "deptHeatmap": "科室热力图",
+    "waitTimeTrend": "等待时间趋势",
+    "visitTable": "就诊明细"
+  },
+  "cssPath": "medical/patient-flow.css",
+  "containerClass": "layout-medical-patient"
+}

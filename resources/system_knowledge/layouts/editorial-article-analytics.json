@@ -1,0 +1,22 @@
+{
+  "id": "editorial-article-analytics",
+  "type": "layout",
+  "name": "文章内容分析",
+  "category": "editorial",
+  "tags": [
+    "内容",
+    "文章",
+    "阅读量",
+    "传播",
+    "媒体"
+  ],
+  "description": "内容媒体文章分析布局，顶部阅读/分享/评论KPI，中部发布量趋势+内容分类饼图，底部文章排行榜。",
+  "slots": {
+    "contentKpi": "内容KPI",
+    "publishTrend": "发布趋势图",
+    "categoryPie": "内容分类图",
+    "articleRanking": "文章排行"
+  },
+  "cssPath": "editorial/article-analytics.css",
+  "containerClass": "layout-editorial-articles"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "bar-horizontal-rank",
+  "type": "card",
+  "name": "横向排名柱状图",
+  "category": "chart",
+  "tags": ["横向柱状图", "排名", "TOP N", "水平柱", "bar chart", "排序"],
+  "description": "横向条形图，数据按值从大到小排序，展示各分类的排名排行。支持数据标签显示、颜色区分正负值、以及 TOP N 数量配置。适合城市/产品/销售员等维度排行榜展示。常与筛选控件联动动态更新排名。",
+  "useCases": [
+    "城市销售额 TOP 10 排行",
+    "产品利润率对比排名",
+    "销售员业绩排行榜",
+    "品牌市场份额排名"
+  ],
+  "dataSchema": {
+    "categories": "分类数组（已按值排序）",
+    "values": "对应数值数组",
+    "unit": "数值单位（万元/%等）",
+    "topN": "展示前N项（默认10）"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["highlight", "filter"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_hbar_rank\">\n  <h2 class=\"card-title\">城市销售额 TOP10</h2>\n  <div id=\"chart_hbar_rank\" class=\"chart-container\" style=\"height:320px\"></div>\n  <script>\n  (function(){\n    var cats=['上海','北京','深圳','广州','成都','杭州','武汉','南京','苏州','西安'];\n    var vals=[850,780,620,580,420,390,340,310,290,270];\n    var chart=echarts.init(document.getElementById('chart_hbar_rank'));\n    chart.setOption({\n      tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},\n      grid:{left:60,right:80},\n      xAxis:{type:'value',axisLabel:{formatter:'{value}万'}},\n      yAxis:{type:'category',data:cats.slice().reverse(),inverse:false},\n      series:[{type:'bar',data:vals.slice().reverse(),label:{show:true,position:'right',formatter:'{c}万'},barMaxWidth:20}]\n    });\n    chart.on('click',function(p){window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.emit({type:'highlight',cardId:'chart_hbar_rank',payload:{name:p.name,value:p.value}});});\n    window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.register('chart_hbar_rank', chart);\n  })();\n  <\/script>\n</div>"
+}

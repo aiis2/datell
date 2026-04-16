@@ -1,0 +1,34 @@
+{
+  "id": "bar-chart-basic",
+  "type": "card",
+  "name": "基础柱状图",
+  "category": "chart",
+  "tags": [
+    "柱状图",
+    "对比",
+    "分类",
+    "排行",
+    "条形",
+    "ECharts"
+  ],
+  "description": "垂直柱状图，适合展示各分类数据的数量对比，如各地区销售额、各月收入等离散类别对比。",
+  "useCases": [
+    "各地区销售额对比",
+    "月度收入柱状图",
+    "产品销量排名",
+    "部门人数对比"
+  ],
+  "dataSchema": {
+    "categories": "横轴类别数组",
+    "values": "数值数组",
+    "title": "图表标题",
+    "yUnit": "Y轴单位"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "highlight",
+    "tooltip",
+    "zoom"
+  ]
+}

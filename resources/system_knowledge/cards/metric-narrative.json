@@ -1,0 +1,12 @@
+{
+  "id": "metric-narrative",
+  "type": "card",
+  "category": "D",
+  "name": "指标叙述卡",
+  "description": "超大核心数值+趋势标签+叙述段落，适合报告开篇摘要、执行摘要、单一重要指标深度解读",
+  "tags": ["narrative", "story", "metric", "summary", "executive", "description"],
+  "cssClass": "metric-narrative",
+  "exampleHtml": "<div class=\"card metric-narrative\" data-card-id=\"revenue_narrative\" style=\"padding:24px\"><div class=\"narrative-header\"><span class=\"narrative-value\">¥2,840万</span><span class=\"narrative-trend trend-up\">+12.5% 同比</span></div><p class=\"narrative-text\">本季度总收入创历史新高，较上季度增长 12.5%。华东和华南区域是主要增长驱动，分别贡献增量的 38% 和 31%。数字渠道转化率提升是核心因素，线上订单占比已达 62%，较去年同期提高 14 个百分点。</p></div>",
+  "variants": ["季度业绩摘要", "年报执行摘要", "单指标深度解读"],
+  "relatedCards": ["insight-callout", "text-summary", "kpi-single"]
+}

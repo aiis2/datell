@@ -1,0 +1,25 @@
+{
+  "id": "gauge-speedometer",
+  "type": "card",
+  "name": "仪表盘速度计图",
+  "category": "chart",
+  "tags": ["仪表盘", "gauge", "速度计", "KPI", "指针", "达成率", "百分比"],
+  "description": "半圆形仪表盘指针图，展示单个指标相对目标区间的当前值，分区颜色（红/黄/绿）直观辨别达标状态。适合 KPI 达成率、服务响应时间健康度、系统 CPU 使用率等需要「快速判断好坏」的场景。",
+  "useCases": [
+    "季度销售目标达成率仪表",
+    "服务 SLA 可用率仪表",
+    "系统资源使用率（CPU/内存）",
+    "客户满意度/NPS 分数仪表"
+  ],
+  "dataSchema": {
+    "value": "当前值",
+    "max": "最大值",
+    "label": "指标名称",
+    "unit": "单位（%/ms等）",
+    "zones": "[{start,end,color}] 区间颜色，默认三段：红/黄/绿"
+  },
+  "htmlClassName": "card chart-card chart-gauge",
+  "engineHint": "echarts",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_gauge\">\n  <h2 class=\"card-title\">Q1 销售目标达成率</h2>\n  <div id=\"chart_gauge\" class=\"chart-container\" style=\"height:280px\"></div>\n  <script>\n  (function(){\n    var chart=echarts.init(document.getElementById('chart_gauge'));\n    chart.setOption({\n      series:[{type:'gauge',startAngle:200,endAngle:-20,min:0,max:100,detail:{valueAnimation:true,formatter:'{value}%',fontSize:20,color:'inherit'},progress:{show:true,width:14},pointer:{length:'70%',width:4},axisLabel:{fontSize:11},axisLine:{lineStyle:{width:14,color:[[0.6,'#ef4444'],[0.8,'#f59e0b'],[1,'#10b981']]}},data:[{value:82,name:'达成率'}]}]\n    });\n  })();\n  <\/script>\n</div>"
+}

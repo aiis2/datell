@@ -1,0 +1,13 @@
+{
+  "id": "map-city-scatter",
+  "type": "card",
+  "category": "B",
+  "name": "城市气泡地图",
+  "description": "ECharts 地图上叠加散点bubble，圆圈大小代表数值，适合展示城市级/门店级指标的地理分布",
+  "tags": ["map", "city", "scatter", "bubble", "geo", "location", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"city_scatter_map\"><div class=\"card-title\">重点城市门店业绩</div><div class=\"chart-container md\"><div style=\"display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-sub);font-size:13px;flex-direction:column;gap:8px\"><span style=\"font-size:24px\">📍</span><span>城市气泡地图需要地图底图注册</span><span style=\"font-size:11px\">坐标数据使用 {name, value: [lon, lat, val]}</span></div></div></div>",
+  "variants": ["重点城市GMV", "门店分布热点", "配送网点覆盖"],
+  "relatedCards": ["map-china", "bubble-chart"]
+}

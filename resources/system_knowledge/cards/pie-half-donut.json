@@ -1,0 +1,13 @@
+{
+  "id": "pie-half-donut",
+  "type": "card",
+  "category": "B",
+  "name": "半环仪表图",
+  "description": "ECharts 半圆环形图（仪表量程），中间显示核心值，常用于展示达标率/进度/评分等单值的可视化",
+  "tags": ["pie", "half-donut", "gauge", "semicircle", "progress", "goal", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"half_donut\"><div class=\"card-title\">季度目标达成率</div><div class=\"chart-container short\" id=\"chart_half_donut\"></div><script>(function(){var el=document.getElementById('chart_half_donut');if(!el)return;var c=echarts.init(el);var pct=68;var palette=window.__REPORT_PALETTE__||['#3b82f6'];c.setOption({series:[{type:'pie',radius:['50%','70%'],center:['50%','65%'],startAngle:180,endAngle:0,data:[{value:pct,name:'达成',itemStyle:{color:palette[0]}},{value:100-pct,name:'',itemStyle:{color:'rgba(0,0,0,0.06)'}}],label:{show:true,position:'center',formatter:pct+'%',fontSize:24,fontWeight:'bold',color:'var(--text-accent)'},labelLine:{show:false}}]});})();</script></div>",
+  "variants": ["季度达成率", "任务完成度", "利用率"],
+  "relatedCards": ["kpi-ring-progress", "kpi-donut-ratio"]
+}

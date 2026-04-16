@@ -1,0 +1,24 @@
+{
+  "id": "bar-target-actual",
+  "type": "card",
+  "name": "目标达成对比条形图",
+  "category": "chart",
+  "tags": ["目标", "实际", "达成率", "target vs actual", "bullet chart", "对比"],
+  "description": "目标 vs 实际达成对比条形图（Bullet Chart 变体），每行显示一个分类，背景淡色长条表示目标值，前景深色短条表示实际值，超目标部分用特殊颜色标识。清晰展示多个维度的目标达成情况。",
+  "useCases": [
+    "各部门 KPI 目标达成情况",
+    "各产品线销售目标 vs 实际",
+    "各月计划任务完成率对比",
+    "各城市业绩目标完成对比"
+  ],
+  "dataSchema": {
+    "categories": "分类数组（纵轴）",
+    "targets": "目标值数组",
+    "actuals": "实际值数组",
+    "unit": "单位"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["highlight"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_target_bar\">\n  <h2 class=\"card-title\">各部门 Q1 目标达成</h2>\n  <div id=\"chart_target_bar\" class=\"chart-container\" style=\"height:300px\"></div>\n  <script>\n  (function(){\n    var cats=['华北区','华东区','华南区','西部区','华中区'];\n    var targets=[200,280,180,120,160];\n    var actuals=[185,310,165,95,178];\n    var chart=echarts.init(document.getElementById('chart_target_bar'));\n    chart.setOption({\n      tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:function(p){return p[0].name+'<br/>目标:'+targets[p[0].dataIndex]+'万<br/>实际:'+actuals[p[0].dataIndex]+'万<br/>达成率:'+Math.round(actuals[p[0].dataIndex]/targets[p[0].dataIndex]*100)+'%';}},\n      xAxis:{type:'value',name:'万元'},\n      yAxis:{type:'category',data:cats},\n      series:[\n        {name:'目标',type:'bar',data:targets,barWidth:16,z:1,itemStyle:{color:'#e2e8f0'},label:{show:true,position:'right',formatter:'{c}万'}},\n        {name:'实际',type:'bar',data:actuals,barWidth:8,z:2,barGap:'-50%',label:{show:false},itemStyle:{color:function(p){return actuals[p.dataIndex]>=targets[p.dataIndex]?'#10b981':'#3b82f6';}}}\n      ]\n    });\n    window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.register('chart_target_bar', chart);\n  })();\n  <\/script>\n</div>"
+}

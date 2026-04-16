@@ -1,0 +1,24 @@
+{
+  "id": "bar-grouped-comparison",
+  "type": "card",
+  "name": "分组对比柱状图",
+  "category": "chart",
+  "tags": ["分组柱状图", "对比", "grouped bar", "同比", "按组", "多系列对比"],
+  "description": "分组并排柱状图，同一分类下多个系列的柱子并排对比，适合多维度在相同类别下的横向对比，如各月份不同产品线的销售额对比、各部门不同指标的比较。",
+  "useCases": [
+    "各月各产品线销售额分组对比",
+    "各城市男女用户数分组对比",
+    "各部门今年/去年费用分组对比",
+    "各渠道不同指标（GMV/订单量/用户数）横向对比"
+  ],
+  "dataSchema": {
+    "categories": "X轴分类数组",
+    "series": "系列数组：[{name, data:[]}]",
+    "barWidth": "柱宽（默认auto）",
+    "unit": "Y轴单位"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["highlight", "filter"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_grouped_bar\">\n  <h2 class=\"card-title\">各季度产品线销售额对比（万元）</h2>\n  <div id=\"chart_grouped_bar\" class=\"chart-container\" style=\"height:300px\"></div>\n  <script>\n  (function(){\n    var chart=echarts.init(document.getElementById('chart_grouped_bar'));\n    chart.setOption({\n      legend:{},\n      tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},\n      xAxis:{type:'category',data:['Q1','Q2','Q3','Q4']},\n      yAxis:{type:'value',axisLabel:{formatter:'{value}万'}},\n      series:[\n        {name:'产品A',type:'bar',data:[120,135,148,162],barWidth:'20%'},\n        {name:'产品B',type:'bar',data:[80,95,105,118],barWidth:'20%'},\n        {name:'产品C',type:'bar',data:[55,60,72,85],barWidth:'20%'}\n      ]\n    });\n    chart.on('click',function(p){window.__REPORT_EVENT_BUS__&&window.__REPORT_EVENT_BUS__.emit({type:'highlight',cardId:'chart_grouped_bar',payload:{name:p.seriesName,category:p.name}});});\n    window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.register('chart_grouped_bar', chart);\n  })();\n  <\/script>\n</div>"
+}

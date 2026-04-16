@@ -1,0 +1,23 @@
+{
+  "id": "filter-search-input",
+  "type": "card",
+  "name": "搜索框筛选控件",
+  "category": "filter",
+  "tags": ["搜索", "search", "文本筛选", "模糊匹配", "输入框", "关键词筛选"],
+  "description": "文本搜索输入框筛选控件，用户输入关键词后（可加防抖300ms）触发 filterChange 事件，携带搜索字段和关键词，配合表格或列表卡片实现实时客户端过滤或服务端搜索。支持清空按钮。",
+  "useCases": [
+    "客户名称/公司名实时搜索筛选",
+    "产品 SKU/名称搜索",
+    "员工姓名查找过滤",
+    "自由文本关键词搜索"
+  ],
+  "dataSchema": {
+    "placeholder": "输入框提示文字",
+    "field": "对应筛选字段名",
+    "debounceMs": "防抖延迟（毫秒，默认300）"
+  },
+  "htmlClassName": "card filter-card filter-search",
+  "engineHint": "pure-html",
+  "interactionSupport": ["filter"],
+  "exampleHtml": "<div class=\"card filter-card\" data-card-id=\"filter_search\">\n  <label class=\"filter-label\">搜索客户</label>\n  <div style=\"position:relative;margin-top:8px\">\n    <input type=\"text\" id=\"fs_input\" class=\"filter-input\" placeholder=\"输入客户名称搜索...\" style=\"width:100%;padding:8px 32px 8px 12px;\">\n    <span id=\"fs_clear\" style=\"position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;opacity:0.5;display:none\">✕</span>\n  </div>\n  <script>\n  (function(){\n    var inp=document.getElementById('fs_input');\n    var clr=document.getElementById('fs_clear');\n    var timer;\n    inp.addEventListener('input',function(){\n      clr.style.display=this.value?'block':'none';\n      clearTimeout(timer);\n      var v=this.value;\n      timer=setTimeout(function(){document.dispatchEvent(new CustomEvent('filterChange',{detail:{field:'name',value:v,type:'contains'}}));},300);\n    });\n    clr.addEventListener('click',function(){inp.value='';this.style.display='none';document.dispatchEvent(new CustomEvent('filterChange',{detail:{field:'name',value:'',type:'contains'}}));});\n  })();\n  <\/script>\n</div>"
+}

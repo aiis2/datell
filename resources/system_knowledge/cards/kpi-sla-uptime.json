@@ -1,0 +1,30 @@
+{
+  "id": "kpi-sla-uptime",
+  "type": "card",
+  "category": "kpi",
+  "name": "SLA 可用性 KPI 卡",
+  "description": "显示服务可用率百分位+历史各天状态圆点（绿色=正常/红色=故障/黄色=降级），适合IT监控/服务健康/SLA汇报",
+  "tags": [
+    "kpi",
+    "sla",
+    "uptime",
+    "availability",
+    "service",
+    "health",
+    "it",
+    "ops",
+    "status"
+  ],
+  "cssClass": "kpi-sla-uptime",
+  "exampleHtml": "<div class=\"card kpi-card kpi-sla-uptime\" data-card-id=\"sla_uptime\"><div class=\"kpi-title\" style=\"font-size:13px;color:var(--text-sub)\">API 服务可用性（近30天）</div><div class=\"sla-pct ok\">99.87%</div><div class=\"sla-dots\" style=\"margin-top:8px\"><div class=\"sla-dot\" title=\"Jan 1: OK\"></div><div class=\"sla-dot\" title=\"Jan 2: OK\"></div><div class=\"sla-dot down\" title=\"Jan 3: Down\"></div><div class=\"sla-dot\" title=\"Jan 4: OK\"></div><div class=\"sla-dot degraded\" title=\"Jan 5: Degraded\"></div><div class=\"sla-dot\" title=\"Jan 6: OK\"></div><div class=\"sla-dot\" title=\"Jan 7: OK\"></div><div class=\"sla-dot\" title=\"Jan 8: OK\"></div><div class=\"sla-dot\" title=\"Jan 9: OK\"></div><div class=\"sla-dot\" title=\"Jan 10: OK\"></div></div><div class=\"sla-legend\" style=\"margin-top:4px\">绿=正常 红=故障 黄=降级</div></div>",
+  "variants": [
+    "系统可用率",
+    "数据库在线率",
+    "CDN健康状态"
+  ],
+  "relatedCards": [
+    "kpi-traffic-light",
+    "kpi-risk-flag"
+  ],
+  "htmlClassName": "card kpi-card kpi-sla-uptime"
+}

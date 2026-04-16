@@ -1,0 +1,13 @@
+{
+  "id": "chord-diagram",
+  "type": "card",
+  "category": "B",
+  "name": "和弦关系图",
+  "description": "ECharts 和弦图，展示多个节点之间双向流量/关系强度，适合渠道流转/城市迁徙/交叉购买关系可视化",
+  "tags": ["chord", "flow", "relation", "bidirectional", "matrix", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chord_diagram\"><div class=\"card-title\">渠道间流量流转</div><div class=\"chart-container md\"><div style=\"display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-sub);font-size:13px;flex-direction:column;gap:8px\"><span style=\"font-size:24px\">🎻</span><span>和弦图需要 D3.js 或 ECharts graph 渲染</span></div></div></div>",
+  "variants": ["渠道互转流量", "城市迁徙关系", "用户交叉购买"],
+  "relatedCards": ["sankey-flow", "network-graph"]
+}

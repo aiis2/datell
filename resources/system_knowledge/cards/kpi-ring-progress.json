@@ -1,0 +1,31 @@
+{
+  "id": "kpi-ring-progress",
+  "type": "card",
+  "name": "KPI 环形进度卡",
+  "category": "kpi",
+  "tags": [
+    "KPI",
+    "进度",
+    "环形",
+    "完成度",
+    "目标",
+    "圆环"
+  ],
+  "description": "环形进度图 KPI 卡片，展示目标完成百分比。中心显示当前值和目标值，适合季度/年度目标追踪。",
+  "useCases": [
+    "销售目标完成率",
+    "项目进度跟踪",
+    "年度预算执行率"
+  ],
+  "dataSchema": {
+    "value": "当前值",
+    "target": "目标值",
+    "label": "指标名",
+    "unit": "单位"
+  },
+  "htmlClassName": "card kpi-card",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "highlight"
+  ]
+}

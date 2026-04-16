@@ -1,0 +1,45 @@
+{
+  "id": "kpi-comparison",
+  "type": "card",
+  "name": "对比 KPI 指标卡",
+  "category": "kpi",
+  "tags": [
+    "KPI",
+    "同比",
+    "环比",
+    "指标",
+    "对比",
+    "增减",
+    "涨跌",
+    "变化",
+    "双期",
+    "两个时段",
+    "前后对比",
+    "当期上期",
+    "本月上月",
+    "信息对比",
+    "核心指标"
+  ],
+  "description": "展示单个关键指标，同时显示与上期对比的涨跌幅（百分比+绝对值），适合财务收入、用户增长等需要对比上期的核心指标展示。",
+  "useCases": [
+    "财务报表的收入/利润 KPI",
+    "电商 GMV 同比对比",
+    "用户注册量环比变化",
+    "运营指标周期对比"
+  ],
+  "dataSchema": {
+    "value": "当期值（数字）",
+    "label": "指标名称",
+    "prevValue": "上期值（可选）",
+    "changePercent": "涨跌幅百分比（可选，自动计算）",
+    "unit": "单位",
+    "isPositiveGood": "涨为正面还是负面（默认 true）"
+  },
+  "htmlClassName": "card kpi-card kpi-comparison-card",
+  "engineHint": "pure-html",
+  "interactionSupport": [
+    "highlight",
+    "drill_up"
+  ],
+  "exampleHtml": "<div class=\"card kpi-card kpi-comparison-card\" data-card-id=\"kpi_revenue\">\n  <span class=\"kpi-title icon-text\">\n    <svg class=\"icon\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><use href=\"./vendor/icons.svg#icon-receipt\"></use></svg>\n    月度收入\n  </span>\n  <div class=\"kpi-values\">\n    <span class=\"kpi-value current\">¥284万</span>\n    <span class=\"kpi-value previous\">上期 ¥253万</span>\n  </div>\n  <span class=\"kpi-trend up\">\n    <svg class=\"icon\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><use href=\"./vendor/icons.svg#icon-trending-up\"></use></svg>\n    +12.3% 同比\n  </span>\n  <div class=\"kpi-bars\">\n    <div class=\"kpi-bar current\" style=\"--bar-pct:100%\"></div>\n    <div class=\"kpi-bar\" style=\"--bar-pct:89%\"></div>\n  </div>\n</div>"
+}

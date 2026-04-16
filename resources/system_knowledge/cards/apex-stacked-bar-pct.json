@@ -1,0 +1,22 @@
+{
+  "id": "apex-stacked-bar-pct",
+  "type": "card",
+  "name": "ApexCharts 100% 堆积柱状图",
+  "category": "chart",
+  "tags": ["百分比堆积", "100% bar", "ApexCharts", "占比对比", "结构比较", "stacked"],
+  "description": "ApexCharts 100% 堆积柱状图，每根柱子合计为 100%，展示各系列在不同分类下的相对占比，适合比较不同时期或不同分类下的构成比例变化，无需关注绝对数量。使用 generate_chart_apex 工具生成。",
+  "useCases": [
+    "各季度渠道流量占比对比",
+    "各城市用户设备类型分布占比",
+    "各月收入来源构成百分比",
+    "各分类 NPS 评分构成"
+  ],
+  "dataSchema": {
+    "categories": "X轴分类数组",
+    "series": "系列数组：[{name, data:[]}]"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "apexcharts",
+  "interactionSupport": ["highlight"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_apex_100bar\">\n  <h2 class=\"card-title\">各季度渠道占比分布</h2>\n  <div id=\"chart_apex_100bar\"></div>\n  <script>\n  (function(){\n    var options={\n      chart:{type:'bar',height:280,stacked:true,stackType:'100%',toolbar:{show:false},animations:{enabled:!window.__REPORT_PRINT_MODE__},events:{dataPointSelection:function(e,ctx,c){window.__REPORT_EVENT_BUS__&&window.__REPORT_EVENT_BUS__.emit({type:'highlight',cardId:'chart_apex_100bar',payload:c});}}},\n      series:[\n        {name:'搜索',data:[40,38,32,25]},\n        {name:'直播',data:[15,20,28,35]},\n        {name:'推荐',data:[25,24,23,22]},\n        {name:'社交',data:[20,18,17,18]}\n      ],\n      xaxis:{categories:['Q1','Q2','Q3','Q4']},\n      yaxis:{labels:{formatter:function(v){return v+'%';}}},\n      colors:window.__APEX_PALETTE__||['#3b82f6','#10b981','#f59e0b','#ef4444'],\n      plotOptions:{bar:{horizontal:false}},\n      legend:{position:'top'}\n    };\n    var apx=new ApexCharts(document.getElementById('chart_apex_100bar'),options);\n    apx.render().then(function(){\n      window.__REPORT_EVENT_BUS__&&window.__REPORT_EVENT_BUS__.registerApex('chart_apex_100bar',apx);\n    });\n  })();\n  <\/script>\n</div>"
+}

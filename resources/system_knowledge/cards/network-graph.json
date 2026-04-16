@@ -1,0 +1,13 @@
+{
+  "id": "network-graph",
+  "type": "card",
+  "category": "B",
+  "name": "网络关系图",
+  "description": "ECharts graph网络图，展示节点之间的连接关系，节点大小代表权重，适合知识图谱/供应链关系/社交关系可视化",
+  "tags": ["network", "graph", "relation", "node", "edge", "knowledge", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"network_graph\"><div class=\"card-title\">供应商关系网络</div><div class=\"chart-container md\" id=\"chart_network\"></div><script>(function(){var el=document.getElementById('chart_network');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6','#10b981','#f59e0b'];c.setOption({tooltip:{},series:[{type:'graph',layout:'circular',roam:true,edgeSymbol:['none','arrow'],data:[{name:'核心工厂',symbolSize:50,itemStyle:{color:palette[0]}},{name:'供应商A',symbolSize:30,itemStyle:{color:palette[1]}},{name:'供应商B',symbolSize:30,itemStyle:{color:palette[1]}},{name:'供应商C',symbolSize:25,itemStyle:{color:palette[2] || '#f59e0b'}},{name:'原材料商',symbolSize:20,itemStyle:{color:palette[2] || '#f59e0b'}}],links:[{source:'核心工厂',target:'供应商A',value:80},{source:'核心工厂',target:'供应商B',value:60},{source:'核心工厂',target:'供应商C',value:40},{source:'供应商A',target:'原材料商',value:50}],label:{show:true,position:'right',fontSize:11},lineStyle:{opacity:0.5,width:1.5,curveness:0.1}}]});})();</script></div>",
+  "variants": ["供应链关系", "知识图谱", "社交网络关系"],
+  "relatedCards": ["chord-diagram", "sankey-flow"]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "heatmap-matrix",
+  "type": "card",
+  "name": "热力矩阵图",
+  "category": "chart",
+  "tags": [
+    "热力图",
+    "矩阵",
+    "密度",
+    "交叉",
+    "颜色编码"
+  ],
+  "description": "矩阵型热力图，颜色深浅代表数值大小，适合展示两个维度交叉的大量数据，如时间×地区的销售热力分布。",
+  "useCases": [
+    "每月×各区域销售热力",
+    "工作日×时段流量热力",
+    "用户行为交叉分析"
+  ],
+  "dataSchema": {
+    "xCategories": "X轴类别",
+    "yCategories": "Y轴类别",
+    "values": "矩阵数据（二维数组）",
+    "title": "标题"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "tooltip",
+    "zoom"
+  ]
+}

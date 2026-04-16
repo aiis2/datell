@@ -1,0 +1,10 @@
+/* 货运跟踪布局 */
+:root {
+  --layout-content-padding:   20px;
+  --layout-content-max-width: 1400px;
+  --layout-gap:               20px;
+  --layout-kpi-cols:          repeat(4, 1fr);
+  --layout-chart-cols:        3fr 2fr;
+  --layout-chart-gap:         20px;
+  --layout-card-padding:      18px;
+}

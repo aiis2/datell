@@ -1,0 +1,12 @@
+{
+  "id": "comparison-twoCol",
+  "type": "card",
+  "category": "D",
+  "name": "双列对比内容卡",
+  "description": "两列文字内容并排对比，每列有独立带颜色下划线的标题，适合 SWOT 对比、优缺点分析、策略对转",
+  "tags": ["comparison", "two-column", "pros-cons", "swot", "versus", "text"],
+  "cssClass": "comparison-twoCol",
+  "exampleHtml": "<div class=\"card\" data-card-id=\"strategy_compare\" style=\"padding:16px\"><h2 class=\"card-title\">策略对比：线上渠道 vs 线下渠道</h2><div class=\"comparison-twoCol\"><div class=\"compare-col\"><div class=\"compare-label col-a-label\">线上渠道</div><ul style=\"margin:8px 0;padding-left:16px;font-size:13px;color:var(--text-main)\"><li>获客成本低（平均 ¥12/人）</li><li>覆盖范围广，24小时可触达</li><li>数据追踪精准，可快速迭代</li><li>客单价相对偏低</li></ul></div><div class=\"compare-col\"><div class=\"compare-label col-b-label\">线下渠道</div><ul style=\"margin:8px 0;padding-left:16px;font-size:13px;color:var(--text-main)\"><li>体验感强，客单价高（平均 ¥380）</li><li>品牌信任度建立快</li><li>受地域限制，扩张成本高</li><li>运营数据获取滞后</li></ul></div></div></div>",
+  "variants": ["SWOT分析", "产品对比", "策略优劣分析"],
+  "relatedCards": ["comparison-table", "insight-callout"]
+}

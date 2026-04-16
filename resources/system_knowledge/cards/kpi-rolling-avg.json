@@ -1,0 +1,30 @@
+{
+  "id": "kpi-rolling-avg",
+  "type": "card",
+  "category": "kpi",
+  "name": "滚动均值趋势 KPI 卡（ECharts）",
+  "description": "ECharts 折线图，同时展示原始值和N周期滚动均线，用于平滑噪声、观察长期趋势",
+  "tags": [
+    "kpi",
+    "rolling",
+    "moving-average",
+    "trend",
+    "smooth",
+    "line",
+    "echarts",
+    "ma"
+  ],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"rolling_avg\"><div class=\"card-title\">日活（7日滚动均值）</div><div class=\"chart-container short\" id=\"chart_rolling\"></div><script>(function(){var el=document.getElementById('chart_rolling');if(!el)return;var c=echarts.init(el);var raw=[420,380,450,510,490,520,480,530,560,540,580,610];var ma=raw.map(function(v,i){if(i<6)return null;var s=0;for(var j=i-6;j<=i;j++)s+=raw[j];return Math.round(s/7);});var palette=window.__REPORT_PALETTE__||['#3b82f6','#10b981'];c.setOption({tooltip:{trigger:'axis'},legend:{data:['原始值','7日均线'],bottom:0},xAxis:{type:'category',data:['1','2','3','4','5','6','7','8','9','10','11','12'],boundaryGap:false},yAxis:{type:'value'},series:[{name:'原始值',type:'line',data:raw,lineStyle:{color:palette[0],opacity:0.4},itemStyle:{opacity:0},areaStyle:{color:palette[0],opacity:0.06}},{name:'7日均线',type:'line',data:ma,smooth:true,lineStyle:{color:palette[1],width:2},itemStyle:{color:palette[1]}}]});})();</script></div>",
+  "variants": [
+    "7日/30日/MA20",
+    "收入滚动平均",
+    "访问量二次平滑"
+  ],
+  "relatedCards": [
+    "kpi-forecast-vs-actual",
+    "line-chart-multi"
+  ],
+  "htmlClassName": "card chart-card"
+}

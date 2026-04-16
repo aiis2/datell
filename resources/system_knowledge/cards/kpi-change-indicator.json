@@ -1,0 +1,33 @@
+{
+  "id": "kpi-change-indicator",
+  "type": "card",
+  "name": "变化量指示器 KPI（大箭头风格）",
+  "category": "kpi",
+  "tags": [
+    "变化量",
+    "指示器",
+    "箭头",
+    "增减",
+    "KPI",
+    "大字变化"
+  ],
+  "description": "变化量指示器 KPI 卡片，以超大箭头符号突出显示变化方向，下方展示具体变化数值和百分比，以及对比基准说明。颜色随方向变化（绿=上升，红=下降，灰=持平）。适合在报告开头突出显示某指标的最重要变化情况。",
+  "useCases": [
+    "本季度 GMV 同比变化",
+    "市场份额变化指示器",
+    "NPS 变化量显示",
+    "重要指标环比变化突出展示"
+  ],
+  "dataSchema": {
+    "label": "指标名称",
+    "currentValue": "当前值",
+    "change": "变化量（有单位）",
+    "changePct": "变化百分比",
+    "baseLabel": "对比基准说明（如 vs 去年同期）",
+    "direction": "'up'|'down'|'neutral'"
+  },
+  "htmlClassName": "card kpi-card",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card kpi-card\" data-card-id=\"kpi_change\" style=\"text-align:center\">\n  <div class=\"kpi-label\">季度 GMV</div>\n  <div style=\"font-size:4rem;line-height:1;color:#10b981\">↑</div>\n  <div class=\"kpi-value\">+¥2.3亿</div>\n  <div class=\"kpi-sub text-green-500\">同比增长 +22.4%</div>\n  <div style=\"font-size:0.8rem;opacity:0.5;margin-top:4px\">vs 2023 Q1 = ¥10.3亿</div>\n</div>"
+}

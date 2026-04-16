@@ -1,0 +1,21 @@
+{
+  "id": "hr-talent-matrix",
+  "type": "layout",
+  "name": "人才矩阵（九宫格）",
+  "category": "hr",
+  "tags": [
+    "HR",
+    "人才",
+    "9宫格",
+    "绩效",
+    "潜力"
+  ],
+  "description": "人才评估九宫格矩阵布局，主区绩效×潜力二维矩阵，配套人才分布列表和重点人才详情卡。",
+  "slots": {
+    "talentMatrix": "绩效×潜力九宫格",
+    "talentList": "人才分布列表",
+    "keyTalent": "重点人才卡片"
+  },
+  "cssPath": "hr/talent-matrix.css",
+  "containerClass": "layout-hr-talent"
+}

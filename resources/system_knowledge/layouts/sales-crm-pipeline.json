@@ -1,0 +1,21 @@
+{
+  "id": "sales-crm-pipeline",
+  "type": "layout",
+  "name": "CRM 销售漏斗",
+  "category": "sales",
+  "tags": [
+    "CRM",
+    "销售",
+    "漏斗",
+    "线索",
+    "管道"
+  ],
+  "description": "CRM销售管道布局，顶部线索/商机/成单KPI，中部销售漏斗图+区域热力，底部商机明细表。",
+  "slots": {
+    "pipelineKpi": "线索到成单KPI",
+    "funnelChart": "销售漏斗图",
+    "dealTable": "商机明细表"
+  },
+  "cssPath": "sales/crm-pipeline.css",
+  "containerClass": "layout-sales-crm"
+}

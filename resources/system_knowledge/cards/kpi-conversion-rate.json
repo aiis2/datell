@@ -1,0 +1,30 @@
+{
+  "id": "kpi-conversion-rate",
+  "type": "card",
+  "category": "kpi",
+  "name": "转化率漏斗 KPI 卡（ECharts）",
+  "description": "ECharts 漏斗图，展示各步骤转化率，突出关键转化瓶颈，适合注册/支付/激活漏斗分析",
+  "tags": [
+    "kpi",
+    "conversion",
+    "funnel",
+    "rate",
+    "step",
+    "flow",
+    "echarts",
+    "acquisition"
+  ],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"conv_funnel\"><div class=\"card-title\">转化率漏斗</div><div class=\"chart-container short\" id=\"chart_conv\"></div><script>(function(){var el=document.getElementById('chart_conv');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6'];c.setOption({tooltip:{trigger:'item'},series:[{type:'funnel',left:'10%',width:'80%',label:{show:true,position:'inside',formatter:'{b}: {c}%'},data:[{value:100,name:'访问'},{value:60,name:'注册'},{value:35,name:'激活'},{value:18,name:'付费'},{value:10,name:'复购'}],itemStyle:{color:palette[0]},emphasis:{label:{fontSize:14}}}]});})();</script></div>",
+  "variants": [
+    "注册激活漏斗",
+    "购物车支付率",
+    "广告点击转化"
+  ],
+  "relatedCards": [
+    "funnel-chart",
+    "kpi-segmented"
+  ],
+  "htmlClassName": "card chart-card"
+}

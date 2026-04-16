@@ -1,0 +1,30 @@
+{
+  "id": "kpi-api-latency",
+  "type": "card",
+  "category": "kpi",
+  "name": "API 响应延迟(P99)指标卡",
+  "description": "展示 API 接口 P50/P95/P99 响应时间，含 SLA 目标线，适合后端性能监控、技术监控大屏、SRE 看板",
+  "tags": [
+    "kpi",
+    "API latency",
+    "响应时间",
+    "P99",
+    "性能",
+    "SRE",
+    "技术监控",
+    "接口"
+  ],
+  "cssClass": "kpi-composite",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card kpi-composite' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>API 响应延迟</div><div style='display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;text-align:center'><div><div style='font-size:22px;font-weight:900;color:var(--color-success)'>42ms</div><div style='font-size:10px;color:var(--text-sub)'>P50</div></div><div><div style='font-size:22px;font-weight:900;color:var(--color-warning)'>186ms</div><div style='font-size:10px;color:var(--text-sub)'>P95</div></div><div><div style='font-size:22px;font-weight:900;color:var(--color-danger)'>480ms</div><div style='font-size:10px;color:var(--text-sub)'>P99</div></div></div><div style='font-size:11px;color:var(--color-warning);margin-top:8px'>P99 接近 SLA限值(500ms)</div></div>",
+  "variants": [
+    "数据库查询延迟",
+    "前端白屏时间",
+    "CDN响应时间"
+  ],
+  "relatedCards": [
+    "kpi-sla-uptime",
+    "kpi-error-rate-tech"
+  ],
+  "htmlClassName": "card kpi-card kpi-composite"
+}

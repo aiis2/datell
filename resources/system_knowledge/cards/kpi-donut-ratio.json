@@ -1,0 +1,29 @@
+{
+  "id": "kpi-donut-ratio",
+  "type": "card",
+  "category": "kpi",
+  "name": "环形比值 KPI 卡（ECharts）",
+  "description": "ECharts 单环形图，中心显示大字指标值，用于展示完成率/占比/转化率等单一比值",
+  "tags": [
+    "kpi",
+    "donut",
+    "ratio",
+    "pie",
+    "completion",
+    "percentage",
+    "echarts"
+  ],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"completion_rate\"><div class=\"card-title\">目标完成率</div><div class=\"chart-container short\" id=\"chart_donut_ratio\"></div><script>(function(){var el=document.getElementById('chart_donut_ratio');if(!el)return;var c=echarts.init(el);var pct=78;c.setOption({color:window.__REPORT_PALETTE__||['#3b82f6'],series:[{type:'pie',radius:['55%','80%'],center:['50%','50%'],avoidLabelOverlap:false,label:{show:true,position:'center',formatter:pct+'%',fontSize:28,fontWeight:'bold',color:'var(--text-accent)'},labelLine:{show:false},data:[{value:pct,name:'完成'},{value:100-pct,name:'剩余',itemStyle:{color:'rgba(0,0,0,0.06)'}}]}]});})();</script></div>",
+  "variants": [
+    "目标完成率",
+    "转化率",
+    "市场占有率"
+  ],
+  "relatedCards": [
+    "kpi-ring-progress",
+    "kpi-segmented"
+  ],
+  "htmlClassName": "card chart-card"
+}

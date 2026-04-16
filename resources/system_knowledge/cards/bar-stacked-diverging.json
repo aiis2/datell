@@ -1,0 +1,23 @@
+{
+  "id": "bar-stacked-diverging",
+  "type": "card",
+  "name": "堆积发散柱状图（正负双向）",
+  "category": "chart",
+  "tags": ["发散柱状图", "正负", "双向", "满意度", "李克特", "diverging bar"],
+  "description": "正负双向堆积柱状图，X 轴居中为 0，左侧表示负向值（如不满意/反对），右侧表示正向值（如满意/支持）。适合展示满意度调查、支持/反对投票、NPS 分类、财务收支双向对比。",
+  "useCases": [
+    "满意度调查：非常满意/一般/不满意",
+    "NPS 推荐分组分布",
+    "收入/支出双向瀑布",
+    "政策支持/反对调查结果"
+  ],
+  "dataSchema": {
+    "categories": "分类轴（纵向）",
+    "positiveSeries": "正向系列（多个）如[非常满意, 满意]",
+    "negativeSeries": "负向系列（多个）如[非常不满意, 不满意]，值需为负数"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["highlight"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_diverging_bar\">\n  <h2 class=\"card-title\">产品满意度调查</h2>\n  <div id=\"chart_diverging_bar\" class=\"chart-container\" style=\"height:320px\"></div>\n  <script>\n  (function(){\n    var cats=['功能完整性','使用流畅度','界面美观','文档完善','价格合理'];\n    var chart=echarts.init(document.getElementById('chart_diverging_bar'));\n    chart.setOption({\n      legend:{},\n      tooltip:{axisPointer:{type:'shadow'}},\n      xAxis:{type:'value',label:{formatter:function(v){return Math.abs(v)+'%';}}},\n      yAxis:{type:'category',data:cats},\n      series:[\n        {name:'非常满意',type:'bar',stack:'s',data:[42,38,55,22,30]},\n        {name:'满意',type:'bar',stack:'s',data:[28,32,25,30,20]},\n        {name:'不满意',type:'bar',stack:'s',data:[-18,-15,-10,-25,-22]},\n        {name:'非常不满意',type:'bar',stack:'s',data:[-12,-15,-10,-23,-28]}\n      ]\n    });\n    window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.register('chart_diverging_bar', chart);\n  })();\n  <\/script>\n</div>"
+}

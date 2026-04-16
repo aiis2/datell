@@ -1,0 +1,24 @@
+/* 打印优化布局 — A4 纸张比例，印刷友好 */
+:root {
+  --layout-content-padding:   32px 48px;
+  --layout-content-max-width: 794px;    /* A4 width at 96dpi */
+  --layout-gap:               24px;
+  --layout-kpi-cols:          repeat(3, 1fr);
+  --layout-chart-cols:        1fr;
+  --layout-chart-gap:         20px;
+  --layout-card-padding:      20px;
+  --font-size-base:           13px;
+  /* 三区结构 */
+  --layout-kpi-cols-n:        4;
+  --layout-kpi-row-h:         80px;
+  --layout-kpi-card-padding:  8px 12px;
+  --layout-zone-gap:          8px;
+  --layout-filter-row-h:      0px;
+}
+
+/* 打印时隐藏交互控件 */
+@media print {
+  .filter-card,
+  .drill-breadcrumb { display: none; }
+  .card { break-inside: avoid; }
+}

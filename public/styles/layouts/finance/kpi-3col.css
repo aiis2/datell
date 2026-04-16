@@ -1,0 +1,19 @@
+/* 财务 KPI 三列看板 — 适合资产负债/利润报告 */
+:root {
+  --layout-content-padding:   24px;
+  --layout-content-max-width: 1280px;
+  --layout-gap:               20px;
+  --layout-kpi-cols:          repeat(3, 1fr);
+  --layout-kpi-gap:           16px;
+  --layout-chart-cols:        repeat(2, 1fr);
+  --layout-chart-gap:         20px;
+  --layout-card-padding:      20px;
+}
+
+/* 财务数字等宽字体 */
+.kpi-value,
+.data-table td[data-type="number"],
+.data-table td[data-type="currency"] {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}

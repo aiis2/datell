@@ -1,0 +1,21 @@
+{
+  "id": "table-data-dictionary",
+  "type": "card",
+  "name": "数据字典/字段说明表",
+  "category": "table",
+  "tags": ["数据字典", "字段说明", "metadata", "技术文档", "变量说明", "数据定义"],
+  "description": "数据字典/字段说明表格卡片，列包含字段名、中文名称、数据类型、说明/口径、示例值、是否必填等，适合在报告附录中附上数据说明，或在数据分析报告中解释指标定义和统计口径。",
+  "useCases": [
+    "数据报告指标口径说明",
+    "分析结果的字段解释",
+    "数据集元数据展示",
+    "业务指标定义文档"
+  ],
+  "dataSchema": {
+    "fields": "字段数组：[{fieldName, chineseName, type, description, example, required}]"
+  },
+  "htmlClassName": "card table-card data-dict",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card table-card\" data-card-id=\"table_dict\">\n  <h2 class=\"card-title\">核心指标说明</h2>\n  <div class=\"table-wrapper\">\n    <table class=\"data-table\">\n      <thead><tr><th>字段名</th><th>中文名</th><th>类型</th><th>口径说明</th><th>示例</th></tr></thead>\n      <tbody>\n        <tr><td><code>gmv</code></td><td>成交金额</td><td>decimal</td><td>用户支付成功的订单금额之和，含税，不含退款</td><td>12345.60</td></tr>\n        <tr><td><code>dau</code></td><td>日活用户</td><td>integer</td><td>自然日内至少有1次 App 启动的去重用户数</td><td>128000</td></tr>\n        <tr><td><code>conversion_rate</code></td><td>转化率</td><td>float</td><td>下单用户数 / 访问用户数，百分比形式</td><td>0.0382</td></tr>\n        <tr><td><code>arpu</code></td><td>人均收入</td><td>decimal</td><td>GMV / DAU，当日平均每活跃用户贡献收入</td><td>9.65</td></tr>\n      </tbody>\n    </table>\n  </div>\n</div>"
+}
