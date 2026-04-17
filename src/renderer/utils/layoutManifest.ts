@@ -29,7 +29,9 @@ export type LayoutPreviewType =
   | 'candlestick' // finance chart layout
   | 'funnel'      // funnel chart focus
   | 'calendar'    // calendar grid
-  | 'flow';       // process flow / pipeline
+  | 'flow'        // process flow / pipeline
+  | 'poster'      // single full-page poster card
+  | 'poster-wide'; // wide (16:9) single poster card
 
 export interface LayoutManifestItem {
   /** Canonical ID = cssPath without ".css", e.g. "universal/dashboard-2col" */
@@ -48,6 +50,8 @@ export interface LayoutManifestItem {
 export const LAYOUT_MANIFEST: LayoutManifestItem[] = [
   /* ── universal ── */
   { id: 'universal/single-col',           name: '单列布局',         category: 'universal',  cssPath: 'universal/single-col.css',           description: '单列垂直堆叠布局，所有元素全宽排列，适合文档风格报告',                tags: ['单列', '通用', '简洁', '文档', '窄屏'] , previewType: '1col' },
+  { id: 'universal/poster-single',        name: '竖版海报（单卡）', category: 'universal',  cssPath: 'universal/poster-single.css',        description: '全页单卡自由布局，AI可自由排版图文、嵌入用户上传图片，适合数据海报、信息图表、宣传物料',  tags: ['海报', '单卡', '自由布局', '图片', '宣传', '竖版', '全页'] , previewType: 'poster' },
+  { id: 'universal/poster-wide',          name: '横版海报（宽屏）', category: 'universal',  cssPath: 'universal/poster-wide.css',          description: '横版16:9单卡海报，全页自由布局，适合横版宣传海报、大屏截图、社交媒体横图',          tags: ['海报', '横版', '宽屏', '16:9', '单卡', '自由布局', '宣传'] , previewType: 'poster-wide' },
   { id: 'universal/dashboard-2col',       name: '双列仪表盘',       category: 'universal',  cssPath: 'universal/dashboard-2col.css',       description: '通用双列仪表盘布局，顶部4个KPI卡片，图表2列均等分布',              tags: ['双列', '仪表盘', '通用', '均衡', '看板'] , previewType: '2col' },
   { id: 'universal/dashboard-3col',       name: '三列仪表盘',       category: 'universal',  cssPath: 'universal/dashboard-3col.css',       description: '宽屏三列仪表盘，6个KPI，图表3列，适合大屏高密度信息展示',         tags: ['三列', '仪表盘', '大屏', '看板', '高密度'] , previewType: '3col' },
   { id: 'universal/bento-grid',           name: 'Bento 拼图网格',   category: 'universal',  cssPath: 'universal/bento-grid.css',           description: '12列CSS Grid拼图布局，卡片可跨多列，苹果Bento设计风格',          tags: ['bento', '拼图', '12列', '自由布局', '现代', '苹果风'] , previewType: 'bento' },

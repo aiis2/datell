@@ -1,0 +1,93 @@
+/* ============================================================
+   universal/poster-single.css — 竖版海报单卡布局
+   海报模式：单张全页自由布局卡片，适合数据海报、宣传图、信息图表
+   AI 可在单卡中自由排版：图文混排、叠层设计、创意布局
+   ============================================================ */
+
+:root {
+  --layout-content-padding:    0px;
+  --layout-content-max-width:  100%;
+  --layout-gap:                0px;
+  --layout-card-padding:       0px;
+  --layout-header-padding:     0 0;
+}
+
+/* 隐藏标准报表头部（海报模式自定义头部） */
+.report-header {
+  display: none !important;
+}
+
+/* 报表容器 — 全高铺满 */
+.report-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 内容区 — 零间距，让单卡完整占满 */
+.report-content {
+  padding: 0 !important;
+  gap: 0 !important;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 三区结构兼容 — 同样隐藏 KPI 区 / 筛选区的间距，让内容区铺满 */
+.report-zones {
+  padding: 0;
+  gap: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.zone-kpi {
+  display: none !important;
+}
+.zone-filter {
+  display: none !important;
+}
+.zone-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* 图表网格 — 单列铺满 */
+.grid-charts {
+  grid-template-columns: 1fr !important;
+  gap: 0 !important;
+}
+.grid-kpi {
+  display: none !important;
+}
+
+/* 海报主卡 — 铺满整个内容区，允许自由定位子元素 */
+.report-content > .card,
+.grid-charts > .card,
+.zone-content > .card,
+.poster-card {
+  width: 100% !important;
+  min-height: calc(100vh - 0px) !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+  overflow: hidden;
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 海报内部内容区 — 支持绝对定位元素 */
+.poster-body,
+.poster-content {
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  position: relative;
+  flex: 1;
+}

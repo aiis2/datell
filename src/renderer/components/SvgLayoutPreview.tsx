@@ -340,6 +340,66 @@ export const SvgWireframe: React.FC<SvgWireframeProps> = ({
           </>
         );
 
+      case 'poster':
+        return (
+          <>
+            {/* Poster: single full-page card with creative layout */}
+            {/* Background gradient band */}
+            <rect x="0" y="0" width="240" height="160" rx="4" fill={WF.bg} />
+            <rect x="0" y="0" width="240" height="54" rx="4" fill={WF.accent} opacity="0.18" />
+            {/* Title block */}
+            <rect x="18" y="12" width="130" height="14" rx="3" fill={WF.accent} opacity="0.7" />
+            <rect x="18" y="32" width="80" height="8" rx="2" fill={WF.text} opacity="0.35" />
+            {/* Image placeholder on right */}
+            <rect x="168" y="8" width="56" height="44" rx="6" fill={WF.header} />
+            <circle cx="196" cy="30" r="10" fill={WF.accent} opacity="0.25" />
+            <line x1="176" y1="44" x2="216" y2="20" stroke={WF.accent} strokeWidth="1" opacity="0.2" />
+            {/* Stats row */}
+            <rect x="18" y="62" width="44" height="28" rx="4" fill={WF.card} />
+            <rect x="68" y="62" width="44" height="28" rx="4" fill={WF.card} />
+            <rect x="118" y="62" width="44" height="28" rx="4" fill={WF.card} />
+            <rect x="168" y="62" width="56" height="28" rx="4" fill={WF.cardDark} />
+            {/* Main content area */}
+            <rect x="18" y="98" width="140" height="40" rx="3" fill={WF.block} />
+            <rect x="164" y="98" width="60" height="18" rx="3" fill={WF.card} />
+            <rect x="164" y="120" width="60" height="18" rx="3" fill={WF.cardDark} />
+            {/* Decorative dots */}
+            <circle cx="22" cy="150" r="3" fill={WF.accent} opacity="0.5" />
+            <circle cx="32" cy="150" r="3" fill={WF.accent} opacity="0.3" />
+            <circle cx="42" cy="150" r="3" fill={WF.accent} opacity="0.2" />
+          </>
+        );
+
+      case 'poster-wide':
+        return (
+          <>
+            {/* Wide poster: 16:9 single card creative layout */}
+            <rect x="0" y="0" width="240" height="160" rx="4" fill={WF.bg} />
+            {/* Left accent strip */}
+            <rect x="0" y="0" width="70" height="160" rx="4" fill={WF.accent} opacity="0.14" />
+            {/* Logo / title block */}
+            <rect x="10" y="16" width="50" height="10" rx="2" fill={WF.accent} opacity="0.65" />
+            <rect x="10" y="32" width="50" height="6" rx="2" fill={WF.text} opacity="0.3" />
+            {/* Large image/chart area center */}
+            <rect x="80" y="8" width="100" height="90" rx="5" fill={WF.card} />
+            <ellipse cx="130" cy="53" rx="30" ry="22" fill={WF.accent} opacity="0.2" />
+            {[90,110,130,150,160].map((x, i) => (
+              <rect key={i} x={x - 4} y={80 - [28,20,36,16,30][i]} width="10" height={[28,20,36,16,30][i]} rx="2" fill={WF.accent} opacity={0.4 + i * 0.1} />
+            ))}
+            {/* Right sidebar */}
+            <rect x="186" y="8" width="46" height="40" rx="4" fill={WF.header} />
+            <rect x="186" y="54" width="46" height="40" rx="4" fill={WF.cardDark} />
+            {/* Bottom bar */}
+            <rect x="80" y="104" width="152" height="20" rx="3" fill={WF.block} />
+            {/* Left lower stats */}
+            <rect x="10" y="60" width="50" height="22" rx="3" fill={WF.card} />
+            <rect x="10" y="88" width="50" height="22" rx="3" fill={WF.cardDark} />
+            <rect x="10" y="116" width="50" height="16" rx="3" fill={WF.header} />
+            {/* Divider */}
+            <line x1="74" y1="4" x2="74" y2="156" stroke={WF.line} strokeWidth="1" />
+          </>
+        );
+
       default:
         // Fallback: 2col layout
         return (

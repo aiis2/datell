@@ -1,0 +1,96 @@
+/* ============================================================
+   universal/poster-wide.css — 横版宽屏海报单卡布局
+   海报模式（横版 16:9）：单张全页自由布局卡片
+   适合横版宣传海报、数据大屏截图、社交媒体横图
+   AI 可在单卡中自由排版：图文混排、叠层设计、创意布局
+   ============================================================ */
+
+:root {
+  --layout-content-padding:    0px;
+  --layout-content-max-width:  100%;
+  --layout-gap:                0px;
+  --layout-card-padding:       0px;
+  --layout-header-padding:     0 0;
+}
+
+/* 隐藏标准报表头部（海报模式自定义头部） */
+.report-header {
+  display: none !important;
+}
+
+/* 报表容器 — 全高铺满，横版比例 */
+.report-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  /* 固定 16:9 横版比例供截图/导出 */
+  aspect-ratio: 16 / 9;
+}
+
+/* 内容区 — 零间距 */
+.report-content {
+  padding: 0 !important;
+  gap: 0 !important;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 三区结构兼容 */
+.report-zones {
+  padding: 0;
+  gap: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.zone-kpi {
+  display: none !important;
+}
+.zone-filter {
+  display: none !important;
+}
+.zone-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* 图表网格 — 单列铺满 */
+.grid-charts {
+  grid-template-columns: 1fr !important;
+  gap: 0 !important;
+}
+.grid-kpi {
+  display: none !important;
+}
+
+/* 海报主卡 — 铺满整个内容区 */
+.report-content > .card,
+.grid-charts > .card,
+.zone-content > .card,
+.poster-card {
+  width: 100% !important;
+  min-height: 100% !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+  overflow: hidden;
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 海报内部内容区 */
+.poster-body,
+.poster-content {
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  position: relative;
+  flex: 1;
+}

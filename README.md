@@ -1,22 +1,276 @@
 <div align="center">
 
-<img src="build/icons/icon.png" width="96" alt="Data Analysis Agent" />
+<img src="build/icons/icon.png" width="96" alt="Datell" />
 
 # Datell
 
 **Let your data tell the story.**
 
-上传数据，描述需求，AI 自动生成专业可交互报表。
+Upload data, describe what you need — Datell's AI agent generates professional interactive reports automatically.
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/aiis2/datell)](https://github.com/aiis2/datell/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/aiis2/datell/total?label=Downloads)](https://github.com/aiis2/datell/releases/latest)
 [![Electron](https://img.shields.io/badge/Electron-41-47848F?logo=electron)](https://www.electronjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript)](https://www.typescriptlang.org/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)](https://github.com/electron/electron)
 
-[中文](#中文) · [English](#english)
+[English](#english) · [中文](#中文)
 
 </div>
+
+---
+
+## English
+
+**Datell** is a local-first desktop data analytics platform built on the **ReAct agent architecture**. Not just a chatbot — a real AI data analyst that breaks down tasks, queries databases, and delivers professional interactive reports.
+
+All data is stored entirely on-device. No cloud sync, no privacy concerns.
+
+---
+
+### Download
+
+| Platform | File | Notes |
+|----------|------|-------|
+| **Windows x64** | [`Datell-1.0.0-win-x64-portable.exe`](https://github.com/aiis2/datell/releases/download/v1.0/Datell-1.0.0-win-x64-portable.exe) | Portable, no install needed |
+| macOS x64 | `Datell-*-mac-x64.dmg` | Intel Mac |
+| macOS arm64 | `Datell-*-mac-arm64.dmg` | Apple Silicon (M1/M2/M3) |
+| Linux x64 | `Datell-*-x86_64.AppImage` | Universal Linux |
+| Linux x64 | `Datell-*-amd64.deb` | Debian / Ubuntu |
+
+> **[→ View all releases](https://github.com/aiis2/datell/releases/latest)**
+
+> **macOS first launch**: If blocked by Gatekeeper, right-click the app → "Open".
+
+---
+
+### Highlights
+
+#### From data to report, in one message
+
+Upload Excel / CSV or connect directly to a database. Describe what you want to analyze in plain language. Datell handles data cleaning, analysis, and visualization — outputting interactive HTML reports, Excel files, PDFs, or slide decks automatically.
+
+![Chat-driven report generation](docs/screenshots/chat.png)
+
+---
+
+#### Real agent, not just Q&A
+
+Built on **ReAct (Reasoning + Acting)** architecture, the agent exposes its full reasoning process: Think → Plan → Execute → Verify. Every step is visible. Multi-step task progress panels make complex analyses transparent.
+
+![Agent reasoning and task progress](docs/screenshots/chat2.png)
+
+---
+
+#### Professional reports, out of the box
+
+Generated reports are fully interactive HTML dashboards — not static screenshots. Dynamic ECharts / ApexCharts, KPI cards with sparklines, filter linkage, DuckDB real-time SQL re-querying. Live preview on the right.
+
+![Full report generation view](docs/screenshots/chat3.png)
+
+---
+
+#### 172 KPI card components
+
+The built-in card library covers KPI metric cards (trend indicators, period-over-period), Sparkline line charts, mini bar charts, gauge dials, progress bars, comparison matrices, and more. The agent picks the right card type for your data automatically.
+
+![Card Component Library](docs/screenshots/card.png)
+
+---
+
+#### 43+ layout templates across industries
+
+Single-column, dual-pane dashboard, three-column wide, Bento Grid, magazine-wide, poster (portrait & landscape) — categorized by industry (Finance / Sales / HR / Marketing / Medical / Logistics). Switch the entire report layout with one click.
+
+![Layout Template Library](docs/screenshots/layout.png)
+
+---
+
+#### Real report example — monthly sales analysis
+
+A complete monthly sales report auto-generated from sales data: 4 KPI cards, trend line chart, store-share pie chart, sales ranking bar chart, and a brand × product heatmap — all produced in a single pass.
+
+![Sales Analysis Report](docs/screenshots/ch_report.png)
+
+---
+
+#### Real report example — global energy data
+
+A 60-year dataset covering 200+ countries. Datell automatically explores the data, computes statistics, compares trends, and generates a multi-dimensional visualization report.
+
+![Global Per Capita Energy Consumption](docs/screenshots/Global%20Per%20Capita%20Energy%20Consumption%20Analysis.png)
+
+---
+
+### Features
+
+#### AI Chat · ReAct Agent
+
+- Datell runs on the **ReAct (Reasoning + Acting)** architecture — the agent plans, calls tools, and iterates autonomously until the task is complete
+- Full conversation history in the sidebar with rename and search support
+- Multi-agent collaboration: parallel sub-agents, serial pipelines, aggregation nodes, nested calls
+- Real-time task progress panel for multi-step execution
+- `ask_user` tool for mid-task clarification (AG2UI interaction)
+- Thinking chain display, full support for reasoning models
+
+#### Report Generation & Export
+
+| Output Format | Description |
+|---------------|-------------|
+| **HTML Report** | Interactive ECharts / ApexCharts, filter linkage, DuckDB dynamic SQL rebinding |
+| **VTable Big Data Table** | Virtual scroll, 100K+ rows, pivot tables, tree tables, frozen columns |
+| **Excel File** | Structured data export as `.xlsx` |
+| **PDF File** | One-click HTML → PDF export |
+| **Slides / Presentation** | Multi-page HTML slideshow with keyboard navigation, exportable to PDF |
+| **Document** | Rich-text HTML document for printing or PDF export |
+| **Poster** | Full-page single-card poster (portrait & landscape / 16:9) |
+
+- **Report Presets**: 20+ bundled "palette + layout + chart engine" style packs (Business, Finance, Tech, Marketing, HR, Print)
+- **Layout Template Library**: 43+ visual grid layouts with custom editor
+- **Color Palette Library**: 60+ presets with custom editor
+- **KPI Cards + Mini Charts** (Sparkline, Gauge, Progress bar) embedded in reports
+
+#### Multi-Database Connectivity
+
+- Supports **MySQL / MariaDB / Apache Doris · PostgreSQL · Presto**
+- Built-in **SSH tunnel** — no manual port forwarding needed
+- Connection pool management, automatic schema exploration (tables / column comments)
+- Natural language → SQL queries, results injected directly into reports
+
+#### Knowledge Base (RAG)
+
+- **Local vector store**: ONNX local embedding model, fully offline
+- **Dify**: Connect to Dify API / external dataset retrieval
+- **Ragflow**: Connect to Ragflow document understanding pipeline
+- Custom chunking strategies (delimiter, max length, overlap)
+
+#### Knowledge Graph
+
+- Built-in **Kuzu** graph database, persistent nodes and edges
+- Visual editor (add/delete nodes/relationships), agent can read/write the graph via tools
+
+#### Model Compatibility
+
+| Provider | Notes |
+|----------|-------|
+| OpenAI | GPT-4o / GPT-4.1, multimodal vision |
+| Anthropic | Claude 3.x / Claude 4 series |
+| Google | Gemini 2.x Flash / Pro |
+| Ollama | Local models (Qwen, Llama, Mistral, etc.) |
+| OpenAI-compatible | Any compatible endpoint (SiliconFlow, DeepSeek, vLLM, etc.) |
+| OpenRouter | Unified multi-model routing |
+
+Multiple model instances with free switching per chat; configurable `baseUrl`, `maxTokens`, `temperature`.
+
+#### Tools & Extensions
+
+- Connect to any **MCP (Model Context Protocol) HTTP/SSE** server — tools are auto-discovered and registered
+- Custom skills: drop YAML files into `datellData/skills/` for hot-loaded tools with HTTP API support
+
+#### Other
+
+- Dark / Light theme
+- Chinese / English UI (`zh-CN` / `en-US`)
+- File parsing: Excel (`.xlsx`), CSV, PDF, images (multimodal upload)
+- All data persisted locally via SQLite — nothing leaves your machine
+- Agent long-term memory, retains user preferences across sessions
+- `web_fetch` tool for fetching web content
+- Portable build for Windows, no installation needed
+
+---
+
+### Getting Started
+
+#### Prerequisites
+
+- **Node.js** ≥ 20.x
+- **npm** ≥ 10.x
+- Windows / macOS / Linux
+
+#### Install Dependencies
+
+```bash
+git clone https://github.com/aiis2/datell.git
+cd datell
+npm install
+```
+
+#### Development Mode
+
+```bash
+npm run dev
+```
+
+> This starts the Vite dev server (port 5173) and Electron main process concurrently. The system RAG index is built automatically on first run.
+
+---
+
+### Building
+
+```bash
+# Windows portable build (x64)
+npm run build:win
+
+# macOS (x64 + arm64 DMG)
+npm run build:mac
+
+# Linux AppImage
+npm run build:linux
+```
+
+Build artifacts are output to the `release/` directory.
+
+> **Note**: The `release/` directory is excluded from git via `.gitignore`.
+
+---
+
+### Configuration
+
+#### Add AI Models
+
+Go to **Settings → Models** to add model configurations:
+
+- **Provider**: OpenAI / Anthropic / Google / Ollama / OpenAI-compatible / OpenRouter
+- **API Key**: Enter the key for the corresponding service
+- **Base URL**: Set a custom address for proxies or compatible endpoints
+- **Model ID**: Model name (e.g. `gpt-4o`, `claude-3-5-sonnet-20241022`, `gemini-2.0-flash`)
+
+#### Connect External Databases
+
+Go to **Settings → Datasources** to add connections:
+
+- Supports MySQL / Apache Doris, PostgreSQL, Presto
+- Enable **SSH tunnel** and fill in bastion host details for automatic encrypted forwarding
+
+#### Add Knowledge Bases
+
+Go to **Settings → Knowledge Base**:
+
+- **Local**: Upload documents — the system auto-chunks, embeds locally, and indexes for full-text search
+- **Dify**: Enter API URL and Dataset ID
+- **Ragflow**: Enter API URL and Dataset ID
+
+#### Custom Skills
+
+Create YAML files in `datellData/skills/` — they are hot-loaded on the next restart.
+
+---
+
+### License
+
+This project is licensed under the [Apache License 2.0](LICENSE).
+
+```
+Copyright 2026 Datell Contributors
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+```
 
 ---
 
@@ -25,6 +279,22 @@
 **Datell** 是一款基于 **ReAct 架构**的本地桌面数据分析平台。它不只是一个聊天机器人——它是一个真正的 AI 数据分析师：会主动拆解任务、查询数据库、理解业务背景，最终输出带交互图表的专业报表。
 
 所有数据与对话**完全本地存储**，无需云端同步，隐私安全有保障。
+
+---
+
+### 下载
+
+| 平台 | 文件 | 说明 |
+|------|------|------|
+| **Windows x64** | [`Datell-1.0.0-win-x64-portable.exe`](https://github.com/aiis2/datell/releases/download/v1.0/Datell-1.0.0-win-x64-portable.exe) | 免安装，双击直接运行 |
+| macOS x64 | `Datell-*-mac-x64.dmg` | Intel Mac |
+| macOS arm64 | `Datell-*-mac-arm64.dmg` | Apple Silicon (M1/M2/M3) |
+| Linux x64 | `Datell-*-x86_64.AppImage` | 通用 Linux |
+| Linux x64 | `Datell-*-amd64.deb` | Debian / Ubuntu |
+
+> **[→ 查看所有发行版](https://github.com/aiis2/datell/releases/latest)**
+
+> **macOS 首次打开说明**：如提示「无法打开」，请右键点击应用 → 选择「打开」即可。
 
 ---
 
@@ -242,241 +512,6 @@ npm run build:linux
 ### 许可证
 
 本项目以 [Apache License 2.0](LICENSE) 开源。
-
-```
-Copyright 2026 Datell Contributors
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-```
-
----
-
-## English
-
-**Datell** is a local-first desktop data analytics platform built on the **ReAct agent architecture**. Not just a chatbot — a real AI data analyst that breaks down tasks, queries databases, and delivers professional interactive reports.
-
-All data is stored entirely on-device. No cloud sync, no privacy concerns.
-
----
-
-### Highlights
-
-#### From data to report, in one message
-
-Upload Excel / CSV or connect directly to a database. Describe what you want to analyze in plain language. Datell handles data cleaning, analysis, and visualization — outputting interactive HTML reports, Excel files, PDFs, or slide decks automatically.
-
-![Chat-driven report generation](docs/screenshots/chat.png)
-
----
-
-#### Real agent, not just Q&A
-
-Built on **ReAct (Reasoning + Acting)** architecture, the agent exposes its full reasoning process: Think → Plan → Execute → Verify. Every step is visible. Multi-step task progress panels make complex analyses transparent.
-
-![Agent reasoning and task progress](docs/screenshots/chat2.png)
-
----
-
-#### Professional reports, out of the box
-
-Generated reports are fully interactive HTML dashboards — not static screenshots. Dynamic ECharts / ApexCharts, KPI cards with sparklines, filter linkage, DuckDB real-time SQL re-querying. Live preview on the right.
-
-![Full report generation view](docs/screenshots/chat3.png)
-
----
-
-#### 172 KPI card components
-
-The built-in card library covers KPI metric cards (trend indicators, period-over-period), Sparkline line charts, mini bar charts, gauge dials, progress bars, comparison matrices, and more. The agent picks the right card type for your data automatically.
-
-![Card Component Library](docs/screenshots/card.png)
-
----
-
-#### 43 layout templates across industries
-
-Single-column, dual-pane dashboard, three-column wide, Bento Grid, magazine-wide — categorized by industry (Finance / Sales / HR / Marketing / Medical / Logistics). Switch the entire report layout with one click.
-
-![Layout Template Library](docs/screenshots/layout.png)
-
----
-
-#### Real report example — monthly sales analysis
-
-A complete monthly sales report auto-generated from sales data: 4 KPI cards, trend line chart, store-share pie chart, sales ranking bar chart, and a brand × product heatmap — all produced in a single pass.
-
-![Sales Analysis Report](docs/screenshots/ch_report.png)
-
----
-
-#### Real report example — global energy data
-
-A 60-year dataset covering 200+ countries. Datell automatically explores the data, computes statistics, compares trends, and generates a multi-dimensional visualization report.
-
-![Global Per Capita Energy Consumption](docs/screenshots/Global%20Per%20Capita%20Energy%20Consumption%20Analysis.png)
-
----
-
-### Features
-
-#### AI Chat · ReAct Agent
-
-- Datell runs on the **ReAct (Reasoning + Acting)** architecture — the agent plans, calls tools, and iterates autonomously until the task is complete
-- Full conversation history in the sidebar with rename and search support
-- Multi-agent collaboration: parallel sub-agents, serial pipelines, aggregation nodes, nested calls
-- Real-time task progress panel for multi-step execution
-- `ask_user` tool for mid-task clarification (AG2UI interaction)
-- Thinking chain display, full support for reasoning models
-
-#### Report Generation & Export
-
-| Output Format | Description |
-|---------------|-------------|
-| **HTML Report** | Interactive ECharts / ApexCharts, filter linkage, DuckDB dynamic SQL rebinding |
-| **VTable Big Data Table** | Virtual scroll, 100K+ rows, pivot tables, tree tables, frozen columns |
-| **Excel File** | Structured data export as `.xlsx` |
-| **PDF File** | One-click HTML → PDF export |
-| **Slides / Presentation** | Multi-page HTML slideshow with keyboard navigation, exportable to PDF |
-| **Document** | Rich-text HTML document for printing or PDF export |
-
-- **Report Presets**: 20+ bundled "palette + layout + chart engine" style packs (Business, Finance, Tech, Marketing, HR, Print)
-- **Layout Template Library**: 40+ visual grid layouts with custom editor
-- **Color Palette Library**: 60+ presets with custom editor
-- **KPI Cards + Mini Charts** (Sparkline, Gauge, Progress bar) embedded in reports
-
-#### Multi-Database Connectivity
-
-- Supports **MySQL / MariaDB / Apache Doris · PostgreSQL · Presto**
-- Built-in **SSH tunnel** — no manual port forwarding needed
-- Connection pool management, automatic schema exploration (tables / column comments)
-- Natural language → SQL queries, results injected directly into reports
-
-#### Knowledge Base (RAG)
-
-- **Local vector store**: ONNX local embedding model, fully offline
-- **Dify**: Connect to Dify API / external dataset retrieval
-- **Ragflow**: Connect to Ragflow document understanding pipeline
-- Custom chunking strategies (delimiter, max length, overlap)
-
-#### Knowledge Graph
-
-- Built-in **Kuzu** graph database, persistent nodes and edges
-- Visual editor (add/delete nodes/relationships), agent can read/write the graph via tools
-
-#### Model Compatibility
-
-| Provider | Notes |
-|----------|-------|
-| OpenAI | GPT-4o / GPT-4.1, multimodal vision |
-| Anthropic | Claude 3.x / Claude 4 series |
-| Google | Gemini 2.x Flash / Pro |
-| Ollama | Local models (Qwen, Llama, Mistral, etc.) |
-| OpenAI-compatible | Any compatible endpoint (SiliconFlow, DeepSeek, vLLM, etc.) |
-| OpenRouter | Unified multi-model routing |
-
-Multiple model instances with free switching per chat; configurable `baseUrl`, `maxTokens`, `temperature`.
-
-#### Tools & Extensions
-
-- Connect to any **MCP (Model Context Protocol) HTTP/SSE** server — tools are auto-discovered and registered
-- Custom skills: drop YAML files into `datellData/skills/` for hot-loaded tools with HTTP API support
-
-#### Other
-
-- Dark / Light theme
-- Chinese / English UI (`zh-CN` / `en-US`)
-- File parsing: Excel (`.xlsx`), CSV, PDF, images (multimodal upload)
-- All data persisted locally via SQLite — nothing leaves your machine
-- Agent long-term memory, retains user preferences across sessions
-- `web_fetch` tool for fetching web content
-- Portable build for Windows, no installation needed
-
----
-
-### Getting Started
-
-#### Prerequisites
-
-- **Node.js** ≥ 20.x
-- **npm** ≥ 10.x
-- Windows / macOS / Linux
-
-#### Install Dependencies
-
-```bash
-git clone https://github.com/aiis2/datell.git
-cd datell
-npm install
-```
-
-#### Development Mode
-
-```bash
-npm run dev
-```
-
-> This starts the Vite dev server (port 5173) and Electron main process concurrently. The system RAG index is built automatically on first run.
-
----
-
-### Building
-
-```bash
-# Windows portable build (x64)
-npm run build:win
-
-# macOS (x64 + arm64 DMG)
-npm run build:mac
-
-# Linux AppImage
-npm run build:linux
-```
-
-Build artifacts are output to the `release/` directory.
-
-> **Note**: The `release/` directory is excluded from git via `.gitignore`.
-
----
-
-### Configuration
-
-#### Add AI Models
-
-Go to **Settings → Models** to add model configurations:
-
-- **Provider**: OpenAI / Anthropic / Google / Ollama / OpenAI-compatible / OpenRouter
-- **API Key**: Enter the key for the corresponding service
-- **Base URL**: Set a custom address for proxies or compatible endpoints
-- **Model ID**: Model name (e.g. `gpt-4o`, `claude-3-5-sonnet-20241022`, `gemini-2.0-flash`)
-
-#### Connect External Databases
-
-Go to **Settings → Datasources** to add connections:
-
-- Supports MySQL / Apache Doris, PostgreSQL, Presto
-- Enable **SSH tunnel** and fill in bastion host details for automatic encrypted forwarding
-
-#### Add Knowledge Bases
-
-Go to **Settings → Knowledge Base**:
-
-- **Local**: Upload documents — the system auto-chunks, embeds locally, and indexes for full-text search
-- **Dify**: Enter API URL and Dataset ID
-- **Ragflow**: Enter API URL and Dataset ID
-
-#### Custom Skills
-
-Create YAML files in `datellData/skills/` — they are hot-loaded on the next restart.
-
----
-
-### License
-
-This project is licensed under the [Apache License 2.0](LICENSE).
 
 ```
 Copyright 2026 Datell Contributors

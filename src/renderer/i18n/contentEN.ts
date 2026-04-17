@@ -48,6 +48,8 @@ export const CONTENT_EN_NAMES: Record<string, string> = {
 
   // ===== Layout Templates (43 items) =====
   'universal/single-col':           'Single Column',
+  'universal/poster-single':        'Portrait Poster (Single Card)',
+  'universal/poster-wide':          'Landscape Poster (Widescreen)',
   'universal/dashboard-2col':       'Dual Column Dashboard',
   'universal/dashboard-3col':       'Three Column Dashboard',
   'universal/bento-grid':           'Bento Grid',
@@ -336,6 +338,8 @@ export const CONTENT_EN_DESCS: Record<string, string> = {
 
   // ===== Layout Template Descriptions (43) =====
   'universal/single-col':           'Single-column vertical stack, all elements full-width, ideal for document-style reports',
+  'universal/poster-single':        'Full-page single-card free layout. AI can freely arrange text/images, embed uploaded photos. Ideal for data posters, infographics, and promotional materials.',
+  'universal/poster-wide':          'Wide 16:9 single-card poster with full-page free layout. Ideal for landscape promotional posters, screen captures, and social media horizontal images.',
   'universal/dashboard-2col':       'Dual-column dashboard with 4 KPI cards on top and evenly split 2-column charts',
   'universal/dashboard-3col':       'Wide-screen 3-column dashboard with 6 KPIs and 3-column charts for high-density displays',
   'universal/bento-grid':           '12-column CSS Grid mosaic, cards span multiple columns, Apple Bento design style',
