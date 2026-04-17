@@ -129,17 +129,27 @@ export async function* runReactAgent(
     ' memoryContext-type=', typeof memoryContext, ' memoryContext-len=', memoryContext?.length ?? 0,
     ' userPrompts-isArr=', Array.isArray(enabledUserPrompts), ' userPrompts-len=', enabledUserPrompts.length);
 
+  // Detect poster mode — skip card RAG injection to avoid multi-card suggestions polluting poster layout
+  const currentLayoutId = configState.reportLayoutId;
+  const isPosterLayout = currentLayoutId === 'universal/poster-single' || currentLayoutId === 'universal/poster-wide';
+
   // Query System RAG for relevant cards and layouts to inject into the system prompt
+  // Skip card retrieval in poster mode: card recommendations would cause AI to generate multi-card layout
   const userMessage = messages.filter((m) => m.role === 'user').slice(-1)[0]?.content ?? '';
   const userMessageText = typeof userMessage === 'string' ? userMessage : '';
-  console.log('[reactAgent] querying System RAG for:', userMessageText.slice(0, 80));
-  const { cards: ragCards, layouts: ragLayouts } = await retrieveSystemComponents(userMessageText, {
-    topKCards: 15,
-    topKLayouts: 5,
-  });
-  const systemComponentsContext = formatSystemComponentsPrompt(ragCards, ragLayouts);
-  console.log('[reactAgent] System RAG: cards=', ragCards.length, 'layouts=', ragLayouts.length,
-    'contextLen=', systemComponentsContext.length);
+  console.log('[reactAgent] querying System RAG for:', userMessageText.slice(0, 80), '| posterMode=', isPosterLayout);
+  let systemComponentsContext = '';
+  if (!isPosterLayout) {
+    const { cards: ragCards, layouts: ragLayouts } = await retrieveSystemComponents(userMessageText, {
+      topKCards: 15,
+      topKLayouts: 5,
+    });
+    systemComponentsContext = formatSystemComponentsPrompt(ragCards, ragLayouts);
+    console.log('[reactAgent] System RAG: cards=', ragCards.length, 'layouts=', ragLayouts.length,
+      'contextLen=', systemComponentsContext.length);
+  } else {
+    console.log('[reactAgent] System RAG: SKIPPED (poster mode)');
+  }
 
   let systemPrompt: string;
   try {
@@ -160,6 +170,7 @@ export async function* runReactAgent(
       activePresetName: activePreset?.name,
       presetPromptModifier: activePreset?.promptModifier,
       language: configState.language,
+      reportLayoutId: currentLayoutId,
     });
   } catch (bspErr: unknown) {
     console.error('[reactAgent] buildSystemPrompt THREW:', bspErr);

@@ -20,8 +20,12 @@ export const buildSystemPrompt = (context: {
   presetPromptModifier?: string;
   /** 界面语言，用于指示 AI 使用相应语言回复 */
   language?: 'zh-CN' | 'en-US';
+  /** 当前选中的报表布局ID（如 'universal/poster-single'），用于模式特定规则 */
+  reportLayoutId?: string;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 }): string => {
+  const isPosterMode = context.reportLayoutId === 'universal/poster-single' ||
+    context.reportLayoutId === 'universal/poster-wide';
   const isEnglish = context.language === 'en-US';
   const languageInstruction = isEnglish
     ? `⚠️ ABSOLUTE LANGUAGE REQUIREMENT (overrides ALL other instructions) ⚠️
@@ -84,7 +88,11 @@ You MUST think and respond EXCLUSIVELY in English.
 
 ## 关键行动规则（必须严格遵守）
 1. **立即行动**：只要用户提供了数据（文件、图片、文字描述）并且没有明确要求"先分析后等待"，就必须直接调用工具生成报表，绝对不能只说"让我为你生成"之类的意图描述后就停止。
-2. **图片数据**：当用户上传图片时，从图片中提取所有可见的数字/指标/表格数据，然后立即调用 generate_chart 生成报表，不要等待用户二次确认。
+1b. **多轮对话必须独立调用工具（极其重要，违反将导致报表历史不更新）**：在同一对话的**后续消息**中，每次用户发起新的报表生成/更新/修改/重新生成请求，都**必须重新调用 generate_chart（或相应工具）创建一份全新独立的报表**——即使本轮对话之前已生成过报表。**严禁**仅用文字回复"报表已更新"/"已为您更新"/"报表已生成"/"已完成"等文字描述而不实际调用工具；这样的回复无法在报表历史中新增任何条目，用户看不到任何变化。每次调用 generate_chart 都会在左侧报表列表中新增一个独立历史条目，用户可切换查看历史版本。
+2. **图片数据**：当用户上传图片时，根据用户意图决定处理方式：
+   - **数据图片**（含表格/数字/指标的截图）：提取所有可见数字/指标/表格数据后立即调用 generate_chart 生成数据报表
+   - **素材图片**（照片、设计图、背景等）：在海报/宣传类布局模式中，将图片以 base64 data-url 嵌入 HTML，用于海报装饰或背景；不要强行提取数字数据
+   - 不要等待用户二次确认，直接行动
 3. **generate_chart 的 HTML 要求（必须严格遵守）**：
    - 必须是完整可独立运行的 HTML 文件，包含完整 DOCTYPE、meta charset、viewport 标签
    - **⚠️ 无需写 ECharts CDN script 标签**——渲染环境已预加载 ECharts，echarts 对象直接可用
@@ -100,6 +108,20 @@ You MUST think and respond EXCLUSIVELY in English.
      * 数据表格：使用 \`<div class="card"><table class="data-table">...</table></div>\`。
      * 严格限制Emoji：**任何场景下均禁止使用emoji**
      * 加载动画：所有图表 showLoading→hideLoading
+   - **⚠️ 海报模式例外规则（当用户选择了 "竖版海报/横版海报" 布局，或用户明确要求"海报""宣传图""信息图"等自由排版时适用）**：${isPosterMode ? `
+     * ⚡ **【当前已激活海报模式】** — 系统检测到当前布局为海报布局，以下规则立即生效：
+     * 本次报表**必须且只能**使用单个 \`<div class="poster-card">\` 作为最外层唯一容器
+     * **严禁生成多个卡片**（不能有 grid-kpi / grid-charts / kpi-card 等多卡结构）
+     * **严禁调用 suggest_card_combinations**（海报模式无需卡片规划，系统已绕过）
+     * 在单个 poster-card 内自由排版所有内容（数据、图表、文字、装饰）` : ``}
+     * 海报模式下**不需要**使用标准报表结构（无需 report-container / report-header / grid-kpi / grid-charts 等类名）
+     * 使用 \`<div class="poster-card">\` 作为最外层唯一容器，可自由在其内部使用 absolute/relative 定位、flex、grid 排版
+     * **可以使用内联 style**（海报排版需要精确定位，内联 style 是此模式下的明确豁免）
+     * 如用户上传了图片素材，将图片以 \`<img src="data:image/...;base64,...">\` 嵌入 HTML，用于海报背景/装饰/配图
+     * 如无用户图片，使用渐变色背景、SVG 装饰、CSS 艺术图形等方式填充视觉空间
+     * 字体可大胆使用 80-200px 超大号数字作为视觉焦点，强调核心指标
+     * ECharts/ApexCharts 图表仍可嵌入，但尺寸可自由调整，不必遵守 100% 宽度规则
+     * 海报整体维度：竖版 → 宽800px×高1130px（类A4竖版），横版 → 宽1280px×高720px（16:9）
 4. **generate_chart_apex HTML 规范（使用 ApexCharts 时必须遵守）**：
    - 同上遵守页面设计规范与类名约定。
    - **⚠️ 无需写 ApexCharts CDN script 标签**——渲染环境已预加载 ApexCharts，ApexCharts 类直接可用
@@ -281,7 +303,8 @@ ${isEnglish ? '6. **Language**: Respond in **English** to the user.' : '6. **语
     - 严禁使用 emoji；用▲/▼等Unicode字符表示趋势
     - 可嵌入SVG图表（无需CDN，纯SVG绘制简单柱状/折线图）
 11. **报告生成前的卡片规划（强制执行，不可省略）**：
-    - **在调用 generate_chart / generate_chart_apex / generate_table_vtable 之前**，必须先调用 suggest_card_combinations 工具进行卡片规划。
+    - **⚠️ 海报模式完全例外（当前布局为竖版海报或横版海报时）**：**完全跳过 suggest_card_combinations 调用**，直接按照规则3海报模式例外规则生成单卡自由布局 HTML。海报模式不使用 KPI 卡、图表网格等标准卡片结构，所有内容都放在单个 `.poster-card` 容器内自由排版。
+    - **在调用 generate_chart / generate_chart_apex / generate_table_vtable 之前**（非海报模式时），必须先调用 suggest_card_combinations 工具进行卡片规划。
     - 调用时传入：current_cards（**首次生成传空字符串 ""**，不要传 "kpi-card" 等通用类名）、data_context（数据背景摘要，含维度/指标/数量级）、report_type（报表类型）。
     - suggest_card_combinations 返回的卡片建议作为生成报表的参考——决定使用哪些卡片类型和布局结构。
     - **采纳建议中的 KPI 变体（强制规则）**：
