@@ -1,0 +1,234 @@
+/* ============================================================
+   _layout-base.css — 报表布局基础（骨架变量 + 通用 fallback）
+   所有具体布局文件继承此文件，通过覆盖 CSS 变量定制差异。
+   ============================================================ */
+
+:root {
+  /* ── 布局变量默认值 ── */
+  --layout-content-padding:    24px;
+  --layout-content-max-width:  100%;
+  --layout-gap:                24px;
+  --layout-kpi-cols:           repeat(auto-fit, minmax(200px, 1fr));
+  --layout-kpi-gap:            16px;
+  --layout-chart-cols:         repeat(auto-fit, minmax(280px, 1fr));
+  --layout-chart-max-height:   480px;
+  --layout-chart-gap:          24px;
+  --layout-card-padding:       24px;
+  --layout-header-padding:     24px 32px;
+
+  /* ── 三区结构变量（Tech-11）── */
+  --layout-zone-gap:           12px;
+  --layout-kpi-row-h:          100px;
+  --layout-kpi-card-padding:   10px 14px;
+  --layout-filter-row-h:       44px;
+  --layout-filter-gap:         8px;
+}
+
+/* ── 报表根容器 ─────────────────────────────────────────── */
+.report-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* ── 报表头部 ──────────────────────────────────────────── */
+.report-header {
+  padding: var(--layout-header-padding);
+}
+
+/* ── 报表内容区 ────────────────────────────────────────── */
+.report-content {
+  padding: var(--layout-content-padding);
+  max-width: var(--layout-content-max-width);
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-gap);
+}
+
+/* ── KPI 网格 ──────────────────────────────────────────── */
+.grid-kpi {
+  display: grid;
+  grid-template-columns: var(--layout-kpi-cols);
+  column-gap: var(--layout-kpi-gap);
+  row-gap: calc(var(--layout-kpi-gap) + 4px);
+  align-items: stretch;
+}
+
+/* ── 图表网格 ──────────────────────────────────────────── */
+.grid-charts {
+  display: grid;
+  grid-template-columns: var(--layout-chart-cols);
+  gap: var(--layout-chart-gap);
+  /* Reset Bento-style explicit grid-auto-rows (may linger from layout switch) */
+  grid-auto-rows: auto;
+}
+/* Reset explicit span/row hints that bento/other complex layouts may set.
+   Individual layout files re-apply their own span rules. */
+.grid-charts > .card {
+  grid-column: auto;
+  grid-row: auto;
+}
+.grid-charts.full {
+  grid-template-columns: 1fr;
+}
+
+/* ── 末行单卡全宽自适应 ────────────────────────────────── */
+/* When the last card in a multi-column grid is alone on the last row,
+   span it to full width for better visual balance. */
+.grid-charts > .card:last-child:nth-child(odd):not(:first-child) {
+  grid-column: 1 / -1;
+}
+/* Also handle zone-content which shares the same grid structure */
+.zone-content > .card:last-child:nth-child(odd):not(:first-child) {
+  grid-column: 1 / -1;
+}
+/* Universal: last card always stretches to fill the remaining row width.
+   This handles all column counts (2-col, 3-col, etc.) where the last
+   row is not completely filled. grid-column-end: -1 stretches the card
+   from its auto-placed start position to the last grid line. */
+.grid-charts > .card:last-child {
+  grid-column-end: -1;
+}
+.zone-content > .card:last-child {
+  grid-column-end: -1;
+}
+
+/* ── 表格类卡片始终全宽 ────────────────────────────────── */
+/* Tables (data-table, detail-table, etc.) always span full width in grid layouts */
+.grid-charts > .card.card-table,
+.grid-charts > .card[class*="table"],
+.grid-charts > .card:has(table),
+.zone-content > .card.card-table,
+.zone-content > .card[class*="table"],
+.zone-content > .card:has(table) {
+  grid-column: 1 / -1;
+}
+
+/* ── 表格卡片高度自适应 ───────────────────────────────── */
+/* 表格卡片应随内容自动撑高，不受 chart-container 的 min/max-height 约束 */
+.card:has(table) .chart-container,
+.card-table .chart-container {
+  min-height: unset;
+  max-height: unset;
+  flex: none;
+}
+/* 表格卡片不随网格行拉伸，自身高度由内容决定 */
+.grid-charts > .card:has(table),
+.grid-charts > .card.card-table,
+.grid-charts > .card[class*="table"],
+.zone-content > .card:has(table),
+.zone-content > .card.card-table,
+.zone-content > .card[class*="table"] {
+  align-self: start;
+  height: auto;
+}
+
+/* ── 通用卡片内边距 ─────────────────────────────────────── */
+.card {
+  padding: var(--layout-card-padding);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── 图表容器自适应填充 ────────────────────────────────── */
+/* chart-container placed inside .card will stretch to fill the remaining card height */
+.chart-container {
+  flex: 1;
+  min-height: 260px;
+  max-height: var(--layout-chart-max-height);
+  width: 100%;
+  /* Use 100% width to force ECharts to re-read container size on layout change */
+  box-sizing: border-box;
+}
+
+/* ── 确保 .grid-charts 内的直接 ECharts/ApexCharts div 自适应 ── */
+/* 当 AI 生成的 HTML 中 ECharts div 有 height/width style 时，override 以适应布局 */
+.grid-charts > .card > div[id]:not(.card):not([class]) {
+  width: 100% !important;
+}
+
+/* ── KPI 卡片专用小尺寸变体 ──────────────────────────── */
+/* .kpi-card 优先使用较小的内边距，以便在 4/6 列网格中展示 */
+.grid-kpi > .card,
+.grid-kpi > .kpi-card {
+  padding: var(--layout-kpi-card-padding, var(--layout-card-padding));
+}
+
+/* ══════════════════════════════════════════════════════════
+   三区结构（Tech-11）: zone-kpi / zone-filter / zone-content
+   ══════════════════════════════════════════════════════════ */
+
+/* ── 三区外层容器（可替代 .report-content 使用）── */
+.report-zones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--layout-zone-gap);
+  padding: var(--layout-content-padding);
+  max-width: var(--layout-content-max-width);
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── KPI 指标条：等宽横排，高度固定 ── */
+.zone-kpi {
+  display: grid;
+  grid-template-columns: repeat(var(--layout-kpi-cols-n, 4), 1fr);
+  gap: var(--layout-kpi-gap);
+  flex-shrink: 0;
+  min-height: var(--layout-kpi-row-h);
+  container-type: inline-size;
+  container-name: zone-kpi;
+}
+
+/* ── 筛选控件行：全宽单行 ── */
+.zone-filter {
+  display: flex;
+  align-items: center;
+  gap: var(--layout-filter-gap);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  min-height: var(--layout-filter-row-h);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color, var(--border-table));
+  border-radius: var(--radius-md, 8px);
+  padding: 6px 12px;
+}
+
+/* ── 主内容区：占满剩余空间 ── */
+.zone-content {
+  flex: 1;
+  display: grid;
+  grid-template-columns: var(--layout-chart-cols);
+  gap: var(--layout-chart-gap);
+  overflow: auto;
+}
+
+/* ── 区域可见性控制 ── */
+/* 使用 .report-content 时，通过 has-kpi-zone 等 class 启用三区结构 */
+.report-content.has-kpi-zone > .zone-kpi,
+.report-content.has-filter-zone > .zone-filter {
+  display: grid;
+}
+/* 无三区时向后兼容 — 默认不显示 zone-* 容器（除非父级有 has-*-zone） */
+.report-content > .zone-kpi   { display: grid; }  /* always show if present */
+.report-content > .zone-filter { display: flex; }  /* always show if present */
+
+/* 打印模式：隐藏筛选区 */
+.report-content.print-mode > .zone-filter,
+.layout-print-a4 .zone-filter {
+  display: none !important;
+}
+
+/* KPI-only 模式 */
+.report-content.kpi-only > .zone-content { display: none; }
+
+/* ── 容器响应式折行（KPI 区）── */
+@container zone-kpi (max-width: 800px) {
+  .zone-kpi { grid-template-columns: repeat(2, 1fr); }
+}
+@container zone-kpi (max-width: 480px) {
+  .zone-kpi { grid-template-columns: repeat(2, 1fr); min-height: 0; }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "kpi-churn-rate",
+  "type": "card",
+  "category": "kpi",
+  "name": "流失率 KPI 卡",
+  "description": "展示客户/用户流失率，包含当期值、环比变化、留存vs流失对比，是订阅业务和用户增长必备指标",
+  "tags": [
+    "kpi",
+    "churn",
+    "retention",
+    "attrition",
+    "subscription",
+    "loss",
+    "user"
+  ],
+  "cssClass": "kpi-single",
+  "exampleHtml": "<div class=\"card kpi-card\" data-card-id=\"churn_rate\" style=\"display:flex;flex-direction:column;gap:8px\"><span class=\"kpi-title\" style=\"font-size:13px;color:var(--text-sub)\">月度用户流失率</span><div style=\"display:flex;align-items:baseline;gap:8px\"><span style=\"font-size:36px;font-weight:900;color:var(--color-danger);line-height:1\">4.2%</span><span class=\"trend-down\" style=\"font-size:13px\">▼ 0.8%（环比改善）</span></div><div style=\"display:flex;gap:16px;font-size:12px;margin-top:4px\"><span style=\"color:var(--color-success)\">留存: 95.8%</span><span style=\"color:var(--color-danger)\">流失: 4.2%</span></div></div>",
+  "variants": [
+    "客户流失率",
+    "订阅续费失败率",
+    "MAU留存对比"
+  ],
+  "relatedCards": [
+    "kpi-cohort-retention",
+    "kpi-cac-ltv"
+  ],
+  "htmlClassName": "card kpi-card"
+}

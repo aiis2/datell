@@ -1,0 +1,28 @@
+{
+  "id": "bar-waterfall",
+  "type": "card",
+  "name": "瀑布图",
+  "category": "chart",
+  "tags": [
+    "瀑布图",
+    "财务",
+    "盈亏",
+    "净变化",
+    "分解"
+  ],
+  "description": "瀑布图，展示数值如何从起点经过一系列正负变化后到达终点。适合财务利润分析、收支分解。",
+  "useCases": [
+    "利润分解（收入-各项成本）",
+    "现金流变化分析",
+    "预算执行偏差分析"
+  ],
+  "dataSchema": {
+    "items": "各项变化数组（label/value/isTotal）",
+    "title": "标题"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "tooltip"
+  ]
+}

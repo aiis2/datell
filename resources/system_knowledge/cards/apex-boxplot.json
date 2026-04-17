@@ -1,0 +1,23 @@
+{
+  "id": "apex-boxplot",
+  "type": "card",
+  "name": "箱线图（Box Plot）— ApexCharts",
+  "category": "chart",
+  "tags": ["箱线图", "boxplot", "分布", "四分位数", "离散程度", "ApexCharts", "统计分布"],
+  "description": "使用 ApexCharts boxPlot 类型实现标准箱线图，展示数据的最小值、下四分位、中位数、上四分位、最大值五个统计量，适合对比多组数据的分布差异。ECharts 不内置此图类型，ApexCharts 原生支持。使用 generate_chart_apex 工具生成。",
+  "useCases": [
+    "各地区销售额分布对比",
+    "测试成绩四分位数分析",
+    "多产品响应时间分布",
+    "不同时期价格波动范围对比"
+  ],
+  "dataSchema": {
+    "series": "系列数组：[{type:'boxPlot', data:[{x:类别, y:[min, q1, median, q3, max]}]}]",
+    "x": "类别标签（字符串）",
+    "y": "五元素统计量数组 [最小值, 下四分位, 中位数, 上四分位, 最大值]"
+  },
+  "htmlClassName": "card chart-card apex-chart-card",
+  "engineHint": "apexcharts",
+  "interactionSupport": ["highlight"],
+  "exampleHtml": "<div class=\"card chart-card apex-chart-card\" data-card-id=\"chart_boxplot_example\">\n  <h2 class=\"card-title\">各区域销售额分布</h2>\n  <div id=\"chart_boxplot_example\" class=\"chart-container\" style=\"height:320px\"></div>\n  <script>\n  (function(){\n    var options = {\n      chart: { type: 'boxPlot', height: 320, toolbar: { show: false }, animations: { enabled: !window.__REPORT_PRINT_MODE__ } },\n      colors: window.__APEX_PALETTE__ || ['#3b82f6','#f59e0b'],\n      series: [{\n        type: 'boxPlot',\n        data: [\n          { x: '华北', y: [54, 66, 69, 75, 88] },\n          { x: '华东', y: [43, 65, 72, 80, 96] },\n          { x: '华南', y: [31, 39, 45, 51, 59] },\n          { x: '华西', y: [39, 46, 55, 65, 71] },\n          { x: '东北', y: [29, 31, 35, 39, 46] }\n        ]\n      }],\n      plotOptions: { boxPlot: { colors: { upper: (window.__APEX_PALETTE__ || ['#3b82f6'])[0], lower: (window.__APEX_PALETTE__ || ['#3b82f6','#10b981'])[1] || '#10b981' } } },\n      tooltip: { shared: false, intersect: true }\n    };\n    var chart = new ApexCharts(document.getElementById('chart_boxplot_example'), options);\n    chart.render().then(function(){ window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.registerApex('chart_boxplot_example', chart); });\n  })();\n  <\/script>\n</div>"
+}

@@ -1,0 +1,29 @@
+{
+  "id": "pie-chart-rose",
+  "type": "card",
+  "name": "玫瑰图（南丁格尔图）",
+  "category": "chart",
+  "tags": [
+    "玫瑰图",
+    "南丁格尔",
+    "占比",
+    "扇区",
+    "雷达"
+  ],
+  "description": "南丁格尔玫瑰图，各扇区半径不同，同时反映占比和数量大小。适合分类数量差异较大时的视觉展示。",
+  "useCases": [
+    "各类投诉数量分布",
+    "各渠道订单量对比",
+    "产品系列销量分布"
+  ],
+  "dataSchema": {
+    "items": "各项数据（name/value）",
+    "title": "标题"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "highlight",
+    "tooltip"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "id": "filter-reset-button",
+  "type": "card",
+  "category": "E",
+  "name": "重置全部筛选按钮",
+  "description": "清除当前所有激活筛选条件的按钮，发送 filterReset 事件，通常配合全局筛选面板使用",
+  "tags": ["filter", "reset", "clear", "button", "clear-all", "deselect"],
+  "cssClass": "filter-reset-button",
+  "filterType": "reset",
+  "exampleHtml": "<div class=\"card\" data-card-id=\"filter_reset\" style=\"display:flex;align-items:center;gap:12px;flex-wrap:wrap\"><span style=\"font-size:12px;color:var(--text-sub)\">当前筛选：季度 Q1 | 地区 华东</span><button class=\"filter-reset-button\" onclick=\"window.__REPORT_EVENT_BUS__&&window.__REPORT_EVENT_BUS__.emit('filter_reset','click',{})\">✕ 清除全部筛选</button></div>",
+  "variants": ["全局筛选重置", "报表条件清空", "重置选项"],
+  "relatedCards": ["filter-global-panel", "filter-tag-pills"]
+}

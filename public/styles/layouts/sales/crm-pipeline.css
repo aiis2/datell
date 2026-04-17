@@ -1,0 +1,10 @@
+/* 销售管道布局 — 漏斗 + 阶段分解 */
+:root {
+  --layout-content-padding:   22px;
+  --layout-content-max-width: 1300px;
+  --layout-gap:               20px;
+  --layout-kpi-cols:          repeat(4, 1fr);
+  --layout-chart-cols:        1fr 2fr;
+  --layout-chart-gap:         20px;
+  --layout-card-padding:      20px;
+}

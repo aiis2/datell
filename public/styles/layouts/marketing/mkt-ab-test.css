@@ -1,0 +1,51 @@
+/* A/B 测试结果报告布局 */
+:root {
+  --layout-content-padding:   24px;
+  --layout-content-max-width: 1200px;
+  --layout-gap:               20px;
+  --layout-card-padding:      20px;
+}
+
+.layout-mkt-abtest {
+  display: grid;
+  grid-template-areas:
+    "summary  summary  summary"
+    "compare  compare  trend"
+    "subgroup subgroup subgroup";
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--layout-gap);
+  padding: var(--layout-content-padding);
+  max-width: var(--layout-content-max-width);
+  margin: 0 auto;
+}
+
+.layout-mkt-abtest .slot-experimentSummary { grid-area: summary; }
+.layout-mkt-abtest .slot-metricCompare     { grid-area: compare; }
+.layout-mkt-abtest .slot-conversionTrend   { grid-area: trend; }
+.layout-mkt-abtest .slot-subgroupTable     { grid-area: subgroup; }
+
+/* 实验状态标签 */
+.experiment-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.experiment-status.running  { background: color-mix(in srgb, var(--color-primary) 15%, transparent); color: var(--color-primary); }
+.experiment-status.winner   { background: color-mix(in srgb, var(--color-success) 15%, transparent); color: var(--color-success); }
+.experiment-status.inconclusive { background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning); }
+
+/* A/B 对比色 */
+.variant-a { border-left: 3px solid var(--color-primary); }
+.variant-b { border-left: 3px solid var(--color-accent, #f59e0b); }
+
+@media (max-width: 900px) {
+  .layout-mkt-abtest {
+    grid-template-areas: "summary" "compare" "trend" "subgroup";
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "kpi-email-metrics",
+  "type": "card",
+  "category": "kpi",
+  "name": "邮件营销指标卡",
+  "description": "多行展示邮件营销核心指标：发送量、打开率、点击率、退订率，适合 EDM 效果分析、内容营销报告",
+  "tags": [
+    "kpi",
+    "email",
+    "邮件营销",
+    "打开率",
+    "点击率",
+    "EDM",
+    "内容营销"
+  ],
+  "cssClass": "kpi-multi-row",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card kpi-multi-row' style='padding:16px'><div style='font-weight:700;margin-bottom:8px;font-size:13px'>邮件营销概览</div><div class='kpi-row'><span class='kpi-row-label'>发送量</span><span class='kpi-row-value'>8,542</span></div><div class='kpi-row'><span class='kpi-row-label'>打开率</span><span class='kpi-row-value' style='color:var(--color-primary)'>22.4%</span><span class='kpi-row-change' style='color:var(--color-success)'>▲1.2%</span></div><div class='kpi-row'><span class='kpi-row-label'>点击率</span><span class='kpi-row-value'>4.8%</span></div><div class='kpi-row'><span class='kpi-row-label'>退订率</span><span class='kpi-row-value' style='color:var(--color-danger)'>0.6%</span></div></div>",
+  "variants": [
+    "短信营销指标",
+    "推送通知效果",
+    "社媒内容指标"
+  ],
+  "relatedCards": [
+    "kpi-ctr",
+    "kpi-multi-row"
+  ],
+  "htmlClassName": "card kpi-card kpi-multi-row"
+}

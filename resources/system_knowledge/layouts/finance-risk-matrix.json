@@ -1,0 +1,21 @@
+{
+  "id": "finance-risk-matrix",
+  "type": "layout",
+  "name": "风险矩阵看板",
+  "category": "finance",
+  "tags": [
+    "金融",
+    "风控",
+    "风险",
+    "矩阵",
+    "评级"
+  ],
+  "description": "风险评估矩阵布局，左侧风险热力矩阵，右侧风险列表与评级，底部风险趋势图，适合信贷/保险/合规风险报告。",
+  "slots": {
+    "riskMatrix": "风险热力矩阵",
+    "riskList": "风险明细列表",
+    "trendChart": "风险趋势图"
+  },
+  "cssPath": "finance/risk-matrix.css",
+  "containerClass": "layout-finance-risk-matrix"
+}

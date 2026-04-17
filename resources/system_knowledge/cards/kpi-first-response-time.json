@@ -1,0 +1,30 @@
+{
+  "id": "kpi-first-response-time",
+  "type": "card",
+  "category": "kpi",
+  "name": "首次响应时间(FRT)指标卡",
+  "description": "展示客服工单首次响应时长，含达标率百分比和 SLA 合规情况，适合客服中心效率监控、工单平台 KPI 看板",
+  "tags": [
+    "kpi",
+    "FRT",
+    "first response time",
+    "响应时间",
+    "客服",
+    "SLA",
+    "工单",
+    "速度"
+  ],
+  "cssClass": "kpi-sla-uptime",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>首次响应时间(FRT)</div><div style='font-size:32px;font-weight:900;color:var(--color-primary)'>1.8 小时</div><div style='font-size:11px;color:var(--color-success)'>SLA达标率 93.4%</div><div style='font-size:11px;color:var(--text-sub)'>目标: ≤2h | 逾期工单 42个</div></div>",
+  "variants": [
+    "平均处理时长",
+    "工单关闭时间",
+    "升级响应时间"
+  ],
+  "relatedCards": [
+    "kpi-sla-uptime",
+    "kpi-risk-flag"
+  ],
+  "htmlClassName": "card kpi-card"
+}

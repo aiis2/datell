@@ -1,0 +1,25 @@
+{
+  "id": "finance-kpi-3col",
+  "type": "layout",
+  "name": "金融 KPI 三列看板",
+  "category": "finance",
+  "tags": [
+    "金融",
+    "财务",
+    "KPI",
+    "三列",
+    "看板",
+    "利润",
+    "收入",
+    "风控"
+  ],
+  "description": "金融行业标准三列KPI看板。顶部一行3个KPI卡片，中部左2/3为主图表区，右1/3为辅助指标区，底部可扩展明细表格。",
+  "slots": {
+    "kpiRow": "3个KPI指标卡",
+    "mainChart": "主要图表（推荐折线/柱状）",
+    "sideChart": "辅助图表（推荐饼图/排行）",
+    "detailTable": "明细数据表（可选）"
+  },
+  "cssPath": "finance/kpi-3col.css",
+  "containerClass": "layout-finance-kpi-3col"
+}

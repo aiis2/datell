@@ -1,0 +1,22 @@
+{
+  "id": "apex-area-gradient",
+  "type": "card",
+  "name": "渐变面积折线图 — ApexCharts",
+  "category": "chart",
+  "tags": ["面积图", "渐变", "折线图", "趋势", "ApexCharts", "area", "填充"],
+  "description": "使用 ApexCharts area 类型实现渐变填充面积折线图，面积区域从主色渐变为透明，视觉层次丰富。适合展示单指标或多指标的持续趋势，如 DAU 趋势、收入增长曲线、库存水位变化。使用 generate_chart_apex 工具生成。",
+  "useCases": [
+    "DAU/MAU 用户增长趋势",
+    "月度收入累计曲线",
+    "库存水位时间序列",
+    "多产品销售趋势对比"
+  ],
+  "dataSchema": {
+    "series": "系列数组，每个含 name 和 data（数值数组）",
+    "categories": "X 轴类别（日期/月份/季度等）"
+  },
+  "htmlClassName": "card chart-card apex-chart-card",
+  "engineHint": "apexcharts",
+  "interactionSupport": ["highlight", "filter", "datazoom"],
+  "exampleHtml": "<div class=\"card chart-card apex-chart-card\" data-card-id=\"chart_area_example\">\n  <h2 class=\"card-title\">月度活跃用户趋势</h2>\n  <div id=\"chart_area_example\" class=\"chart-container\" style=\"height:300px\"></div>\n  <script>\n  (function(){\n    var options = {\n      chart: { type: 'area', height: 300, toolbar: { show: false }, animations: { enabled: !window.__REPORT_PRINT_MODE__ }, zoom: { enabled: true } },\n      colors: window.__APEX_PALETTE__ || ['#3b82f6','#10b981'],\n      series: [\n        { name: 'DAU', data: [31,40,28,51,42,109,100,120,95,130,115,145] },\n        { name: 'MAU', data: [11,32,45,32,34,52,41,65,53,80,71,95] }\n      ],\n      xaxis: { categories: ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'] },\n      fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.1 } },\n      stroke: { curve: 'smooth', width: 2 },\n      tooltip: { shared: true, intersect: false },\n      events: {\n        dataPointSelection: function(e, chart, opts) {\n          if (window.__REPORT_INTERACTION_DISABLED__) return;\n          var label = opts.w.globals.labels[opts.dataPointIndex];\n          var value = opts.w.globals.series[opts.seriesIndex][opts.dataPointIndex];\n          window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.emit('chart_area_example', 'click', { name: label, value: value });\n        },\n        selection: function(chart, opts) {\n          if (window.__REPORT_INTERACTION_DISABLED__) return;\n          if (opts && opts.xaxis) window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.emit('chart_area_example', 'datazoom', { startValue: opts.xaxis.min, endValue: opts.xaxis.max });\n        }\n      }\n    };\n    var chart = new ApexCharts(document.getElementById('chart_area_example'), options);\n    chart.render().then(function(){ window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.registerApex('chart_area_example', chart); });\n  })();\n  <\/script>\n</div>"
+}

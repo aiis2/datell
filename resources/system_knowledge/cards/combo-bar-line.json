@@ -1,0 +1,32 @@
+{
+  "id": "combo-bar-line",
+  "type": "card",
+  "name": "柱线组合图",
+  "category": "chart",
+  "tags": [
+    "组合图",
+    "柱状图",
+    "折线图",
+    "混合",
+    "双轴"
+  ],
+  "description": "柱状图+折线图组合，双Y轴设计，柱展示数量，线展示比率/增速等比例指标，适合量与率的联合分析。",
+  "useCases": [
+    "销售额（柱）与增速（线）",
+    "订单量与客单价双轴",
+    "收入与利润率组合"
+  ],
+  "dataSchema": {
+    "categories": "横轴类别",
+    "barSeries": "柱数据（name+data）",
+    "lineSeries": "线数据（name+data）",
+    "title": "标题"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "tooltip",
+    "legend",
+    "zoom"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "id": "heatmap-correlation",
+  "type": "card",
+  "category": "B",
+  "name": "相关性热力矩阵",
+  "description": "ECharts 上三角热力矩阵，展示多变量两两相关系数，颜色深浅代表相关强度，适合多因素相关性分析",
+  "tags": ["heatmap", "correlation", "matrix", "coefficient", "statistics", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"corr_matrix\"><div class=\"card-title\">指标相关性矩阵</div><div class=\"chart-container md\" id=\"chart_corr\"></div><script>(function(){var el=document.getElementById('chart_corr');if(!el)return;var c=echarts.init(el);var vars=['销售额','客单价','访客数','转化率','复购率'];var data=[];var raw=[[1,0.72,-0.15,0.63,0.48],[0.72,1,-0.08,0.35,0.61],[-.15,-.08,1,0.44,-0.22],[0.63,0.35,0.44,1,0.38],[0.48,0.61,-.22,0.38,1]];for(var i=0;i<vars.length;i++){for(var j=0;j<vars.length;j++){data.push([j,i,+raw[i][j].toFixed(2)]);}}c.setOption({tooltip:{position:'top',formatter:function(p){return vars[p.data[1]]+' / '+vars[p.data[0]]+'<br/>r = '+p.data[2];}},grid:{height:'70%',top:'10%'},xAxis:{type:'category',data:vars,splitArea:{show:true}},yAxis:{type:'category',data:vars,splitArea:{show:true}},visualMap:{min:-1,max:1,calculable:true,orient:'horizontal',left:'center',bottom:'5%',inRange:{color:['#ef4444','#ffffff','#3b82f6']}},series:[{name:'相关系数',type:'heatmap',data:data,label:{show:true,fontSize:11},emphasis:{itemStyle:{shadowBlur:10}}}]});})();</script></div>",
+  "variants": ["KPI相关性", "因子分析", "特征重要性"],
+  "relatedCards": ["heatmap-matrix", "scatter-regression"]
+}

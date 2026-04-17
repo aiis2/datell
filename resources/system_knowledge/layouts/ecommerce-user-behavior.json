@@ -1,0 +1,17 @@
+{
+  "id": "ecommerce-user-behavior",
+  "type": "layout",
+  "name": "电商用户行为分析",
+  "category": "ecommerce",
+  "tags": ["用户行为", "漏斗", "留存", "路径", "电商", "用户分析"],
+  "description": "电商用户行为深度分析布局，顶部用户核心指标（DAU/新用户/留存率/ARPU），中部用户行为漏斗图+用户来源渠道桑基图，底部用户同期群留存矩阵+购买路径热力图。适合用户增长分析报告。",
+  "slots": {
+    "userKpi": "DAU/MAU/新用户/留存率KPI",
+    "funnelChart": "用户行为转化漏斗（浏览→购买）",
+    "sourceMap": "用户来源渠道桑基/堆积图",
+    "cohortTable": "同期群留存率矩阵表",
+    "pathHeatmap": "用户购买路径热力图（可选）"
+  },
+  "cssPath": "ecommerce/user-behavior.css",
+  "containerClass": "layout-ecommerce-user"
+}

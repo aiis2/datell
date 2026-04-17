@@ -1,0 +1,23 @@
+{
+  "id": "filter-cascade-select",
+  "type": "card",
+  "name": "级联选择筛选控件",
+  "category": "filter",
+  "tags": ["级联选择", "cascade", "多级", "筛选", "省市区", "联动选择"],
+  "description": "两级或三级联动的级联选择控件，上一级选择后自动加载下一级选项（如省 → 市，大类 → 小类 → SKU）。选择最终值后触发 filterChange 事件。适合地区/类目/组织层级等树状维度的筛选。",
+  "useCases": [
+    "省 → 市 → 区地区层级筛选",
+    "大类 → 小类 → 品牌级联选择",
+    "事业部 → 部门层级筛选",
+    "年 → 季 → 月时间层级选择"
+  ],
+  "dataSchema": {
+    "options": "级联选项树结构：[{value, label, children:[{value, label}]}]",
+    "fields（多字段）": "每级对应一个筛选字段名",
+    "separator": "显示时的层级分隔符，如 '/'"
+  },
+  "htmlClassName": "card filter-card filter-cascade",
+  "engineHint": "pure-html",
+  "interactionSupport": ["filter"],
+  "exampleHtml": "<div class=\"card filter-card\" data-card-id=\"filter_cascade\">\n  <label class=\"filter-label\">地区级联</label>\n  <div style=\"display:flex;gap:8px\">\n    <select id=\"fc_l1\" class=\"filter-select\"><option value=\"\">省份</option><option value=\"广东\">广东</option><option value=\"浙江\">浙江</option></select>\n    <select id=\"fc_l2\" class=\"filter-select\"><option value=\"\">城市</option></select>\n  </div>\n  <script>\n  (function(){\n    var map = { '广东': ['广州','深圳','东莞'], '浙江': ['杭州','宁波','温州'] };\n    document.getElementById('fc_l1').addEventListener('change', function(){\n      var cities = map[this.value] || [];\n      var l2 = document.getElementById('fc_l2');\n      l2.innerHTML = '<option value=\"\">城市</option>' + cities.map(function(c){return '<option>'+c+'</option>';}).join('');\n      l2.value = '';\n    });\n    document.getElementById('fc_l2').addEventListener('change', function(){\n      if(this.value) document.dispatchEvent(new CustomEvent('filterChange', { detail: { field: 'city', value: this.value } }));\n    });\n  })();\n  <\/script>\n</div>"
+}

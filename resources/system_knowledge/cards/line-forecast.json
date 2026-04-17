@@ -1,0 +1,25 @@
+{
+  "id": "line-forecast",
+  "type": "card",
+  "name": "预测趋势折线图（含预测区间）",
+  "category": "chart",
+  "tags": ["预测", "forecast", "置信区间", "趋势", "折线图", "预测线"],
+  "description": "展示历史实际数据与未来预测数据的折线图，预测段使用虚线，并以透明阴影带表示预测置信区间（上下限）。适合销售预测、需求预测、服务器负载预测等场景。",
+  "useCases": [
+    "销售量未来3个月预测",
+    "服务器负载趋势预测",
+    "库存需求预测",
+    "用户增长趋势预测（含乐观/悲观区间）"
+  ],
+  "dataSchema": {
+    "dates": "日期数组（历史+预测合并，预测段用特殊标记）",
+    "actual": "历史实际值数组（预测段为null）",
+    "forecast": "预测值数组（历史段前几个为null以实现连接）",
+    "upperBound": "预测上界数组",
+    "lowerBound": "预测下界数组"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["datazoom"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_forecast\">\n  <h2 class=\"card-title\">销售量趋势预测</h2>\n  <div id=\"chart_forecast\" class=\"chart-container\" style=\"height:300px\"></div>\n  <script>\n  (function(){\n    var d=['1月','2月','3月','4月','5月','6月','7月*','8月*','9月*'];\n    var act=[120,132,101,134,148,155,null,null,null];\n    var fc=[null,null,null,null,null,155,162,170,180];\n    var up=[null,null,null,null,null,155,175,185,200];\n    var lo=[null,null,null,null,null,155,150,158,162];\n    var chart=echarts.init(document.getElementById('chart_forecast'));\n    chart.setOption({\n      legend:{},\n      xAxis:{type:'category',data:d},\n      yAxis:{type:'value'},\n      series:[\n        {name:'实际',type:'line',data:act,symbol:'circle'},\n        {name:'预测',type:'line',data:fc,lineStyle:{type:'dashed'},symbol:'emptyCircle'},\n        {name:'上界',type:'line',data:up,lineStyle:{width:0},stack:'bound',areaStyle:{color:'rgba(59,130,246,0.1)'},symbol:'none'},\n        {name:'下界',type:'line',data:lo,lineStyle:{width:0},stack:'bound',areaStyle:{color:'rgba(59,130,246,0.0)'},symbol:'none'}\n      ]\n    });\n    window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.register('chart_forecast', chart);\n  })();\n  <\/script>\n</div>"
+}

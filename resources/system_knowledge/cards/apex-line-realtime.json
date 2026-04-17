@@ -1,0 +1,23 @@
+{
+  "id": "apex-line-realtime",
+  "type": "card",
+  "name": "ApexCharts 实时更新折线图",
+  "category": "chart",
+  "tags": ["实时", "折线图", "ApexCharts", "动态更新", "live chart", "时序"],
+  "description": "ApexCharts 实时更新折线图，使用 `appendData` 方法动态追加新数据点并自动移除旧数据点，实现流式滚动更新效果。适合展示实时指标（在线人数、请求量、股价等），支持多系列实时更新。使用 generate_chart_apex 工具生成。",
+  "useCases": [
+    "系统实时请求量监控",
+    "实时在线用户数滚动图",
+    "股价/行情实时走势",
+    "传感器数据实时可视化"
+  ],
+  "dataSchema": {
+    "initialData": "初始数据点数组（建议20个点）",
+    "updateInterval": "更新间隔（毫秒，如1000）",
+    "maxPoints": "最多保留数据点数量（如30）"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "apexcharts",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_apex_realtime\">\n  <h2 class=\"card-title\">实时请求量（次/秒）</h2>\n  <div id=\"chart_apex_realtime\"></div>\n  <script>\n  (function(){\n    var data=Array.from({length:20},function(_,i){return{x:new Date(Date.now()-((19-i)*1000)),y:Math.floor(Math.random()*500+200)};});\n    var options={\n      chart:{id:'rt_chart',type:'line',height:260,animations:{enabled:true,easing:'linear',dynamicAnimation:{speed:1000}},toolbar:{show:false}},\n      series:[{name:'QPS',data:data}],\n      xaxis:{type:'datetime',range:20000,labels:{datetimeUTC:false}},\n      yaxis:{labels:{formatter:function(v){return Math.round(v)+'次';}}},\n      colors:window.__APEX_PALETTE__||['#3b82f6'],\n      stroke:{curve:'smooth',width:2},\n      tooltip:{x:{format:'HH:mm:ss'}}\n    };\n    var apx=new ApexCharts(document.getElementById('chart_apex_realtime'),options);\n    apx.render().then(function(){\n      window.__REPORT_EVENT_BUS__&&window.__REPORT_EVENT_BUS__.registerApex('chart_apex_realtime',apx);\n      setInterval(function(){apx.appendData([{data:[{x:new Date(),y:Math.floor(Math.random()*500+200)}]}]);},1000);\n    });\n  })();\n  <\/script>\n</div>"
+}

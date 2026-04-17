@@ -1,0 +1,21 @@
+{
+  "id": "universal-single-col",
+  "type": "layout",
+  "name": "单列布局",
+  "category": "universal",
+  "tags": [
+    "单列",
+    "通用",
+    "简洁",
+    "文档",
+    "窄屏"
+  ],
+  "description": "单列垂直堆叠布局，所有元素全宽排列，适合文档风格报告、移动查看或内容较少的简洁看板。",
+  "slots": {
+    "kpi": "任意数量KPI卡片（全宽）",
+    "charts": "任意数量图表（全宽）",
+    "table": "数据表格（全宽）"
+  },
+  "cssPath": "universal/single-col.css",
+  "containerClass": "layout-single-col"
+}

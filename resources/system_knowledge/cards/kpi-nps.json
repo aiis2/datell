@@ -1,0 +1,27 @@
+{
+  "id": "kpi-nps",
+  "type": "card",
+  "category": "kpi",
+  "name": "NPS 净推荐值卡",
+  "description": "展示 NPS 分数与推荐者/中立者/批评者三段占比进度条，适合客户满意度、员工敬业度等分析",
+  "tags": [
+    "kpi",
+    "nps",
+    "satisfaction",
+    "promoters",
+    "detractors",
+    "customer"
+  ],
+  "cssClass": "kpi-nps",
+  "exampleHtml": "<div class=\"card kpi-card kpi-nps\" data-card-id=\"customer_nps\" style=\"padding:16px\"><span class=\"kpi-title\" style=\"font-weight:700;font-size:14px;display:block;margin-bottom:4px\">客户净推荐值</span><span class=\"kpi-value\" style=\"font-size:36px;font-weight:900;color:var(--color-success)\">+42</span><div class=\"nps-bar-wrap\" style=\"margin:10px 0\"><div class=\"nps-bar-promoters\" style=\"flex:62\"></div><div class=\"nps-bar-passives\" style=\"flex:20\"></div><div class=\"nps-bar-detractors\" style=\"flex:18\"></div></div><div class=\"nps-legend\"><div class=\"nps-legend-item\"><div class=\"nps-legend-dot\" style=\"background:var(--color-success)\"></div>推荐者 62%</div><div class=\"nps-legend-item\"><div class=\"nps-legend-dot\" style=\"background:var(--color-warning)\"></div>中立者 20%</div><div class=\"nps-legend-item\"><div class=\"nps-legend-dot\" style=\"background:var(--color-danger)\"></div>批评者 18%</div></div></div>",
+  "variants": [
+    "员工敬业度",
+    "产品满意度NPS",
+    "服务评分"
+  ],
+  "relatedCards": [
+    "kpi-single",
+    "kpi-comparison"
+  ],
+  "htmlClassName": "card kpi-card kpi-nps"
+}

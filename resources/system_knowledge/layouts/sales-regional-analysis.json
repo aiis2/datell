@@ -1,0 +1,17 @@
+{
+  "id": "sales-regional-analysis",
+  "type": "layout",
+  "name": "销售区域分析",
+  "category": "sales",
+  "tags": ["销售", "区域", "地图", "区域对比", "大区分析"],
+  "description": "销售区域分析布局，以地图为核心。顶部区域/时间筛选+全国汇总KPI，中部中国省域地图热力图（主视图）+右侧大区排名柱状图，底部各区域详情表格（含同比/目标达成/占比）。适合季度区域销售报告。",
+  "slots": {
+    "regionFilter": "大区/省份/时间范围筛选控件",
+    "summaryKpi": "全国合计KPI（总销售额/达成率/同比）",
+    "chinaMap": "省域销售热力地图",
+    "regionRank": "大区销售排名柱状图",
+    "regionTable": "各区域详情数据表（含指标分解）"
+  },
+  "cssPath": "sales/regional-analysis.css",
+  "containerClass": "layout-sales-regional"
+}

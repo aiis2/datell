@@ -1,0 +1,23 @@
+{
+  "id": "rsi-chart",
+  "type": "card",
+  "name": "RSI 相对强弱指数图",
+  "category": "chart",
+  "tags": ["RSI", "相对强弱", "技术分析", "动量指标", "金融", "超买超卖"],
+  "description": "展示 RSI（相对强弱指数）技术指标折线图，包含 70（超买）和 30（超卖）两条参考线，RSI 曲线以渐变色填充区分强弱区间。适用于股票/期货技术分析报表中的动量评估模块。",
+  "useCases": [
+    "股票技术分析RSI图",
+    "加密货币动量分析",
+    "期货超买超卖状态",
+    "投资组合风险动量监控"
+  ],
+  "dataSchema": {
+    "dates": "日期数组（X轴）",
+    "rsi": "RSI数值数组（0-100之间浮点数）",
+    "period": "RSI计算周期，通常为14"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["datazoom"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_rsi\">\n  <h2 class=\"card-title\">RSI(14) 相对强弱指数</h2>\n  <div id=\"chart_rsi\" class=\"chart-container\" style=\"height:240px\"></div>\n  <script>\n  (function(){\n    var dates=['01/02','01/03','01/04','01/05','01/08','01/09','01/10','01/11','01/12'];\n    var rsi=[62,58,71,75,68,55,42,38,45];\n    var chart=echarts.init(document.getElementById('chart_rsi'));\n    chart.setOption({\n      grid:{top:20,bottom:30},\n      xAxis:{type:'category',data:dates},\n      yAxis:{type:'value',min:0,max:100},\n      series:[{type:'line',data:rsi,smooth:true,areaStyle:{opacity:0.2},markLine:{data:[{yAxis:70,name:'超买',lineStyle:{color:'#ef4444'}},{yAxis:30,name:'超卖',lineStyle:{color:'#10b981'}}]}}],\n      dataZoom:[{type:'inside'}]\n    });\n    window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.register('chart_rsi', chart);\n  })();\n  <\/script>\n</div>"
+}

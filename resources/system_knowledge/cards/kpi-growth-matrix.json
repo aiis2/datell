@@ -1,0 +1,29 @@
+{
+  "id": "kpi-growth-matrix",
+  "type": "card",
+  "category": "kpi",
+  "name": "增长矩阵 KPI 卡（2×2）",
+  "description": "BCG风格2×2象限矩阵，将业务/产品/客户按两个维度（如增长率×份额）分入四个象限，直观呈现组合格局",
+  "tags": [
+    "kpi",
+    "matrix",
+    "growth",
+    "quadrant",
+    "bcg",
+    "portfolio",
+    "strategic",
+    "2x2"
+  ],
+  "cssClass": "kpi-growth-matrix",
+  "exampleHtml": "<div class=\"card kpi-card kpi-growth-matrix\" data-card-id=\"product_matrix\"><span style=\"font-size:14px;font-weight:700;display:block;margin-bottom:4px\">产品增长矩阵</span><div class=\"kpi-growth-matrix\"><div class=\"gm-cell active\"><div class=\"gm-label\">明星 ⭐</div><div class=\"gm-value\">A产品</div><div class=\"gm-desc\">高增长·高份额</div></div><div class=\"gm-cell\"><div class=\"gm-label\">问题 ❓</div><div class=\"gm-value\">B产品</div><div class=\"gm-desc\">高增长·低份额</div></div><div class=\"gm-cell\"><div class=\"gm-label\">金牛 🐮</div><div class=\"gm-value\">C产品</div><div class=\"gm-desc\">低增长·高份额</div></div><div class=\"gm-cell\"><div class=\"gm-label\">瘦狗 🐕</div><div class=\"gm-value\">D产品</div><div class=\"gm-desc\">低增长·低份额</div></div></div></div>",
+  "variants": [
+    "产品组合矩阵",
+    "客户价值分层",
+    "市场机会评估"
+  ],
+  "relatedCards": [
+    "kpi-segmented",
+    "kpi-dual-compare"
+  ],
+  "htmlClassName": "card kpi-card kpi-growth-matrix"
+}

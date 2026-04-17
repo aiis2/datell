@@ -1,0 +1,13 @@
+{
+  "id": "pie-sunburst",
+  "type": "card",
+  "category": "B",
+  "name": "旭日图（多层级占比）",
+  "description": "ECharts sunburst旭日图，展示多层级分类结构的占比，从中心向外辐射，适合组织/产品/地区3级以上层级占比",
+  "tags": ["pie", "sunburst", "hierarchical", "multi-level", "radial", "drilldown", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"sunburst\"><div class=\"card-title\">品类三级旭日图</div><div class=\"chart-container md\" id=\"chart_sunburst\"></div><script>(function(){var el=document.getElementById('chart_sunburst');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6','#10b981','#f59e0b'];c.setOption({series:[{type:'sunburst',radius:[0,'90%'],data:[{name:'电子',value:100,children:[{name:'手机',value:60,children:[{name:'A品牌',value:35},{name:'B品牌',value:25}]},{name:'电脑',value:40,children:[{name:'笔记本',value:28},{name:'台式',value:12}]}]},{name:'服装',value:80,children:[{name:'男装',value:45},{name:'女装',value:35}]}],emphasis:{focus:'ancestor'},label:{rotate:'radial',fontSize:11}}]});})();</script></div>",
+  "variants": ["产品层级占比", "地区→城市→渠道", "费用科目分解"],
+  "relatedCards": ["pie-nested", "treemap"]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "filter-numeric-range",
+  "type": "card",
+  "category": "E",
+  "name": "数值范围滑块筛选卡",
+  "description": "单/双端 range slider 筛选数值区间（价格、年龄、分数等），拖动时实时更新并派发 filterChange",
+  "tags": ["filter", "range", "slider", "numeric", "price", "amount", "threshold"],
+  "cssClass": "filter-numeric-range",
+  "exampleHtml": "<div class=\"card filter-card\" style=\"padding:12px 16px\"><label class=\"filter-label\">销售额范围（万元）</label><div class=\"filter-numeric-range\" data-filter-id=\"revenue_range\" data-filter-type=\"numeric-range\"><div class=\"range-values\"><span>0</span><span class=\"range-current\">0 — 500</span><span>1000</span></div><input type=\"range\" class=\"filter-range-input range-min\" min=\"0\" max=\"1000\" value=\"0\"><input type=\"range\" class=\"filter-range-input range-max\" min=\"0\" max=\"1000\" value=\"500\"><div class=\"range-track\"><div class=\"range-fill\" style=\"--range-min:0%;--range-max:50%\"></div></div></div></div>",
+  "variants": ["价格区间筛选", "年龄段筛选", "分数阈值筛选"],
+  "relatedCards": ["filter-dropdown", "filter-global-panel"]
+}

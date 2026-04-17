@@ -1,0 +1,29 @@
+{
+  "id": "kpi-return-rate",
+  "type": "card",
+  "category": "kpi",
+  "name": "退货率指标卡",
+  "description": "展示商品退货率，含主要退货原因分布，适合电商退货分析、逆向物流成本分析、产品质量改进",
+  "tags": [
+    "kpi",
+    "return rate",
+    "退货率",
+    "逆向物流",
+    "电商",
+    "退款",
+    "品质投诉"
+  ],
+  "cssClass": "kpi-risk-flag",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card kpi-risk-flag' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>商品退货率</div><div style='font-size:32px;font-weight:900;color:var(--color-warning)'>4.2%</div><div style='font-size:11px;color:var(--text-sub);margin-top:4px'>主因：质量问题42% | 尺码不符28%</div><div style='font-size:11px;color:var(--color-warning)'>⚠ 高于行业均值3%</div></div>",
+  "variants": [
+    "损坏率",
+    "全渠道退货率",
+    "高退货SKU分析"
+  ],
+  "relatedCards": [
+    "kpi-risk-flag",
+    "kpi-defect-rate"
+  ],
+  "htmlClassName": "card kpi-card kpi-risk-flag"
+}

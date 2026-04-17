@@ -1,0 +1,23 @@
+{
+  "id": "process-flowchart",
+  "type": "card",
+  "name": "业务流程图（SVG）",
+  "category": "structure",
+  "tags": ["流程图", "flowchart", "SVG", "业务流程", "步骤", "决策树"],
+  "description": "使用内联 SVG 绘制的横向或纵向业务流程图，支持矩形节点（流程步骤）、菱形节点（判断/决策）和连接箭头，无需外部依赖。适合展示审批流程、业务决策路径、系统工作流等，样式随主题变化。",
+  "useCases": [
+    "审批流程可视化",
+    "业务决策树/分支流程",
+    "数据处理管道展示",
+    "用户注册/购买流程图"
+  ],
+  "dataSchema": {
+    "nodes": "节点列表：[{id, label, type:'process'|'decision'|'start'|'end'}]",
+    "edges": "连接关系：[{from, to, label}]",
+    "orientation": "'horizontal' | 'vertical'"
+  },
+  "htmlClassName": "card structure-card process-chart",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card structure-card\" data-card-id=\"chart_flowchart\">\n  <h2 class=\"card-title\">审批流程</h2>\n  <svg viewBox=\"0 0 600 120\" xmlns=\"http://www.w3.org/2000/svg\" style=\"width:100%;height:120px\">\n    <rect x=\"10\" y=\"40\" width=\"100\" height=\"40\" rx=\"6\" fill=\"#3b82f6\" opacity=\"0.9\"/>\n    <text x=\"60\" y=\"65\" text-anchor=\"middle\" fill=\"white\" font-size=\"13\">提交申请</text>\n    <line x1=\"110\" y1=\"60\" x2=\"155\" y2=\"60\" stroke=\"#94a3b8\" stroke-width=\"1.5\" marker-end=\"url(#arr)\"/>\n    <polygon points=\"160,45 240,60 160,75\" fill=\"#f59e0b\" opacity=\"0.9\"/>\n    <text x=\"200\" y=\"65\" text-anchor=\"middle\" fill=\"white\" font-size=\"11\">审批?</text>\n    <line x1=\"240\" y1=\"60\" x2=\"280\" y2=\"60\" stroke=\"#94a3b8\" stroke-width=\"1.5\" marker-end=\"url(#arr)\"/>\n    <rect x=\"280\" y=\"40\" width=\"100\" height=\"40\" rx=\"6\" fill=\"#10b981\" opacity=\"0.9\"/>\n    <text x=\"330\" y=\"65\" text-anchor=\"middle\" fill=\"white\" font-size=\"13\">通过</text>\n    <line x1=\"380\" y1=\"60\" x2=\"420\" y2=\"60\" stroke=\"#94a3b8\" stroke-width=\"1.5\" marker-end=\"url(#arr)\"/>\n    <rect x=\"420\" y=\"40\" width=\"100\" height=\"40\" rx=\"6\" fill=\"#8b5cf6\" opacity=\"0.9\"/>\n    <text x=\"470\" y=\"65\" text-anchor=\"middle\" fill=\"white\" font-size=\"13\">执行</text>\n    <defs><marker id=\"arr\" markerWidth=\"8\" markerHeight=\"8\" refX=\"6\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L6,3 L0,6\" fill=\"none\" stroke=\"#94a3b8\" stroke-width=\"1\"/></marker></defs>\n  </svg>\n</div>"
+}

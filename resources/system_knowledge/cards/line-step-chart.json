@@ -1,0 +1,30 @@
+{
+  "id": "line-step-chart",
+  "type": "card",
+  "name": "阶梯折线图",
+  "category": "chart",
+  "tags": [
+    "阶梯图",
+    "折线",
+    "状态变化",
+    "价格变动",
+    "离散"
+  ],
+  "description": "阶梯状折线图，数据在某时刻发生跳变，两次变化之间保持水平。适合价格变动、状态切换等离散变化场景。",
+  "useCases": [
+    "历史价格变动走势",
+    "设备状态切换图",
+    "收费标准变化"
+  ],
+  "dataSchema": {
+    "dates": "时间轴",
+    "values": "数值数组",
+    "title": "标题"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "tooltip",
+    "zoom"
+  ]
+}

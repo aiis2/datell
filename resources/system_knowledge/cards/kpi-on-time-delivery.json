@@ -1,0 +1,29 @@
+{
+  "id": "kpi-on-time-delivery",
+  "type": "card",
+  "category": "kpi",
+  "name": "准时交货率(OTD)指标卡",
+  "description": "展示准时交货率百分比，含本期达成量与逾期量对比，适合供应链KPI监控、物流服务水平报告",
+  "tags": [
+    "kpi",
+    "OTD",
+    "on time delivery",
+    "准时交货",
+    "供应链",
+    "物流",
+    "服务水平"
+  ],
+  "cssClass": "kpi-dual-compare",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>准时交货率(OTD)</div><div style='font-size:32px;font-weight:900;color:var(--color-primary)'>94.2%</div><div style='display:flex;gap:12px;margin-top:8px;font-size:11px'><div style='text-align:center'><div style='color:var(--color-success);font-weight:700'>1,180</div><div style='color:var(--text-sub)'>按时交付</div></div><div style='text-align:center'><div style='color:var(--color-danger);font-weight:700'>72</div><div style='color:var(--text-sub)'>逾期</div></div></div></div>",
+  "variants": [
+    "完美订单率",
+    "提前交货率",
+    "运输准点率"
+  ],
+  "relatedCards": [
+    "kpi-sla-uptime",
+    "kpi-risk-flag"
+  ],
+  "htmlClassName": "card kpi-card"
+}

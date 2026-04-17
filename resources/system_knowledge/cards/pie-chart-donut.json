@@ -1,0 +1,33 @@
+{
+  "id": "pie-chart-donut",
+  "type": "card",
+  "name": "环形饼图",
+  "category": "chart",
+  "tags": [
+    "饼图",
+    "环形",
+    "占比",
+    "构成",
+    "比例",
+    "分布"
+  ],
+  "description": "中空环形饼图，展示各部分占整体的比例。环形中心可展示总计值，适合构成分析、市场份额展示。",
+  "useCases": [
+    "市场份额分布",
+    "收入来源占比",
+    "用户画像分布",
+    "费用构成分析"
+  ],
+  "dataSchema": {
+    "items": "各项数据（name/value）",
+    "title": "标题",
+    "centerText": "中心文字（可选）"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "highlight",
+    "tooltip",
+    "legend"
+  ]
+}

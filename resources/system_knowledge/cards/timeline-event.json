@@ -1,0 +1,29 @@
+{
+  "id": "timeline-event",
+  "type": "card",
+  "name": "事件时间轴",
+  "category": "narrative",
+  "tags": [
+    "时间轴",
+    "事件",
+    "里程碑",
+    "进度",
+    "历程"
+  ],
+  "description": "纵向事件时间轴，展示一系列按时间排列的关键事件或里程碑，适合项目历程、发展大事记展示。",
+  "useCases": [
+    "项目里程碑展示",
+    "公司发展历程",
+    "产品迭代时间线",
+    "问题处理时序"
+  ],
+  "dataSchema": {
+    "events": "事件数组（date/title/description/status）",
+    "title": "标题"
+  },
+  "htmlClassName": "card timeline",
+  "engineHint": "pure-html",
+  "interactionSupport": [
+    "highlight"
+  ]
+}

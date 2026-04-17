@@ -1,0 +1,21 @@
+{
+  "id": "medical-clinical-outcomes",
+  "type": "layout",
+  "name": "临床结果分析",
+  "category": "medical",
+  "tags": [
+    "医疗",
+    "临床",
+    "治愈率",
+    "预后",
+    "效果"
+  ],
+  "description": "临床结果分析布局，顶部治愈率/并发症率KPI，中部治疗方案对比雷达图，底部患者数据表。",
+  "slots": {
+    "outcomeKpi": "临床结果KPI",
+    "treatmentRadar": "治疗方案雷达图",
+    "patientTable": "患者数据表"
+  },
+  "cssPath": "medical/clinical-outcomes.css",
+  "containerClass": "layout-medical-outcomes"
+}

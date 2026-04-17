@@ -1,0 +1,12 @@
+{
+  "id": "table-gantt",
+  "type": "card",
+  "category": "C",
+  "name": "甘特图式进度表",
+  "description": "表格+甘特横条展示项目/任务的时间进度，横轴为时间，每行task对应一个彩色进度条，适合项目管理/里程碑追踪",
+  "tags": ["table", "gantt", "timeline", "schedule", "project", "progress", "task"],
+  "cssClass": "gantt-table",
+  "exampleHtml": "<div class=\"card\" data-card-id=\"gantt_table\"><div style=\"font-size:14px;font-weight:700;margin-bottom:8px\">Q2 项目排期</div><div style=\"overflow-x:auto\"><table class=\"data-table gantt-table\" style=\"width:100%;border-collapse:collapse;min-width:600px\"><thead><tr><th class=\"gantt-col-label\">任务</th><th>4/1</th><th>4/8</th><th>4/15</th><th>4/22</th><th>4/29</th><th>5/6</th></tr></thead><tbody><tr><td class=\"gantt-col-label\">需求设计</td><td class=\"gantt-cell\" colspan=\"2\"><div class=\"gantt-bar status-done\" style=\"--bar-start:0%;--bar-width:100%\"></div></td><td></td><td></td><td></td><td></td></tr><tr><td class=\"gantt-col-label\">开发阶段</td><td></td><td class=\"gantt-cell\" colspan=\"3\"><div class=\"gantt-bar status-active\" style=\"--bar-start:0%;--bar-width:100%\"></div></td><td></td><td></td></tr><tr><td class=\"gantt-col-label\">测试上线</td><td></td><td></td><td></td><td></td><td class=\"gantt-cell\" colspan=\"2\"><div class=\"gantt-bar status-delayed\" style=\"--bar-start:0%;--bar-width:100%\"></div></td></tr></tbody></table></div></div>",
+  "variants": ["项目里程碑", "迭代排期", "生产计划甘特"],
+  "relatedCards": ["timeline-event", "process-steps"]
+}

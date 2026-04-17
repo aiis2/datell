@@ -1,0 +1,22 @@
+{
+  "id": "universal-bento-grid",
+  "type": "layout",
+  "name": "Bento 拼图网格",
+  "category": "universal",
+  "tags": [
+    "bento",
+    "拼图",
+    "12列",
+    "自由布局",
+    "现代",
+    "苹果风"
+  ],
+  "description": "12列CSS Grid拼图布局，卡片可跨2/3/4/6/12列，类似苹果 Bento 设计风格，视觉丰富多变。",
+  "slots": {
+    "wideCard": "跨宽卡片（col-8/col-6）",
+    "narrowCard": "迷你卡片（col-2/col-3）",
+    "fullCard": "全宽卡片（col-12）"
+  },
+  "cssPath": "universal/bento-grid.css",
+  "containerClass": "layout-bento-grid"
+}

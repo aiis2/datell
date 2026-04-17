@@ -1,0 +1,30 @@
+{
+  "id": "kpi-countdown-timer",
+  "type": "card",
+  "name": "倒计时/截止日 KPI 卡",
+  "category": "kpi",
+  "tags": [
+    "倒计时",
+    "截止日",
+    "deadline",
+    "剩余天数",
+    "KPI",
+    "时间提醒"
+  ],
+  "description": "显示距离截止日剩余天数的 KPI 卡片，包含目标事件名、截止日期、剩余天数（大字）和进度条（已过时间比例），剩余时间按长短改变颜色（绿色充裕→黄色警示→红色紧急）。适合项目截止提醒、报告提交倒计时等。",
+  "useCases": [
+    "项目上线截止倒计时",
+    "审计报告提交剩余天数",
+    "KPI 考核周期剩余时间",
+    "活动/促销结束倒计时"
+  ],
+  "dataSchema": {
+    "title": "事件/目标名称",
+    "deadline": "截止日期（ISO字符串）",
+    "startDate": "起始日期（用于进度条计算）"
+  },
+  "htmlClassName": "card kpi-card",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card kpi-card\" data-card-id=\"kpi_countdown\">\n  <div class=\"kpi-label\">Q2 项目上线截止</div>\n  <div id=\"kcd_days\" class=\"kpi-value\" style=\"color:#f59e0b\">18</div>\n  <div class=\"kpi-sub\">剩余天数 · 截止日：2024-06-30</div>\n  <div class=\"kpi-progress\" style=\"margin-top:8px\"><div id=\"kcd_bar\" class=\"kpi-progress-bar\" style=\"background:#f59e0b\"></div></div>\n  <script>\n  (function(){\n    var deadline=new Date('2024-06-30');\n    var start=new Date('2024-04-01');\n    var now=new Date();\n    var remain=Math.max(0,Math.ceil((deadline-now)/86400000));\n    var total=Math.ceil((deadline-start)/86400000);\n    var pct=Math.min(100,Math.round((1-remain/total)*100));\n    document.getElementById('kcd_days').textContent=remain;\n    var color=remain>30?'#10b981':remain>10?'#f59e0b':'#ef4444';\n    document.getElementById('kcd_days').style.color=color;\n    document.getElementById('kcd_bar').style.cssText='width:'+pct+'%;background:'+color;\n  })();\n  </script>\n</div>"
+}

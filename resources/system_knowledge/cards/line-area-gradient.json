@@ -1,0 +1,30 @@
+{
+  "id": "line-area-gradient",
+  "type": "card",
+  "name": "渐变面积折线图",
+  "category": "chart",
+  "tags": [
+    "面积图",
+    "渐变",
+    "趋势",
+    "视觉",
+    "填充"
+  ],
+  "description": "带渐变填充的面积折线图，视觉效果突出，适合重点趋势展示，如网站流量、用户增长等。",
+  "useCases": [
+    "网站访问量趋势",
+    "累计注册用户增长",
+    "收入增长曲线"
+  ],
+  "dataSchema": {
+    "dates": "时间轴",
+    "values": "数值数组",
+    "title": "标题"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "tooltip",
+    "zoom"
+  ]
+}

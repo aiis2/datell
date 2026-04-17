@@ -1,0 +1,13 @@
+{
+  "id": "map-china",
+  "type": "card",
+  "category": "B",
+  "name": "中国省市地图",
+  "description": "ECharts + china.json 中国省级着色地图，展示各省数据指标，支持tooltip和visualMap，适合全国市场分布",
+  "tags": ["map", "china", "province", "geo", "geographic", "region", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"map_china\"><div class=\"card-title\">全国销售地图</div><div class=\"chart-container md\"><div style=\"display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-sub);font-size:13px;flex-direction:column;gap:8px\"><span style=\"font-size:24px\">🗺️</span><span>中国地图需要注册 china.json</span><span style=\"font-size:11px\">echarts.registerMap('china', chinaGeoJson)</span></div></div></div>",
+  "variants": ["全国销售分布", "省级用户密度", "区域市场份额"],
+  "relatedCards": ["map-geo", "heatmap-geo"]
+}

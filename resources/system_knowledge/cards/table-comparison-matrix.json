@@ -1,0 +1,24 @@
+{
+  "id": "table-comparison-matrix",
+  "type": "card",
+  "name": "多维度对比矩阵表",
+  "category": "table",
+  "tags": ["对比", "矩阵", "多维度", "表格", "竞品分析", "功能对比"],
+  "description": "多行多列的维度对比矩阵，支持数字/百分比/✓✗符号/进度条等多种单元格格式，适合竞品功能对比、产品评分矩阵、方案选型对比等场景。关键数值自动着色突出优劣。",
+  "useCases": [
+    "竞品功能对比表",
+    "方案选型评分矩阵",
+    "多时期指标横向对比",
+    "渠道营销ROI矩阵"
+  ],
+  "dataSchema": {
+    "rows": "行标签数组（维度名称）",
+    "columns": "列标签数组（对比对象名称）",
+    "values": "二维数组，values[i][j] 为第i行第j列的值",
+    "cellType": "单元格类型：'text'|'number'|'percent'|'check'|'bar'"
+  },
+  "htmlClassName": "card table-card comparison-matrix",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card table-card\" data-card-id=\"table_matrix\">\n  <h2 class=\"card-title\">方案对比矩阵</h2>\n  <table class=\"data-table\">\n    <thead><tr><th>维度</th><th>方案A</th><th>方案B</th><th>方案C</th></tr></thead>\n    <tbody>\n      <tr><td>成本</td><td>低</td><td>中</td><td>高</td></tr>\n      <tr><td>可靠性</td><td>★★★</td><td>★★★★</td><td>★★★★★</td></tr>\n      <tr><td>部署难度</td><td>简单</td><td>中等</td><td>复杂</td></tr>\n    </tbody>\n  </table>\n</div>"
+}

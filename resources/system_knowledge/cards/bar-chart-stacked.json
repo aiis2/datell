@@ -1,0 +1,31 @@
+{
+  "id": "bar-chart-stacked",
+  "type": "card",
+  "name": "堆叠柱状图",
+  "category": "chart",
+  "tags": [
+    "柱状图",
+    "堆叠",
+    "占比",
+    "构成",
+    "分层"
+  ],
+  "description": "堆叠柱状图，展示整体总量同时呈现各部分构成比例，适合分析各分类中子项占比，如收入来源构成、产品线占比。",
+  "useCases": [
+    "收入来源构成分析",
+    "各渠道流量叠加",
+    "产品线销售构成"
+  ],
+  "dataSchema": {
+    "categories": "横轴类别",
+    "series": "多个系列数组，每个含 name/data",
+    "title": "标题"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "highlight",
+    "tooltip",
+    "legend"
+  ]
+}

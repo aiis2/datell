@@ -1,0 +1,22 @@
+{
+  "id": "logistics-route-optimizer",
+  "type": "layout",
+  "name": "物流路由优化",
+  "category": "logistics",
+  "tags": [
+    "物流",
+    "路由",
+    "运输",
+    "成本",
+    "优化"
+  ],
+  "description": "物流路由分析布局，主区路线地图+成本对比，右侧时效KPI，底部线路明细表。",
+  "slots": {
+    "routeMap": "路线地图",
+    "costChart": "成本对比图",
+    "routeKpi": "时效KPI",
+    "routeTable": "线路明细"
+  },
+  "cssPath": "logistics/route-optimizer.css",
+  "containerClass": "layout-logistics-route"
+}

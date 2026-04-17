@@ -1,0 +1,21 @@
+{
+  "id": "logistics-warehouse-heatmap",
+  "type": "layout",
+  "name": "仓储热力布局",
+  "category": "logistics",
+  "tags": [
+    "仓库",
+    "库存",
+    "热力",
+    "仓储",
+    "分布"
+  ],
+  "description": "仓储管理布局，主区库位热力图，右侧库存KPI与周转率，底部库存明细与预警表。",
+  "slots": {
+    "warehouseHeatmap": "库位热力图",
+    "stockKpi": "库存KPI",
+    "stockTable": "库存明细"
+  },
+  "cssPath": "logistics/warehouse-heatmap.css",
+  "containerClass": "layout-logistics-warehouse"
+}

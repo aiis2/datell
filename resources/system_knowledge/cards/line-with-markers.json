@@ -1,0 +1,13 @@
+{
+  "id": "line-with-markers",
+  "type": "card",
+  "category": "B",
+  "name": "标记事件折线图",
+  "description": "ECharts 折线图叠加markPoint/markLine标注关键事件节点（产品发布、营销活动、政策变更等），用于时间序列的因果分析",
+  "tags": ["line", "marker", "event", "annotation", "markpoint", "milestone", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"line_markers\"><div class=\"card-title\">DAU 趋势 + 事件标注</div><div class=\"chart-container md\" id=\"chart_markers\"></div><script>(function(){var el=document.getElementById('chart_markers');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6'];c.setOption({color:palette,tooltip:{trigger:'axis'},grid:{left:'3%',right:'4%',bottom:'3%',containLabel:true},xAxis:{type:'category',boundaryGap:false,data:['Jan','Feb','Mar','Apr','May','Jun','Jul']},yAxis:{type:'value'},series:[{type:'line',smooth:true,data:[8200,8800,8600,10400,12800,11200,13600],markPoint:{data:[{type:'max',name:'最高值'},{type:'min',name:'最低值'}]},markLine:{data:[{type:'average',name:'平均值'},{xAxis:3,label:{formatter:'V3.0上线'},lineStyle:{color:'#f59e0b',type:'dashed'}}]}}]});})();</script></div>",
+  "variants": ["产品上线影响", "营销活动效果", "重大事件分析"],
+  "relatedCards": ["line-chart-multi", "combo-bar-line"]
+}

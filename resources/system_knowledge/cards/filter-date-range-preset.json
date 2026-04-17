@@ -1,0 +1,22 @@
+{
+  "id": "filter-date-range-preset",
+  "type": "card",
+  "name": "快速日期预设筛选控件",
+  "category": "filter",
+  "tags": ["日期", "快速预设", "今日", "本周", "本月", "日期筛选", "快捷筛选"],
+  "description": "提供预设快速日期选择的筛选控件，包含今日/昨日/本周/上周/本月/上月/本季度/本年等按钮，点击后自动计算开始和结束日期并触发 filterChange 事件。支持自定义日期输入作为补充。",
+  "useCases": [
+    "报表常用时间段快速筛选",
+    "数据看板日期范围切换",
+    "销售/流量日期快捷选择",
+    "运营监控时间窗口切换"
+  ],
+  "dataSchema": {
+    "presets": "预设选项数组（可自定义），默认包含：今日/昨日/本周/本月/本季度/本年",
+    "fields": "{ startField:'start_date', endField:'end_date' } 发送给下游的字段名"
+  },
+  "htmlClassName": "card filter-card filter-date-presets",
+  "engineHint": "pure-html",
+  "interactionSupport": ["filter"],
+  "exampleHtml": "<div class=\"card filter-card\" data-card-id=\"filter_date_preset\">\n  <label class=\"filter-label\">时间范围</label>\n  <div class=\"filter-btn-group\" id=\"fp_group\">\n    <button class=\"filter-btn active\" data-preset=\"today\">今日</button>\n    <button class=\"filter-btn\" data-preset=\"yesterday\">昨日</button>\n    <button class=\"filter-btn\" data-preset=\"thisWeek\">本周</button>\n    <button class=\"filter-btn\" data-preset=\"thisMonth\">本月</button>\n    <button class=\"filter-btn\" data-preset=\"lastMonth\">上月</button>\n    <button class=\"filter-btn\" data-preset=\"thisQuarter\">本季</button>\n    <button class=\"filter-btn\" data-preset=\"thisYear\">今年</button>\n  </div>\n  <script>\n  (function(){\n    function getRange(p){\n      var n=new Date(), y=n.getFullYear(), m=n.getMonth();\n      if(p==='today') return [n.toISOString().slice(0,10), n.toISOString().slice(0,10)];\n      if(p==='yesterday'){var d=new Date(n-86400000);return [d.toISOString().slice(0,10),d.toISOString().slice(0,10)];}\n      if(p==='thisWeek'){var mon=new Date(n);mon.setDate(n.getDate()-n.getDay()+1);return [mon.toISOString().slice(0,10),n.toISOString().slice(0,10)];}\n      if(p==='thisMonth') return [y+'-'+String(m+1).padStart(2,'0')+'-01', n.toISOString().slice(0,10)];\n      if(p==='lastMonth'){var lm=m===0?11:m-1,ly=m===0?y-1:y;return [ly+'-'+String(lm+1).padStart(2,'0')+'-01',ly+'-'+String(lm+1).padStart(2,'0')+'-'+new Date(ly,lm+1,0).getDate()];}\n      if(p==='thisQuarter'){var q=Math.floor(m/3),qm=q*3;return [y+'-'+String(qm+1).padStart(2,'0')+'-01',n.toISOString().slice(0,10)];}\n      if(p==='thisYear') return [y+'-01-01',n.toISOString().slice(0,10)];\n      return [null,null];\n    }\n    document.getElementById('fp_group').addEventListener('click',function(e){\n      var btn=e.target.closest('[data-preset]'); if(!btn) return;\n      this.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});\n      btn.classList.add('active');\n      var r=getRange(btn.dataset.preset);\n      document.dispatchEvent(new CustomEvent('filterChange',{detail:{field:'date_range',startDate:r[0],endDate:r[1]}}));\n    });\n  })();\n  <\/script>\n</div>"
+}

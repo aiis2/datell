@@ -1,0 +1,21 @@
+{
+  "id": "hr-headcount-dashboard",
+  "type": "layout",
+  "name": "人力资本看板",
+  "category": "hr",
+  "tags": [
+    "HR",
+    "人力",
+    "招聘",
+    "离职",
+    "人效"
+  ],
+  "description": "HR人力资本布局，顶部在职/招聘中/离职率KPI，中部部门人数分布+岗位占比饼图，底部人效趋势。",
+  "slots": {
+    "hrKpi": "人力KPI",
+    "deptChart": "部门分布图",
+    "turnoverTrend": "离职趋势图"
+  },
+  "cssPath": "hr/headcount-dashboard.css",
+  "containerClass": "layout-hr-headcount"
+}

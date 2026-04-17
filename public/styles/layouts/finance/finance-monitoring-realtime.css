@@ -1,0 +1,51 @@
+/* 财务实时监控看板布局 */
+:root {
+  --layout-content-padding:   24px;
+  --layout-content-max-width: 1400px;
+  --layout-gap:               20px;
+  --layout-card-padding:      20px;
+}
+
+.layout-finance-monitoring {
+  display: grid;
+  grid-template-areas:
+    "today   today   today"
+    "gauge   gauge   cashflow"
+    "bizline bizline bizline";
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto auto 1fr;
+  gap: var(--layout-gap);
+  padding: var(--layout-content-padding);
+  max-width: var(--layout-content-max-width);
+  margin: 0 auto;
+}
+
+.layout-finance-monitoring .slot-todayKpi    { grid-area: today; }
+.layout-finance-monitoring .slot-budgetGauge { grid-area: gauge; }
+.layout-finance-monitoring .slot-cashflowTable { grid-area: cashflow; }
+.layout-finance-monitoring .slot-bizLineStatus { grid-area: bizline; }
+
+/* 实时状态指示 */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.status-badge.ok     { background: color-mix(in srgb, var(--color-success) 15%, transparent); color: var(--color-success); }
+.status-badge.warn   { background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning); }
+.status-badge.danger { background: color-mix(in srgb, var(--color-danger)  15%, transparent); color: var(--color-danger); }
+
+@media (max-width: 900px) {
+  .layout-finance-monitoring {
+    grid-template-areas:
+      "today"
+      "gauge"
+      "cashflow"
+      "bizline";
+    grid-template-columns: 1fr;
+  }
+}

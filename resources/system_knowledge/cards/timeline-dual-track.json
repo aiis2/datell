@@ -1,0 +1,12 @@
+{
+  "id": "timeline-dual-track",
+  "type": "card",
+  "category": "D",
+  "name": "双轨对比时间轴",
+  "description": "左右双轨对比时间轴，左侧一组事件/右侧另一组（如计划vs实际/A产品线vs B产品线），中间轴线作为时间刻度",
+  "tags": ["timeline", "dual", "comparison", "parallel", "contrast", "milestones"],
+  "cssClass": "timeline-dual-track",
+  "exampleHtml": "<div class=\"card\" data-card-id=\"dual_timeline\"><div style=\"font-size:14px;font-weight:700;margin-bottom:12px\">计划 vs 实际进度</div><div class=\"timeline-dual-track\"><div class=\"track-left\"><div class=\"track-item\"><div style=\"font-size:12px;font-weight:700\">需求确认</div><div style=\"font-size:11px;color:var(--text-sub)\">计划: 3/1</div></div><div class=\"track-item\"><div style=\"font-size:12px;font-weight:700\">设计完成</div><div style=\"font-size:11px;color:var(--text-sub)\">计划: 3/15</div></div><div class=\"track-item\"><div style=\"font-size:12px;font-weight:700\">开发上线</div><div style=\"font-size:11px;color:var(--text-sub)\">计划: 4/30</div></div></div><div class=\"track-axis\"><div class=\"track-dot\"></div><div class=\"track-dot\"></div><div class=\"track-dot\"></div></div><div class=\"track-right\"><div class=\"track-item\"><div style=\"font-size:12px;font-weight:700;color:var(--color-success)\">✓ 完成</div><div style=\"font-size:11px;color:var(--text-sub)\">实际: 3/2</div></div><div class=\"track-item\"><div style=\"font-size:12px;font-weight:700;color:var(--color-warning)\">⏳ 延期</div><div style=\"font-size:11px;color:var(--text-sub)\">实际: 3/20</div></div><div class=\"track-item\"><div style=\"font-size:12px;font-weight:700;color:var(--color-danger)\">⚠ 风险</div><div style=\"font-size:11px;color:var(--text-sub)\">预计: 5/15</div></div></div></div></div>",
+  "variants": ["计划vs实际", "A/B产品线对比", "两部门里程碑"],
+  "relatedCards": ["timeline-event", "timeline-horizontal"]
+}

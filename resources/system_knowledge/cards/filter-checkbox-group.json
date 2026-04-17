@@ -1,0 +1,12 @@
+{
+  "id": "filter-checkbox-group",
+  "type": "card",
+  "category": "E",
+  "name": "多选复选框筛选卡",
+  "description": "复选框组支持多维度并列筛选，适合产品线、渠道类型等多选场景，配合应用按钮集中触发",
+  "tags": ["filter", "checkbox", "multi-select", "dimension", "channel", "product-line"],
+  "cssClass": "filter-checkbox-group",
+  "exampleHtml": "<div class=\"card filter-card\" style=\"padding:12px 16px\"><label class=\"filter-label\">渠道类型</label><div class=\"filter-checkbox-group\" data-filter-id=\"channel_filter\" data-filter-type=\"checkbox-group\"><label class=\"filter-checkbox-item\"><input type=\"checkbox\" value=\"online\" checked> 线上商城</label><label class=\"filter-checkbox-item\"><input type=\"checkbox\" value=\"app\" checked> 移动APP</label><label class=\"filter-checkbox-item\"><input type=\"checkbox\" value=\"offline\"> 线下门店</label><label class=\"filter-checkbox-item\"><input type=\"checkbox\" value=\"partner\"> 合作渠道</label></div><div class=\"filter-controls\" style=\"margin-top:8px\"><button class=\"filter-apply-btn\">应用</button></div></div>",
+  "variants": ["产品线多选", "标签分类多选", "状态多选"],
+  "relatedCards": ["filter-dropdown", "filter-radio-group"]
+}

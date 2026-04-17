@@ -1,0 +1,23 @@
+{
+  "id": "table-schedule-calendar",
+  "type": "card",
+  "name": "计划日程表格（周视图）",
+  "category": "table",
+  "tags": ["日程", "计划", "时间表", "周视图", "schedule", "calendar table"],
+  "description": "周视图计划日程表格，行为时间段（如上午/下午/晚间），列为工作日（周一至周五/日），每格填写当时段的计划事项或任务，有颜色区分优先级。适合在周报中展示工作计划。",
+  "useCases": [
+    "周度工作计划表",
+    "项目里程碑周排期",
+    "团队工作分工周表",
+    "运营活动周日程安排"
+  ],
+  "dataSchema": {
+    "timeSlots": "时间段行标签（如上午/下午/傍晚）",
+    "days": "列日期/星期标签",
+    "events": "事件数据：[{day, slot, label, type}]"
+  },
+  "htmlClassName": "card table-card schedule-table",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card table-card\" data-card-id=\"table_schedule\">\n  <h2 class=\"card-title\">本周工作计划（2024-01 W3）</h2>\n  <div class=\"table-wrapper\">\n    <table class=\"data-table\" style=\"font-size:12px\">\n      <thead><tr><th></th><th>周一</th><th>周二</th><th>周三</th><th>周四</th><th>周五</th></tr></thead>\n      <tbody>\n        <tr><td><strong>上午</strong></td><td style=\"background:#dbeafe\">需求评审</td><td></td><td style=\"background:#d1fae5\">技术设计review</td><td></td><td style=\"background:#fef3c7\">Q1总结汇报</td></tr>\n        <tr><td><strong>下午</strong></td><td></td><td style=\"background:#dbeafe\">数据分析</td><td style=\"background:#dbeafe\">数据分析</td><td style=\"background:#d1fae5\">代码review</td><td></td></tr>\n        <tr><td><strong>全天</strong></td><td></td><td></td><td></td><td></td><td style=\"background:#fce7f3\">团队建设活动</td></tr>\n      </tbody>\n    </table>\n  </div>\n</div>"
+}

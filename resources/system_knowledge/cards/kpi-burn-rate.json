@@ -1,0 +1,30 @@
+{
+  "id": "kpi-burn-rate",
+  "type": "card",
+  "category": "kpi",
+  "name": "资金消耗率(Burn Rate)指标卡",
+  "description": "展示月度/季度资金消耗率和现金跑道剩余月数，适合初创企业融资看板、CFO 现金流管理、预算执行监控",
+  "tags": [
+    "kpi",
+    "burn rate",
+    "资金消耗",
+    "现金跑道",
+    "runway",
+    "初创",
+    "现金流",
+    "融资"
+  ],
+  "cssClass": "kpi-countdown-timer",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>月均资金消耗</div><div style='font-size:30px;font-weight:900;color:var(--color-danger)'>¥ 128万/月</div><div style='font-size:22px;font-weight:700;color:var(--color-warning);margin-top:8px'>现金跑道: 11个月</div><div style='font-size:11px;color:var(--text-sub)'>现金余额: ¥ 1,408万</div></div>",
+  "variants": [
+    "净现金消耗",
+    "基于ARR的跑道",
+    "资本效率"
+  ],
+  "relatedCards": [
+    "kpi-countdown-timer",
+    "kpi-budget-variance"
+  ],
+  "htmlClassName": "card kpi-card"
+}

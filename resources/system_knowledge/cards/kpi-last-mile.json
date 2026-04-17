@@ -1,0 +1,30 @@
+{
+  "id": "kpi-last-mile",
+  "type": "card",
+  "category": "kpi",
+  "name": "最后一公里配送指标卡",
+  "description": "展示末端配送成功率、配送费用和平均配送时效，适合快递物流日报、即时配送效率分析",
+  "tags": [
+    "kpi",
+    "last mile",
+    "最后一公里",
+    "配送",
+    "物流",
+    "快递",
+    "即时配送",
+    "时效"
+  ],
+  "cssClass": "kpi-multi-row",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card kpi-multi-row' style='padding:16px'><div style='font-weight:700;margin-bottom:8px;font-size:13px'>末端配送概览</div><div class='kpi-row'><span class='kpi-row-label'>配送成功率</span><span class='kpi-row-value' style='color:var(--color-success)'>96.4%</span></div><div class='kpi-row'><span class='kpi-row-label'>平均配送时效</span><span class='kpi-row-value'>28.4分钟</span></div><div class='kpi-row'><span class='kpi-row-label'>单票配送成本</span><span class='kpi-row-value'>¥8.60</span><span class='kpi-row-change' style='color:var(--color-danger)'>▲5%</span></div></div>",
+  "variants": [
+    "骑手效率指标",
+    "重配率",
+    "客户自取率"
+  ],
+  "relatedCards": [
+    "kpi-on-time-delivery",
+    "kpi-fill-rate"
+  ],
+  "htmlClassName": "card kpi-card kpi-multi-row"
+}

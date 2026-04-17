@@ -1,0 +1,29 @@
+{
+  "id": "kpi-stock-ticker",
+  "type": "card",
+  "category": "kpi",
+  "name": "行情显示 KPI 卡",
+  "description": "仿金融行情格式展示当前价格、涨跌幅、开高低收等数据，适合股价/期货/汇率/商品报价展示",
+  "tags": [
+    "kpi",
+    "ticker",
+    "stock",
+    "price",
+    "finance",
+    "quote",
+    "change",
+    "market"
+  ],
+  "cssClass": "kpi-stock-ticker",
+  "exampleHtml": "<div class=\"card kpi-card kpi-stock-ticker\" data-card-id=\"stock_demo\"><div class=\"kpi-title\" style=\"font-size:12px;color:var(--text-sub)\">A公司 (SH600001)</div><div class=\"ticker-price\">28.45</div><div class=\"ticker-change trend-up\">▲ 0.85 (+3.08%)</div><div class=\"ticker-meta\"><span><span class=\"meta-label\">开</span><span class=\"meta-val\">27.60</span></span><span><span class=\"meta-label\">高</span><span class=\"meta-val\">28.90</span></span><span><span class=\"meta-label\">低</span><span class=\"meta-val\">27.50</span></span><span><span class=\"meta-label\">量</span><span class=\"meta-val\">3.2亿</span></span></div></div>",
+  "variants": [
+    "股价行情",
+    "汇率报价",
+    "大宗商品"
+  ],
+  "relatedCards": [
+    "candlestick",
+    "kpi-single"
+  ],
+  "htmlClassName": "card kpi-card kpi-stock-ticker"
+}

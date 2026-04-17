@@ -1,0 +1,27 @@
+{
+  "id": "image-embed",
+  "type": "card",
+  "name": "图片嵌入卡片",
+  "category": "narrative",
+  "tags": [
+    "图片",
+    "嵌入",
+    "截图",
+    "附件",
+    "展示"
+  ],
+  "description": "图片嵌入卡片，用于在报表中嵌入上传图片或生成图表截图，带标题和说明文字。",
+  "useCases": [
+    "生产现场照片附件",
+    "设计原型截图展示",
+    "扫描文件插入报表"
+  ],
+  "dataSchema": {
+    "src": "图片 URL 或 base64",
+    "caption": "图片说明",
+    "title": "卡片标题"
+  },
+  "htmlClassName": "card image-card",
+  "engineHint": "pure-html",
+  "interactionSupport": []
+}

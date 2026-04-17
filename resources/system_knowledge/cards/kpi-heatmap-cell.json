@@ -1,0 +1,28 @@
+{
+  "id": "kpi-heatmap-cell",
+  "type": "card",
+  "category": "kpi",
+  "name": "热力色块 KPI 卡",
+  "description": "将多个指标值排列为颜色深浅不一的色块网格，颜色深度代表数值高低，适合多维度浓缩展示",
+  "tags": [
+    "kpi",
+    "heatmap",
+    "color",
+    "grid",
+    "intensity",
+    "multi-metric",
+    "density"
+  ],
+  "cssClass": "kpi-heatmap-cell",
+  "exampleHtml": "<div class=\"card kpi-card kpi-heatmap-cell\" data-card-id=\"weekly_metrics\"><span class=\"kpi-title\" style=\"font-size:14px;font-weight:700;display:block;margin-bottom:8px\">各周指标热度</span><div class=\"kpi-heatmap-cell\"><div class=\"hc-grid\"><div class=\"hc-item level-1\"><span class=\"hc-val\">42</span>W1</div><div class=\"hc-item level-3\"><span class=\"hc-val\">78</span>W2</div><div class=\"hc-item level-5\"><span class=\"hc-val\">95</span>W3</div><div class=\"hc-item level-2\"><span class=\"hc-val\">61</span>W4</div><div class=\"hc-item level-4\"><span class=\"hc-val\">88</span>W5</div></div></div></div>",
+  "variants": [
+    "周/月多维热度",
+    "多产品强度对比",
+    "时段集中度"
+  ],
+  "relatedCards": [
+    "heatmap-table",
+    "kpi-multi-row"
+  ],
+  "htmlClassName": "card kpi-card kpi-heatmap-cell"
+}

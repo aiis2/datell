@@ -1,0 +1,23 @@
+{
+  "id": "area-stream-graph",
+  "type": "card",
+  "name": "流图/堆积面积图（Stream Graph）",
+  "category": "chart",
+  "tags": ["流图", "堆积面积", "stream graph", "占比变化", "时序", "面积图"],
+  "description": "堆积面积图（Stream Graph 风格），展示多个系列随时间的体量变化与相对占比，边界平滑，视觉冲击力强。适合展示品类/渠道/关键词随时间的流量/销量分布演变，尤其适合趋势对比不太精确但视觉美观的场景。",
+  "useCases": [
+    "电商品类销量随时间的份额演变",
+    "流量来源渠道随月份变化",
+    "关键词热度时序堆积",
+    "产品线收入构成随季度变化"
+  ],
+  "dataSchema": {
+    "dates": "时间轴数组",
+    "series": "系列数组：[{name, data:[]}]，各系列同长度",
+    "smooth": "true=平滑曲线"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["highlight", "datazoom"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_stream\">\n  <h2 class=\"card-title\">流量来源渠道趋势</h2>\n  <div id=\"chart_stream\" class=\"chart-container\" style=\"height:300px\"></div>\n  <script>\n  (function(){\n    var months=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月'];\n    var chart=echarts.init(document.getElementById('chart_stream'));\n    chart.setOption({\n      tooltip:{trigger:'axis'},\n      legend:{},\n      xAxis:{type:'category',data:months,boundaryGap:false},\n      yAxis:{type:'value'},\n      series:[\n        {name:'搜索',type:'line',stack:'total',smooth:true,areaStyle:{},data:[120,132,101,134,148,155,160,170,180,200]},\n        {name:'直播',type:'line',stack:'total',smooth:true,areaStyle:{},data:[80,90,85,100,120,135,145,155,160,175]},\n        {name:'推荐',type:'line',stack:'total',smooth:true,areaStyle:{},data:[50,55,60,70,80,95,105,115,120,130]},\n        {name:'社交',type:'line',stack:'total',smooth:true,areaStyle:{},data:[30,35,38,42,50,58,65,70,75,90]}\n      ]\n    });\n    window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.register('chart_stream', chart);\n  })();\n  <\/script>\n</div>"
+}

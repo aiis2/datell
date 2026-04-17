@@ -1,0 +1,13 @@
+{
+  "id": "line-band",
+  "type": "card",
+  "category": "B",
+  "name": "置信带折线图",
+  "description": "ECharts 折线叠加半透明置信区间色带（上下界），用于预测区间/误差范围/统计置信区间可视化",
+  "tags": ["line", "band", "confidence", "interval", "forecast", "uncertainty", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"line_band\"><div class=\"card-title\">销售预测置信区间</div><div class=\"chart-container md\" id=\"chart_band\"></div><script>(function(){var el=document.getElementById('chart_band');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6'];var months=['Jan','Feb','Mar','Apr','May','Jun'];var actual=[500,520,480,540,530,510];var high=[540,565,525,590,580,560];var low=[460,475,435,490,480,460];c.setOption({color:palette,tooltip:{trigger:'axis'},legend:{data:['实际','上界','下界'],bottom:0},grid:{left:'3%',right:'4%',bottom:'15%',containLabel:true},xAxis:{type:'category',boundaryGap:false,data:months},yAxis:{type:'value'},series:[{name:'上界',type:'line',data:high,lineStyle:{opacity:0},areaStyle:{color:palette[0],opacity:0.1},stack:'confidence',symbol:'none'},{name:'下界',type:'line',data:low,lineStyle:{opacity:0},areaStyle:{color:'#fff',opacity:1},stack:'confidence',symbol:'none'},{name:'实际',type:'line',data:actual,lineStyle:{color:palette[0],width:2},itemStyle:{color:palette[0]},smooth:true}]});})();</script></div>",
+  "variants": ["销售预测区间", "需求预测带", "异常检测范围"],
+  "relatedCards": ["kpi-forecast-vs-actual", "line-chart-multi"]
+}

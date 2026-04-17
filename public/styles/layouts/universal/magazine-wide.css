@@ -1,0 +1,14 @@
+/* 宽幅杂志布局 — 左右分栏，文字+图表并排 */
+:root {
+  --layout-content-padding:   40px;
+  --layout-content-max-width: 1200px;
+  --layout-gap:               32px;
+  --layout-kpi-cols:          repeat(auto-fit, minmax(160px, 1fr));
+  --layout-chart-cols:        2fr 1fr;
+  --layout-chart-gap:         32px;
+  --layout-card-padding:      32px;
+  /* 三区结构 */
+  --layout-kpi-cols-n:        4;
+  --layout-kpi-row-h:         100px;
+  --layout-zone-gap:          24px;
+}

@@ -1,0 +1,25 @@
+{
+  "id": "report-cover-page",
+  "type": "card",
+  "name": "报告封面页",
+  "category": "structure",
+  "tags": ["封面", "cover", "标题页", "报告封面", "首页", "正式报告"],
+  "description": "正式报告封面页卡片，包含报告标题（大字）、副标题、报告日期/周期、出具机构/部门名称、以及可选的大号图标/装饰图案。全宽设计（建议跨全列），视觉庄重，适合生成正式 PDF 报告时作为首页使用。",
+  "useCases": [
+    "正式分析报告封面首页",
+    "PDF 报告的标题页",
+    "季报/年报封面",
+    "商务提案文档封面"
+  ],
+  "dataSchema": {
+    "title": "报告主标题",
+    "subtitle": "副标题（简要描述）",
+    "period": "报告周期（如 2024年第一季度）",
+    "author": "出具机构/部门/作者",
+    "date": "报告日期"
+  },
+  "htmlClassName": "card report-cover full-width",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card report-cover\" data-card-id=\"cover_page\" style=\"text-align:center;padding:60px 40px;background:linear-gradient(135deg,var(--accent-bg,#eff6ff) 0%,var(--card-bg) 100%);border-top:6px solid var(--accent,#3b82f6)\">\n  <div style=\"font-size:3.5rem;margin-bottom:16px;opacity:0.15\">📊</div>\n  <h1 style=\"font-size:2rem;font-weight:800;margin:0 0 12px\">2024年第一季度经营分析报告</h1>\n  <p style=\"font-size:1.1rem;opacity:0.7;margin:0 0 32px\">核心业务表现 · 渠道结构分析 · 策略展望</p>\n  <div style=\"display:inline-flex;flex-direction:column;gap:6px;font-size:0.9rem;opacity:0.65\">\n    <div>报告周期：2024年1月1日 — 2024年3月31日</div>\n    <div>出具部门：业务分析中心</div>\n    <div>报告日期：2024年4月15日</div>\n  </div>\n</div>"
+}

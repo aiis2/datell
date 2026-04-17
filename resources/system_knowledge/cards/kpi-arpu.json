@@ -1,0 +1,29 @@
+{
+  "id": "kpi-arpu",
+  "type": "card",
+  "category": "kpi",
+  "name": "每用户平均收入(ARPU)卡",
+  "description": "展示每用户/账户平均收入，含月度趋势和同比增长，适合 SaaS、订阅制、电信等收入分析",
+  "tags": [
+    "kpi",
+    "ARPU",
+    "average revenue per user",
+    "每用户收入",
+    "SaaS",
+    "订阅",
+    "收入结构"
+  ],
+  "cssClass": "kpi-sparkline",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>每用户月均收入(ARPU)</div><div style='font-size:32px;font-weight:900;color:var(--color-primary)'>¥ 286</div><div style='font-size:11px;color:var(--color-success)'>▲ 11.2% YoY</div></div>",
+  "variants": [
+    "ARPPU付费用户均值",
+    "ARPC每账户收入",
+    "每活跃用户收入"
+  ],
+  "relatedCards": [
+    "kpi-cac-ltv",
+    "kpi-churn-rate"
+  ],
+  "htmlClassName": "card kpi-card"
+}

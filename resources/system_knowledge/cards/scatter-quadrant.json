@@ -1,0 +1,13 @@
+{
+  "id": "scatter-quadrant",
+  "type": "card",
+  "category": "B",
+  "name": "四象限矩阵散点图",
+  "description": "ECharts 散点图叠加十字参考线划分四象限，每个象限有标签说明，适合BCG矩阵/价值-风险分析/优先级排序",
+  "tags": ["scatter", "quadrant", "matrix", "priority", "bcg", "strategic", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"quadrant_chart\"><div class=\"card-title\">项目价值-风险矩阵</div><div class=\"chart-container md\" id=\"chart_quadrant\"></div><script>(function(){var el=document.getElementById('chart_quadrant');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6'];c.setOption({tooltip:{trigger:'item',formatter:function(p){return p.name+'<br/>价值:'+p.data[0]+' 风险:'+p.data[1];}},grid:{left:'10%',right:'10%',top:'10%',bottom:'10%'},xAxis:{type:'value',name:'商业价值',min:0,max:100,splitLine:{show:false}},yAxis:{type:'value',name:'实施风险',min:0,max:100,splitLine:{show:false}},series:[{type:'scatter',symbolSize:16,data:[{name:'项目A',value:[80,30]},{name:'项目B',value:[70,70]},{name:'项目C',value:[30,25]},{name:'项目D',value:[25,85]},{name:'项目E',value:[55,50]}],itemStyle:{color:palette[0],opacity:0.7},label:{show:true,position:'right',formatter:'{a+}',offset:[5,0]},markLine:{silent:true,lineStyle:{color:'#94a3b8',type:'dashed'},data:[{xAxis:50,label:{formatter:'',show:false}},{yAxis:50,label:{formatter:'',show:false}}]}}]});})();</script></div>",
+  "variants": ["项目优先级", "产品价值-复杂度", "机会-挑战分析"],
+  "relatedCards": ["scatter-cluster", "kpi-growth-matrix"]
+}

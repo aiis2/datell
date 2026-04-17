@@ -1,0 +1,17 @@
+{
+  "id": "mkt-attribution",
+  "type": "layout",
+  "name": "营销归因分析",
+  "category": "marketing",
+  "tags": ["营销", "归因", "渠道", "ROI", "投放效果"],
+  "description": "营销渠道归因分析布局，顶部渠道筛选+核心效果KPI（总花费/总转化/CPA/ROI），中部多渠道ROI对比柱状图+归因模型桑基图，底部渠道投产明细表+各渠道转化漏斗小图。适合营销团队周报/月报效果分析。",
+  "slots": {
+    "channelFilter": "渠道/时间/归因模型筛选控件",
+    "roiKpi": "总投放/总转化/CPA/ROI核心KPI",
+    "roiCompare": "各渠道ROI对比柱状图",
+    "attributionFlow": "归因路径桑基图",
+    "channelTable": "渠道投产明细表（含漏斗数据）"
+  },
+  "cssPath": "marketing/attribution.css",
+  "containerClass": "layout-mkt-attribution"
+}

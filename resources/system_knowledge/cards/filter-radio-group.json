@@ -1,0 +1,13 @@
+{
+  "id": "filter-radio-group",
+  "type": "card",
+  "category": "E",
+  "name": "单选按钮组筛选",
+  "description": "以Radio按钮组形式提供单选维度筛选（如按年/季/月/周切换粒度），触发 filterChange 事件更新图表",
+  "tags": ["filter", "radio", "single-select", "toggle", "granularity", "period", "dimension"],
+  "cssClass": "filter-radio-group",
+  "filterType": "radio",
+  "exampleHtml": "<div class=\"card\" data-card-id=\"granularity_filter\" data-filter-id=\"time_granularity\"><div class=\"filter-label\">时间粒度</div><div class=\"filter-radio-group\"><label class=\"filter-radio-item\"><input type=\"radio\" name=\"granularity\" value=\"year\"> 按年</label><label class=\"filter-radio-item\"><input type=\"radio\" name=\"granularity\" value=\"quarter\"> 按季</label><label class=\"filter-radio-item\" ><input type=\"radio\" name=\"granularity\" value=\"month\" checked> 按月</label><label class=\"filter-radio-item\"><input type=\"radio\" name=\"granularity\" value=\"week\"> 按周</label></div></div>",
+  "variants": ["时间粒度切换", "维度视角选择", "展示模式切换"],
+  "relatedCards": ["filter-dropdown", "filter-checkbox-group"]
+}

@@ -1,0 +1,39 @@
+/* 电商用户行为分析布局 */
+:root {
+  --layout-content-padding:   24px;
+  --layout-content-max-width: 1400px;
+  --layout-gap:               20px;
+  --layout-card-padding:      20px;
+}
+
+.layout-ecommerce-user {
+  display: grid;
+  grid-template-areas:
+    "kpi      kpi      kpi      kpi"
+    "funnel   funnel   source   source"
+    "cohort   cohort   path     path";
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: auto 1fr 1fr;
+  gap: var(--layout-gap);
+  padding: var(--layout-content-padding);
+  max-width: var(--layout-content-max-width);
+  margin: 0 auto;
+}
+
+.layout-ecommerce-user .slot-userKpi      { grid-area: kpi; }
+.layout-ecommerce-user .slot-funnelChart  { grid-area: funnel; }
+.layout-ecommerce-user .slot-sourceMap    { grid-area: source; }
+.layout-ecommerce-user .slot-cohortTable  { grid-area: cohort; }
+.layout-ecommerce-user .slot-pathHeatmap  { grid-area: path; }
+
+/* 留存热力图色阶 */
+.retention-cell-high   { background: color-mix(in srgb, var(--color-success) 40%, transparent); }
+.retention-cell-mid    { background: color-mix(in srgb, var(--color-warning) 25%, transparent); }
+.retention-cell-low    { background: color-mix(in srgb, var(--color-danger)  20%, transparent); }
+
+@media (max-width: 1024px) {
+  .layout-ecommerce-user {
+    grid-template-areas: "kpi" "funnel" "source" "cohort" "path";
+    grid-template-columns: 1fr;
+  }
+}

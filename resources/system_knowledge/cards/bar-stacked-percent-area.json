@@ -1,0 +1,22 @@
+{
+  "id": "bar-stacked-percent-area",
+  "type": "card",
+  "name": "百分比堆积面积图",
+  "category": "chart",
+  "tags": ["百分比面积图", "堆积占比", "100% area", "份额演变", "趋势占比"],
+  "description": "100% 百分比堆积面积图，每个时间点各系列面积加和为 100%，展示多分类随时间的相对占比变化趋势。适合展示市场份额演变、渠道占比变化、用户来源结构变化等场景。",
+  "useCases": [
+    "各渠道流量占比随时间演变",
+    "市场份额格局变化（竞争对手）",
+    "产品线收入结构月度变化",
+    "用户留存各周期行为占比"
+  ],
+  "dataSchema": {
+    "dates": "时间轴数组",
+    "series": "系列数组：[{name, data:[]}]，每时间点数据会自动归一化为百分比"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["highlight", "datazoom"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_pct_area\">\n  <h2 class=\"card-title\">渠道流量占比趋势（%）</h2>\n  <div id=\"chart_pct_area\" class=\"chart-container\" style=\"height:300px\"></div>\n  <script>\n  (function(){\n    var d=['1月','2月','3月','4月','5月','6月','7月','8月'];\n    var chart=echarts.init(document.getElementById('chart_pct_area'));\n    chart.setOption({\n      tooltip:{trigger:'axis',axisPointer:{type:'cross'}},\n      legend:{},\n      xAxis:{type:'category',data:d,boundaryGap:false},\n      yAxis:{type:'value',axisLabel:{formatter:'{value}%'},max:100},\n      series:[\n        {name:'搜索',type:'line',stack:'total',smooth:true,areaStyle:{},data:[40,38,36,32,30,28,26,25],tooltip:{valueFormatter:function(v){return v+'%';}}},\n        {name:'直播',type:'line',stack:'total',smooth:true,areaStyle:{},data:[15,18,22,26,28,30,32,35]},\n        {name:'推荐',type:'line',stack:'total',smooth:true,areaStyle:{},data:[25,25,24,24,23,23,22,22]},\n        {name:'社交',type:'line',stack:'total',smooth:true,areaStyle:{},data:[20,19,18,18,19,19,20,18]}\n      ]\n    });\n    window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.register('chart_pct_area', chart);\n  })();\n  <\/script>\n</div>"
+}

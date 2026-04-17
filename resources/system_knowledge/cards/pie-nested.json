@@ -1,0 +1,13 @@
+{
+  "id": "pie-nested",
+  "type": "card",
+  "category": "B",
+  "name": "嵌套双环图",
+  "description": "ECharts 双层嵌套环形图，内环为大类，外环为细分，适合展示两级层级结构（大类+子类）的占比",
+  "tags": ["pie", "nested", "donut", "hierarchical", "two-level", "category", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"pie_nested\"><div class=\"card-title\">产品分类双层结构</div><div class=\"chart-container short\" id=\"chart_nested\"></div><script>(function(){var el=document.getElementById('chart_nested');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6','#10b981','#f59e0b','#ef4444'];c.setOption({tooltip:{trigger:'item'},legend:{bottom:0},series:[{name:'大类',type:'pie',radius:[0,'35%'],label:{show:true,position:'inner'},data:[{value:600,name:'线上',itemStyle:{color:palette[0]}},{value:400,name:'线下',itemStyle:{color:palette[1]}}]},{name:'细分',type:'pie',radius:['45%','65%'],labelLine:{length:15},data:[{value:350,name:'App',itemStyle:{color:palette[0],opacity:0.9}},{value:250,name:'Web',itemStyle:{color:palette[0],opacity:0.6}},{value:250,name:'门店',itemStyle:{color:palette[1],opacity:0.9}},{value:150,name:'代理',itemStyle:{color:palette[1],opacity:0.6}}]}]});})();</script></div>",
+  "variants": ["产品大类+细分", "地区+城市", "渠道+来源"],
+  "relatedCards": ["pie-chart-donut", "treemap"]
+}

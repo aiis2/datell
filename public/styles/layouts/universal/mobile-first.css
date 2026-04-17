@@ -1,0 +1,20 @@
+/* 移动端优先布局 — 单列窄卡片 */
+:root {
+  --layout-content-padding:   12px;
+  --layout-content-max-width: 100%;
+  --layout-gap:               12px;
+  --layout-kpi-cols:          repeat(2, 1fr);
+  --layout-kpi-gap:           10px;
+  --layout-chart-cols:        1fr;
+  --layout-chart-gap:         12px;
+  --layout-card-padding:      16px;
+  --font-size-base:           13px;
+  /* 三区结构 */
+  --layout-kpi-cols-n:        2;
+  --layout-kpi-row-h:         90px;
+  --layout-kpi-card-padding:  8px 10px;
+  --layout-filter-row-h:      36px;
+  --layout-zone-gap:          10px;
+}
+
+.chart-container { height: 260px; }

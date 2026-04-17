@@ -1,0 +1,27 @@
+{
+  "id": "kpi-gross-margin",
+  "type": "card",
+  "category": "A",
+  "name": "毛利率指标卡",
+  "description": "展示销售毛利率百分比及同比/环比变化，适合销售绩效分析、产品定价评估、利润中心报告",
+  "tags": [
+    "kpi",
+    "gross margin",
+    "毛利率",
+    "利润率",
+    "销售",
+    "定价"
+  ],
+  "cssClass": "kpi-comparison",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>毛利率</div><div style='font-size:32px;font-weight:900;color:var(--color-primary)'>42.8%</div><div style='font-size:11px;color:var(--color-success)'>▲ 1.5pp vs 上季</div></div>",
+  "variants": [
+    "净利率",
+    "净利润额",
+    "贡献毛利"
+  ],
+  "relatedCards": [
+    "kpi-ebitda",
+    "kpi-single"
+  ]
+}

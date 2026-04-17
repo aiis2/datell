@@ -1,0 +1,13 @@
+{
+  "id": "bar-histogram",
+  "type": "card",
+  "category": "B",
+  "name": "频率分布直方图",
+  "description": "ECharts 直方图，将连续数值分桶展示频率分布，可选叠加正态曲线，适合统计分析/质量控制/分布可视化",
+  "tags": ["bar", "histogram", "distribution", "frequency", "statistics", "bucket", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"histogram\"><div class=\"card-title\">订单金额分布</div><div class=\"chart-container md\" id=\"chart_histogram\"></div><script>(function(){var el=document.getElementById('chart_histogram');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6'];var bins=['0-200','200-400','400-600','600-800','800-1k','1k+'];var freq=[120,310,480,290,140,60];c.setOption({color:palette,tooltip:{trigger:'axis'},grid:{left:'3%',right:'4%',bottom:'3%',containLabel:true},xAxis:{type:'category',data:bins,name:'金额区间（元）'},yAxis:{type:'value',name:'订单数'},series:[{type:'bar',data:freq,barMaxWidth:60,itemStyle:{color:palette[0],opacity:0.8},label:{show:false}}]});})();</script></div>",
+  "variants": ["交易金额分布", "响应时间分布", "年龄分布"],
+  "relatedCards": ["bar-chart-basic", "scatter-chart"]
+}

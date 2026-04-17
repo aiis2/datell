@@ -1,0 +1,19 @@
+/* 紧凑仪表盘 — 高信息密度监控大屏 */
+:root {
+  --layout-content-padding:   12px;
+  --layout-content-max-width: 1920px;
+  --layout-gap:               12px;
+  --layout-kpi-cols:          repeat(auto-fit, minmax(150px, 1fr));
+  --layout-kpi-gap:           10px;
+  --layout-chart-cols:        repeat(3, 1fr);
+  --layout-chart-gap:         12px;
+  --layout-card-padding:      14px;
+  --font-size-base:           13px;
+  /* 三区结构 */
+  --layout-kpi-cols-n:        6;
+  --layout-kpi-row-h:         80px;
+  --layout-kpi-card-padding:  6px 10px;
+  --layout-zone-gap:          10px;
+}
+
+.chart-container { height: 280px; }

@@ -1,0 +1,32 @@
+{
+  "id": "kpi-health-score",
+  "type": "card",
+  "name": "健康度/评分 KPI 卡",
+  "category": "kpi",
+  "tags": [
+    "健康度",
+    "评分",
+    "score",
+    "综合指数",
+    "KPI",
+    "仪表",
+    "健康指标"
+  ],
+  "description": "展示综合健康度或评分的大圆形仪表 KPI 卡，分数从 0-100，配合颜色梯度（红色为差、黄色为中、绿色为优）直观表达系统/业务/客户满意度的综合状态。",
+  "useCases": [
+    "系统/服务健康度评分",
+    "客户满意度综合指数",
+    "员工敬业度评分",
+    "供应商评级/质量分"
+  ],
+  "dataSchema": {
+    "score": "0-100 的综合评分",
+    "label": "指标名称",
+    "subLabel": "补充说明（如评分周期、基准）",
+    "thresholds": "[60, 80] 低于60为差，60-80为中，80以上为优"
+  },
+  "htmlClassName": "card kpi-card",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card kpi-card\" data-card-id=\"kpi_health\">\n  <div style=\"text-align:center\">\n    <svg width=\"100\" height=\"100\" viewBox=\"0 0 36 36\" style=\"transform:rotate(-90deg)\">\n      <circle cx=\"18\" cy=\"18\" r=\"15.9\" fill=\"none\" stroke=\"#e2e8f0\" stroke-width=\"3\"/>\n      <circle cx=\"18\" cy=\"18\" r=\"15.9\" fill=\"none\" stroke=\"#10b981\" stroke-width=\"3\" stroke-dasharray=\"72 28\" stroke-linecap=\"round\"/>\n    </svg>\n    <div class=\"kpi-value\" style=\"margin-top:-60px\">72</div>\n    <div class=\"kpi-label\">系统健康度</div>\n    <div class=\"kpi-sub text-green-500\">良好</div>\n  </div>\n</div>"
+}

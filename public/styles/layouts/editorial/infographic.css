@@ -1,0 +1,12 @@
+/* 信息图布局 — 竖向流式 + 大图表 */
+:root {
+  --layout-content-padding:   24px;
+  --layout-content-max-width: 720px;
+  --layout-gap:               32px;
+  --layout-kpi-cols:          repeat(2, 1fr);
+  --layout-chart-cols:        1fr;
+  --layout-chart-gap:         24px;
+  --layout-card-padding:      24px;
+}
+
+.chart-container { height: 480px; }

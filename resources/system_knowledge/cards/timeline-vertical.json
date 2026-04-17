@@ -1,0 +1,21 @@
+{
+  "id": "timeline-vertical",
+  "type": "card",
+  "name": "垂直时间轴",
+  "category": "structure",
+  "tags": ["时间轴", "垂直", "历史", "里程碑", "事件流", "timeline"],
+  "description": "垂直展示的时间轴卡片，每个节点包含时间标签、标题和简要描述，支持颜色区分不同类型事件（成功/警告/信息/错误），适合展示项目里程碑、历史事件、操作日志等时序内容。",
+  "useCases": [
+    "项目里程碑时间轴",
+    "产品发展历史",
+    "订单/审批流程状态追踪",
+    "用户操作日志时间线"
+  ],
+  "dataSchema": {
+    "events": "事件数组：[{time, title, description, type:'success'|'warning'|'info'|'error'}]"
+  },
+  "htmlClassName": "card timeline-card timeline-vertical",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card timeline-card\" data-card-id=\"timeline_vert\">\n  <h2 class=\"card-title\">项目里程碑</h2>\n  <div class=\"timeline\">\n    <div class=\"timeline-item\">\n      <div class=\"timeline-dot timeline-dot-success\"></div>\n      <div class=\"timeline-content\"><span class=\"timeline-time\">2024-01</span><strong>需求确认</strong><p>完成业务需求调研与文档确认</p></div>\n    </div>\n    <div class=\"timeline-item\">\n      <div class=\"timeline-dot timeline-dot-info\"></div>\n      <div class=\"timeline-content\"><span class=\"timeline-time\">2024-03</span><strong>开发完成</strong><p>核心功能开发完毕，进入测试阶段</p></div>\n    </div>\n    <div class=\"timeline-item\">\n      <div class=\"timeline-dot timeline-dot-warning\"></div>\n      <div class=\"timeline-content\"><span class=\"timeline-time\">2024-05</span><strong>上线发布</strong><p>生产环境部署，开始灰度放量</p></div>\n    </div>\n  </div>\n</div>"
+}

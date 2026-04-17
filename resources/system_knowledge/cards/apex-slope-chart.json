@@ -1,0 +1,25 @@
+{
+  "id": "apex-slope-chart",
+  "type": "card",
+  "name": "ApexCharts 坡度对比图（Slope Chart）",
+  "category": "chart",
+  "tags": ["坡度图", "slope chart", "前后对比", "变化方向", "ApexCharts", "两期对比"],
+  "description": "坡度图（Slope Chart），仅有两个时间点（前/后），用线段连接各分类的前后值，直观展示方向变化（上升/下降）和相对变化量。比传统柱状图更突出变化趋势。使用 ApexCharts line 图实现。",
+  "useCases": [
+    "产品各城市前后两期排名变化",
+    "政策前后同类指标对比",
+    "本月 vs 上月各部门指标变化",
+    "两个时间点的多分类数值对比"
+  ],
+  "dataSchema": {
+    "categories": "分类名称（线的条数）",
+    "beforeValues": "前期值数组",
+    "afterValues": "后期值数组",
+    "beforeLabel": "前期标签（如 上月）",
+    "afterLabel": "后期标签（如 本月）"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "apexcharts",
+  "interactionSupport": ["highlight"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_apex_slope\">\n  <h2 class=\"card-title\">各渠道转化率：上月 vs 本月</h2>\n  <div id=\"chart_apex_slope\"></div>\n  <script>\n  (function(){\n    var cats=['搜索','直播','推荐','社交','邮件'];\n    var before=[4.2,6.1,3.5,2.8,1.9];\n    var after=[4.8,5.7,4.2,3.1,1.6];\n    var series=cats.map(function(c,i){return{name:c,data:[before[i],after[i]]};});\n    var options={\n      chart:{type:'line',height:280,toolbar:{show:false},animations:{enabled:!window.__REPORT_PRINT_MODE__},events:{dataPointSelection:function(e,ctx,c){window.__REPORT_EVENT_BUS__&&window.__REPORT_EVENT_BUS__.emit({type:'highlight',cardId:'chart_apex_slope',payload:{series:c.seriesIndex}});}}},\n      series:series,\n      xaxis:{categories:['上月','本月'],axisBorder:{show:true}},\n      yaxis:{labels:{formatter:function(v){return v+'%';}}},\n      colors:window.__APEX_PALETTE__||['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6'],\n      stroke:{curve:'straight',width:2},\n      markers:{size:6},\n      legend:{position:'right'},\n      tooltip:{y:{formatter:function(v){return v+'%';}}}\n    };\n    var apx=new ApexCharts(document.getElementById('chart_apex_slope'),options);\n    apx.render().then(function(){\n      window.__REPORT_EVENT_BUS__&&window.__REPORT_EVENT_BUS__.registerApex('chart_apex_slope',apx);\n    });\n  })();\n  <\/script>\n</div>"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "table-action-list",
+  "type": "card",
+  "name": "操作事项列表（可完成任务清单）",
+  "category": "table",
+  "tags": ["任务", "清单", "action items", "待办", "责任人", "due date"],
+  "description": "展示操作事项、任务清单的结构化列表卡片，每行含序号、事项描述、责任人、截止日和状态（待处理/进行中/已完成/逾期），按优先级或截止日排序，逾期项目行高亮显示。适合报告附录的行动事项、问题跟踪。",
+  "useCases": [
+    "报告结论的行动事项列表",
+    "审计发现的整改清单",
+    "会议纪要的任务分配",
+    "项目问题跟踪列表"
+  ],
+  "dataSchema": {
+    "items": "事项数组：[{id, description, owner, dueDate, status, priority}]",
+    "status": "待处理/进行中/已完成/逾期",
+    "priority": "高/中/低"
+  },
+  "htmlClassName": "card table-card action-list",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card table-card\" data-card-id=\"table_actions\">\n  <h2 class=\"card-title\">行动事项跟踪</h2>\n  <div class=\"table-wrapper\">\n    <table class=\"data-table\">\n      <thead><tr><th>#</th><th>事项</th><th>责任人</th><th>截止日</th><th>优先级</th><th>状态</th></tr></thead>\n      <tbody>\n        <tr class=\"row-error\"><td>1</td><td>修复支付超时问题</td><td>张三</td><td>2024-01-15</td><td><span class=\"badge badge-red\">高</span></td><td><span class=\"badge badge-red\">逾期</span></td></tr>\n        <tr><td>2</td><td>完成Q1数据报告</td><td>李四</td><td>2024-02-01</td><td><span class=\"badge badge-yellow\">中</span></td><td><span class=\"badge badge-blue\">进行中</span></td></tr>\n        <tr><td>3</td><td>更新API文档</td><td>王五</td><td>2024-02-15</td><td><span class=\"badge badge-gray\">低</span></td><td><span class=\"badge badge-gray\">待处理</span></td></tr>\n        <tr><td>4</td><td>性能压测报告</td><td>赵六</td><td>2024-01-20</td><td><span class=\"badge badge-red\">高</span></td><td><span class=\"badge badge-green\">已完成</span></td></tr>\n      </tbody>\n    </table>\n  </div>\n</div>"
+}

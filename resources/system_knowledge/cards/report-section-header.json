@@ -1,0 +1,25 @@
+{
+  "id": "report-section-header",
+  "type": "card",
+  "name": "报告分节标题栏",
+  "category": "structure",
+  "tags": ["章节标题", "section header", "分节", "标题栏", "报告结构", "分隔"],
+  "description": "报告章节分节标题卡片，包含章节序号、章节名称、副标题/摘要说明、以及可选的右侧统计数字或日期范围。用于在长报告中标记各章节开始，提升报告可读性和整体结构感。",
+  "useCases": [
+    "报告主体章节分节标题",
+    "分析报告各部分起始标识",
+    "数据看板分区域章节标题",
+    "季报/年报结构分节"
+  ],
+  "dataSchema": {
+    "number": "章节序号（如 01/02）",
+    "title": "章节主标题",
+    "subtitle": "副标题/简要说明",
+    "badge": "右侧可选标签（如日期范围/统计数字）",
+    "accentColor": "强调色（使用CSS变量）"
+  },
+  "htmlClassName": "card section-header-card",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card section-header-card\" data-card-id=\"sec_head_01\" style=\"background:linear-gradient(135deg,var(--accent-bg,#eff6ff),var(--card-bg));border-left:4px solid var(--accent,#3b82f6)\">\n  <div style=\"display:flex;align-items:center;gap:16px\">\n    <div style=\"font-size:2.5rem;font-weight:800;color:var(--accent,#3b82f6);opacity:0.25;line-height:1\">01</div>\n    <div style=\"flex:1\">\n      <h2 style=\"margin:0;font-size:1.25rem;font-weight:700\">业务概况</h2>\n      <p style=\"margin:4px 0 0;font-size:0.85rem;opacity:0.7\">本章节展示本报告周期内的核心业务表现及关键指标达成情况</p>\n    </div>\n    <div style=\"text-align:right;font-size:0.8rem;opacity:0.6\">2024 Q1<br>2024-01-01 ~ 2024-03-31</div>\n  </div>\n</div>"
+}

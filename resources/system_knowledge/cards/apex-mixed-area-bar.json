@@ -1,0 +1,23 @@
+{
+  "id": "apex-mixed-area-bar",
+  "type": "card",
+  "name": "ApexCharts 面积图 + 柱图混合",
+  "category": "chart",
+  "tags": ["混合图", "面积图", "柱图", "ApexCharts", "dual series", "量率双轴"],
+  "description": "ApexCharts 面积图与柱图的混合图，面积图展示一个指标趋势，柱图展示另一指标数量，共用 X 轴，Y 轴可双轴配置。适合需要在同一图内展示量和比的组合，如收入趋势（面积）+订单量（柱）。使用 generate_chart_apex 工具生成。",
+  "useCases": [
+    "GMV（面积）+ 订单量（柱）混合",
+    "消费额（面积）+ 用户数（柱）联合图",
+    "收入（面积）+ 同比增长率（柱）",
+    "访问量（面积）+ 转化数（柱）"
+  ],
+  "dataSchema": {
+    "dates": "时间轴数组",
+    "areaSeries": "{name, data} 面积图数据",
+    "barSeries": "{name, data} 柱图数据"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "apexcharts",
+  "interactionSupport": ["highlight"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_apex_mixed\">\n  <h2 class=\"card-title\">GMV（面积）+ 订单量（柱）</h2>\n  <div id=\"chart_apex_mixed\"></div>\n  <script>\n  (function(){\n    var m=['1月','2月','3月','4月','5月','6月'];\n    var options={\n      chart:{type:'line',height:280,toolbar:{show:false},animations:{enabled:!window.__REPORT_PRINT_MODE__},events:{dataPointSelection:function(e,ctx,c){window.__REPORT_EVENT_BUS__&&window.__REPORT_EVENT_BUS__.emit({type:'highlight',cardId:'chart_apex_mixed',payload:c});}}},\n      series:[\n        {name:'GMV（万元）',type:'area',data:[1200,1350,1100,1580,1480,1720]},\n        {name:'订单量（千单）',type:'bar',data:[42,47,38,55,52,60]}\n      ],\n      xaxis:{categories:m},\n      yaxis:[\n        {title:{text:'GMV（万元）'},labels:{formatter:function(v){return v+'万';}}},\n        {opposite:true,title:{text:'订单量（千单）'},labels:{formatter:function(v){return v+'k';}}}\n      ],\n      colors:(window.__APEX_PALETTE__||['#3b82f6','#10b981']).slice(0,2),\n      fill:{type:['gradient','solid'],gradient:{shadeIntensity:1,opacityFrom:0.4,opacityTo:0.05}},\n      legend:{position:'top'}\n    };\n    var apx=new ApexCharts(document.getElementById('chart_apex_mixed'),options);\n    apx.render().then(function(){\n      window.__REPORT_EVENT_BUS__&&window.__REPORT_EVENT_BUS__.registerApex('chart_apex_mixed',apx);\n    });\n  })();\n  <\/script>\n</div>"
+}

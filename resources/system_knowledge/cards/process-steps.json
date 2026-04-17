@@ -1,0 +1,12 @@
+{
+  "id": "process-steps",
+  "type": "card",
+  "category": "D",
+  "name": "流程步骤卡",
+  "description": "横排或竖排展示流程阶段，每步含编号圆点（done/active/pending 状态）、标题、说明，适合业务流程、项目roadmap、用户旅程",
+  "tags": ["process", "steps", "workflow", "roadmap", "journey", "pipeline", "flow"],
+  "cssClass": "process-steps",
+  "exampleHtml": "<div class=\"card\" data-card-id=\"sales_process\" style=\"padding:16px\"><h2 class=\"card-title\">销售转化流程</h2><div class=\"process-steps\" style=\"gap:0;padding:16px 8px\">\n  <div class=\"process-step\"><div class=\"process-step-num done\">1</div><div class=\"process-step-label\">线索获取</div><div class=\"process-step-desc\">已完成 1,240 条</div></div>\n  <div class=\"process-step\"><div class=\"process-step-num done\">2</div><div class=\"process-step-label\">初步筛选</div><div class=\"process-step-desc\">有效 820 条</div></div>\n  <div class=\"process-step\"><div class=\"process-step-num active\">3</div><div class=\"process-step-label\">深度跟进</div><div class=\"process-step-desc\">进行中 340 条</div></div>\n  <div class=\"process-step\"><div class=\"process-step-num pending\">4</div><div class=\"process-step-label\">签约转化</div><div class=\"process-step-desc\">目标 200+</div></div>\n</div></div>",
+  "variants": ["项目里程碑", "用户注册流程", "审批步骤", "业务pipeline"],
+  "relatedCards": ["timeline-event", "funnel-chart"]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "table-financial-statement",
+  "type": "card",
+  "name": "财务报表格式表（利润表/资产负债表）",
+  "category": "table",
+  "tags": ["财务报表", "利润表", "资产负债", "income statement", "financial", "会计报表"],
+  "description": "仿财务报表格式的结构化表格，支持多级缩进（核心指标/子指标/汇总行），包含本期、上期和变化率三列。小计/合计行加粗显示，负数用括号表示。适合生成正式的利润表、资产负债表或现金流量表片段。",
+  "useCases": [
+    "损益表/利润表",
+    "资产负债表关键科目",
+    "现金流量表简要版",
+    "成本费用明细表"
+  ],
+  "dataSchema": {
+    "rows": "行数组：[{label, currentValue, prevValue, indent, isTotal, isSubtotal}]",
+    "currency": "货币单位（如 人民币千元）",
+    "periodLabels": "['本期','上期','同比']"
+  },
+  "htmlClassName": "card table-card financial-table",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card table-card\" data-card-id=\"table_financial\">\n  <h2 class=\"card-title\">利润表（人民币万元）</h2>\n  <div class=\"table-wrapper\">\n    <table class=\"data-table financial-stmt\">\n      <thead><tr><th style=\"width:50%\">科目</th><th>本期</th><th>上期</th><th>同比</th></tr></thead>\n      <tbody>\n        <tr class=\"subtotal\"><td><strong>营业收入</strong></td><td><strong>12,800</strong></td><td><strong>10,500</strong></td><td class=\"text-green-500\">+21.9%</td></tr>\n        <tr><td style=\"padding-left:1.5em\">主营业务收入</td><td>11,200</td><td>9,300</td><td class=\"text-green-500\">+20.4%</td></tr>\n        <tr><td style=\"padding-left:1.5em\">其他收入</td><td>1,600</td><td>1,200</td><td class=\"text-green-500\">+33.3%</td></tr>\n        <tr><td>营业成本</td><td>(7,840)</td><td>(6,615)</td><td class=\"text-red-500\">+18.5%</td></tr>\n        <tr class=\"subtotal\"><td><strong>毛利润</strong></td><td><strong>4,960</strong></td><td><strong>3,885</strong></td><td class=\"text-green-500\">+27.7%</td></tr>\n        <tr><td>销售费用</td><td>(2,368)</td><td>(1,890)</td><td class=\"text-red-500\">+25.3%</td></tr>\n        <tr><td>管理费用</td><td>(640)</td><td>(525)</td><td class=\"text-red-500\">+21.9%</td></tr>\n        <tr class=\"total\"><td><strong>净利润</strong></td><td><strong>1,952</strong></td><td><strong>1,470</strong></td><td class=\"text-green-500\">+32.8%</td></tr>\n      </tbody>\n    </table>\n  </div>\n</div>"
+}

@@ -1,0 +1,31 @@
+{
+  "id": "bar-chart-grouped",
+  "type": "card",
+  "name": "分组对比柱状图",
+  "category": "chart",
+  "tags": [
+    "柱状图",
+    "分组",
+    "对比",
+    "并排",
+    "多系列"
+  ],
+  "description": "并排分组柱状图，同一类别下多个系列并排展示，适合多维度横向对比，如同期不同产品/地区/渠道的对比。",
+  "useCases": [
+    "今年vs去年同期对比",
+    "A/B/C 产品各地区销量",
+    "多部门指标横向对比"
+  ],
+  "dataSchema": {
+    "categories": "横轴类别",
+    "series": "多个系列（name+data）",
+    "title": "标题"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "highlight",
+    "tooltip",
+    "legend"
+  ]
+}

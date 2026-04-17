@@ -1,0 +1,29 @@
+{
+  "id": "kpi-pick-accuracy",
+  "type": "card",
+  "category": "kpi",
+  "name": "拣货准确率指标卡",
+  "description": "展示仓库拣货准确率，含差错数量和类型分析，适合仓储管理系统(WMS)看板、仓库运营月报",
+  "tags": [
+    "kpi",
+    "pick accuracy",
+    "拣货准确率",
+    "仓储",
+    "WMS",
+    "配送",
+    "出货准确"
+  ],
+  "cssClass": "kpi-target-bar",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>拣货准确率</div><div style='font-size:32px;font-weight:900;color:var(--color-success)'>99.7%</div><div class='kpi-target-bar-wrap' style='margin:8px 0'><div class='kpi-target-bar-fill' style='--bar-pct:99.7%;background:var(--color-success)'></div></div><div style='font-size:11px;color:var(--text-sub)'>差错: 12单 / 总拣: 4,000单</div></div>",
+  "variants": [
+    "发货准确率",
+    "条码扫描率",
+    "库存准确率"
+  ],
+  "relatedCards": [
+    "kpi-sla-uptime",
+    "kpi-defect-rate"
+  ],
+  "htmlClassName": "card kpi-card"
+}

@@ -1,0 +1,28 @@
+{
+  "id": "bubble-chart",
+  "type": "card",
+  "name": "气泡图",
+  "category": "chart",
+  "tags": [
+    "气泡图",
+    "三维对比",
+    "大小",
+    "散点",
+    "矩阵"
+  ],
+  "description": "三维气泡图，气泡大小代表第三维度数据，同时展示 X/Y/大小 三个变量的关系。适合多维数据分析。",
+  "useCases": [
+    "产品利润率/销量/市场规模三维对比",
+    "城市GDP/人口/增速分析"
+  ],
+  "dataSchema": {
+    "points": "气泡数组（x/y/size/name）",
+    "title": "标题"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "tooltip",
+    "zoom"
+  ]
+}

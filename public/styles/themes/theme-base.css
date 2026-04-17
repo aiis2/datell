@@ -1,0 +1,439 @@
+/* ============================================================
+   theme-base.css — 全局重置 + 视觉变量默认值（纯视觉层）
+   布局规则已迁移至 layouts/_layout-base.css
+   ============================================================ */
+:root {
+  /* ── 字体 ── */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-size-base: 14px;
+  --font-size-sm:   12px;
+  --font-size-lg:   18px;
+  --font-size-xl:   24px;
+  --font-size-2xl:  32px;
+
+  /* ── 间距（供布局层使用的语义变量） ── */
+  --spacing-xs:  4px;
+  --spacing-sm:  8px;
+  --spacing-md:  16px;
+  --spacing-lg:  24px;
+  --spacing-xl:  32px;
+
+  /* ── 背景色 ── */
+  --bg-body:         #f8f9fa;
+  --bg-header:       transparent;
+  --bg-card:         #ffffff;
+  --bg-card-alt:     #f0f2f5;
+  --bg-table-header: #f1f5f9;
+  --bg-table-hover:  #f8fafc;
+
+  /* ── 文字色 ── */
+  --text-main:    #1a1a2e;
+  --text-sub:     #64748b;
+  --text-header:  inherit;
+  --text-accent:  #3b82f6;
+
+  /* ── 主题色 ── */
+  --color-primary: #3b82f6;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger:  #ef4444;
+
+  /* ── 阴影 ── */
+  --shadow-sm:   0 1px 3px rgba(0,0,0,.08);
+  --shadow-card: 0 2px 8px rgba(0,0,0,.08);
+  --shadow-md:   0 4px 12px rgba(0,0,0,.10);
+  --shadow-lg:   0 8px 24px rgba(0,0,0,.12);
+
+  /* ── 圆角 ── */
+  --radius-sm:   4px;
+  --radius-card: 8px;
+  --radius-md:   12px;
+  --radius-lg:   20px;
+
+  /* ── 边框 ── */
+  --border-card:   none;
+  --border-header: none;
+  --border-table:  #e2e8f0;
+}
+
+/* ── 全局重置 ─────────────────────────────────────────── */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  background: var(--bg-body);
+  color: var(--text-main);
+  overflow-x: hidden;
+  overflow-y: auto;
+  line-height: 1.5;
+}
+
+/* ── 报表骨架（结构由 layout 决定，此处仅兜底） ─────── */
+.report-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.report-header {
+  padding: var(--spacing-xl);
+  background: var(--bg-header);
+  color: var(--text-header);
+  border-bottom: var(--border-header);
+}
+
+.report-title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  margin-bottom: var(--spacing-sm);
+}
+
+.report-timestamp {
+  font-size: var(--font-size-sm);
+  opacity: 0.8;
+}
+
+.report-content {
+  padding: var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+/* ── 网格系统（base 兜底，可被 layout 覆盖） ──────── */
+.grid-kpi {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.grid-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-lg);
+}
+.grid-charts.full {
+  grid-template-columns: 1fr;
+}
+
+/* ── 卡片基础结构 ─────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-card);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-card);
+  border: var(--border-card);
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Icon alignment — SVG icons inline with text ─── */
+/* .icon-text: flex container so icon + text are always vertically centered */
+.icon-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+/* .icon: reset inline SVG so it sits at the correct optical baseline */
+.icon {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+  /* Counteract the 1-2px optical high-shift common in 16px SVG icons */
+  position: relative;
+  top: -0.5px;
+}
+/* card-title and h2/h3 headings with embedded icons */
+h1 .icon, h2 .icon, h3 .icon, h4 .icon, h5 .icon,
+.card-title .icon, .section-title .icon, .chart-title .icon {
+  top: 0;
+  vertical-align: -0.125em;
+}
+
+/* ── KPI Card ─────────────────────────────────────── */
+.kpi-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+.kpi-title {
+  font-size: 13px;
+  color: var(--text-sub);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.kpi-value {
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--text-accent);
+}
+.kpi-trend {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.kpi-trend.up   { color: var(--color-success); }
+.kpi-trend.down { color: var(--color-danger); }
+.kpi-sub {
+  font-size: 11px;
+  color: var(--text-sub);
+}
+
+/* ── A2 对比 KPI ──────────────────────────────────── */
+.kpi-comparison-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+.kpi-values {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-sm);
+}
+.kpi-value.current  { font-size: 28px; font-weight: bold; color: var(--text-accent); }
+.kpi-value.previous { font-size: 14px; color: var(--text-sub); }
+.kpi-bars { display: flex; flex-direction: column; gap: 4px; }
+.kpi-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-primary);
+  width: var(--bar-pct, 50%);
+  opacity: 0.4;
+}
+.kpi-bar.current { opacity: 1; }
+
+/* ── A3 进度/目标 KPI ─────────────────────────────── */
+.kpi-progress-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  align-items: center;
+  text-align: center;
+}
+
+/* ── Chart Container ──────────────────────────────── */
+.chart-container {
+  width: 100%;
+  height: 420px;
+}
+.chart-container.short { height: 300px; }
+.chart-container.tall  { height: 600px; }
+.chart-container.mini  { height: 160px; }
+
+/* ── Table 样式 ───────────────────────────────────── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.data-table th {
+  text-align: left;
+  padding: 12px var(--spacing-md);
+  background: var(--bg-table-header);
+  color: var(--text-sub);
+  font-weight: 600;
+  border-bottom: 2px solid var(--border-table);
+}
+.data-table td {
+  padding: 12px var(--spacing-md);
+  border-bottom: 1px solid var(--border-table);
+  color: var(--text-main);
+}
+.data-table tbody tr:hover {
+  background: var(--bg-table-hover);
+}
+
+/* ── C1 排行榜表格 ────────────────────────────────── */
+.ranked-table .rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--bg-card-alt);
+  color: var(--text-sub);
+}
+.ranked-table .rank-badge.gold   { background: #f59e0b; color: #fff; }
+.ranked-table .rank-badge.silver { background: #94a3b8; color: #fff; }
+.ranked-table .rank-badge.bronze { background: #b45309; color: #fff; }
+
+/* ── KPI 趋势方向标记 ─────────────────────────────── */
+.trend-up   { color: var(--color-success); }
+.trend-down { color: var(--color-danger); }
+.trend-flat { color: var(--text-sub); }
+
+/* ── D1 时间轴卡片 ────────────────────────────────── */
+.timeline {
+  list-style: none;
+  position: relative;
+  padding-left: 24px;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 7px; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--border-table);
+}
+.timeline-item {
+  position: relative;
+  padding-bottom: var(--spacing-lg);
+}
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: 4px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: 2px solid var(--bg-card);
+}
+.timeline-item--success::before { background: var(--color-success); }
+.timeline-item--warning::before { background: var(--color-warning); }
+.timeline-item--danger::before  { background: var(--color-danger); }
+.timeline-date {
+  font-size: 11px;
+  color: var(--text-sub);
+  display: block;
+  margin-bottom: 4px;
+}
+.timeline-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+.timeline-desc {
+  font-size: 13px;
+  color: var(--text-sub);
+  margin-top: 2px;
+}
+
+/* ── E 类筛选控件基础样式 ─────────────────────────── */
+.filter-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-card);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+  border: var(--border-card);
+}
+.filter-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-sub);
+  display: block;
+  margin-bottom: var(--spacing-xs);
+}
+.filter-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+.filter-input {
+  border: 1px solid var(--border-table);
+  border-radius: var(--radius-sm);
+  padding: 6px var(--spacing-sm);
+  font-size: 13px;
+  color: var(--text-main);
+  background: var(--bg-card);
+  outline: none;
+}
+.filter-input:focus { border-color: var(--color-primary); }
+.filter-sep { font-size: 12px; color: var(--text-sub); }
+.filter-apply-btn {
+  padding: 6px var(--spacing-md);
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  cursor: pointer;
+}
+.filter-apply-btn:hover { opacity: 0.85; }
+.filter-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px var(--spacing-sm);
+  background: var(--bg-card-alt);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text-main);
+}
+.filter-tag button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-sub);
+  padding: 0;
+  line-height: 1;
+}
+.filter-active-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: var(--spacing-sm); }
+
+/* ── 联动面包屑导航 ───────────────────────────────── */
+.drill-breadcrumb {
+  font-size: 12px;
+  color: var(--text-sub);
+  margin-bottom: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.bc-item {
+  cursor: pointer;
+  color: var(--color-primary);
+}
+.bc-item:last-child { color: var(--text-main); font-weight: 600; cursor: default; }
+.bc-item + .bc-item::before {
+  content: '>';
+  margin-right: 6px;
+  color: var(--text-sub);
+  cursor: default;
+}
+
+/* ── ApexCharts 文字色修复 ──────────────────────────────────────────────
+   当 AI 生成的图表包含 theme:{mode:'dark'} 时，ApexCharts 会将所有文字设为
+   白色（#fff）。由于卡片背景为浅色，白色文字不可见。
+   通过 CSS 覆盖强制使用主题文字色变量，兼容所有已存在的卡片。
+   注意：fill 用于 SVG 文本元素（xAxis/yAxis/legend）；color 用于 HTML 文本。
+───────────────────────────────────────────────────────────────────────── */
+.apexcharts-legend-text {
+  color: var(--text-main) !important;
+}
+.apexcharts-text,
+.apexcharts-xaxis-label text,
+.apexcharts-yaxis-label text,
+.apexcharts-title-text,
+.apexcharts-subtitle-text,
+.apexcharts-datalabel-label,
+.apexcharts-datalabel-value {
+  fill: var(--text-main) !important;
+}
+.apexcharts-tooltip {
+  background: var(--bg-card) !important;
+  border-color: var(--bg-card-alt) !important;
+  color: var(--text-main) !important;
+}
+.apexcharts-tooltip .apexcharts-tooltip-title {
+  background: var(--bg-card-alt) !important;
+  color: var(--text-main) !important;
+}

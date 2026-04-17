@@ -1,0 +1,11 @@
+/* 临床试验报告布局 */
+:root {
+  --layout-content-padding:   32px;
+  --layout-content-max-width: 1000px;
+  --layout-gap:               28px;
+  --layout-kpi-cols:          repeat(3, 1fr);
+  --layout-chart-cols:        1fr;
+  --layout-chart-gap:         24px;
+  --layout-card-padding:      28px;
+  --font-family:              Georgia, 'Times New Roman', serif;
+}

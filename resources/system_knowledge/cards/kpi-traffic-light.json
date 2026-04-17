@@ -1,0 +1,27 @@
+{
+  "id": "kpi-traffic-light",
+  "type": "card",
+  "category": "kpi",
+  "name": "红绿灯状态 KPI 卡",
+  "description": "通过红/黄/绿三色灯直观表达业务健康度，适合合规检查、目标达成、风险预警等场景",
+  "tags": [
+    "kpi",
+    "status",
+    "traffic-light",
+    "health",
+    "compliance",
+    "risk"
+  ],
+  "cssClass": "kpi-traffic-light",
+  "exampleHtml": "<div class=\"card kpi-card kpi-traffic-light\" data-card-id=\"compliance_status\" style=\"padding:16px\"><span class=\"kpi-title\" style=\"font-weight:700;font-size:14px;display:block;margin-bottom:12px\">合规状态</span><div class=\"kpi-traffic-light\"><div class=\"tl-lights\"><div class=\"tl-dot red\"></div><div class=\"tl-dot yellow active\"></div><div class=\"tl-dot green\"></div></div><div class=\"tl-body\"><span class=\"kpi-value\" style=\"font-size:22px;font-weight:800\">需关注</span><br><span class=\"kpi-sub\">3项指标偏离警戒线</span><br><span class=\"tl-status status-warning\">警告</span></div></div></div>",
+  "variants": [
+    "目标完成状态",
+    "风险健康度",
+    "质量评级"
+  ],
+  "relatedCards": [
+    "kpi-risk-flag",
+    "kpi-single"
+  ],
+  "htmlClassName": "card kpi-card kpi-traffic-light"
+}

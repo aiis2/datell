@@ -1,0 +1,13 @@
+{
+  "id": "org-chart",
+  "type": "card",
+  "category": "D",
+  "name": "组织架构图",
+  "description": "纯HTML/CSS 树形组织架构图，用盒子+连线展示公司/部门/人员层级关系，适合汇报中的组织介绍",
+  "tags": ["org", "chart", "organization", "hierarchy", "structure", "tree", "personnel"],
+  "cssClass": "chart-card",
+  "renderLib": "pure-html",
+  "exampleHtml": "<div class=\"card\" data-card-id=\"org_chart\"><div style=\"font-size:14px;font-weight:700;margin-bottom:12px\">组织架构</div><div style=\"display:flex;flex-direction:column;align-items:center;gap:8px;overflow-x:auto\"><div style=\"padding:8px 20px;background:var(--color-primary);color:#fff;border-radius:6px;font-weight:700;font-size:13px\">CEO</div><div style=\"width:2px;height:12px;background:var(--border-table)\"></div><div style=\"display:flex;gap:24px;align-items:flex-start\"><div style=\"display:flex;flex-direction:column;align-items:center;gap:6px\"><div style=\"padding:6px 16px;background:var(--bg-card-alt);border:1px solid var(--border-table);border-radius:6px;font-size:12px;font-weight:600\">研发总监</div><div style=\"display:flex;gap:12px\"><div style=\"padding:4px 12px;background:var(--bg-card-alt);border:1px solid var(--border-table);border-radius:4px;font-size:11px\">前端组</div><div style=\"padding:4px 12px;background:var(--bg-card-alt);border:1px solid var(--border-table);border-radius:4px;font-size:11px\">后端组</div></div></div><div style=\"display:flex;flex-direction:column;align-items:center;gap:6px\"><div style=\"padding:6px 16px;background:var(--bg-card-alt);border:1px solid var(--border-table);border-radius:6px;font-size:12px;font-weight:600\">商务总监</div><div style=\"display:flex;gap:12px\"><div style=\"padding:4px 12px;background:var(--bg-card-alt);border:1px solid var(--border-table);border-radius:4px;font-size:11px\">销售部</div><div style=\"padding:4px 12px;background:var(--bg-card-alt);border:1px solid var(--border-table);border-radius:4px;font-size:11px\">市场部</div></div></div></div></div></div>",
+  "variants": ["公司组织架构", "部门层级图", "汇报关系图"],
+  "relatedCards": ["process-steps", "network-graph"]
+}

@@ -1,0 +1,11 @@
+/* 电商 GMV 总览布局 — 核心指标 + 趋势图 */
+:root {
+  --layout-content-padding:   20px;
+  --layout-content-max-width: 1400px;
+  --layout-gap:               20px;
+  --layout-kpi-cols:          repeat(4, 1fr);
+  --layout-kpi-gap:           16px;
+  --layout-chart-cols:        2fr 1fr;
+  --layout-chart-gap:         20px;
+  --layout-card-padding:      20px;
+}

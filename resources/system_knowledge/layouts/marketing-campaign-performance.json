@@ -1,0 +1,22 @@
+{
+  "id": "marketing-campaign-performance",
+  "type": "layout",
+  "name": "营销活动效果",
+  "category": "marketing",
+  "tags": [
+    "营销",
+    "活动",
+    "ROI",
+    "转化",
+    "投放效果"
+  ],
+  "description": "营销活动效果布局，顶部曝光/点击/转化/ROI KPI，中部渠道对比条形图+转化漏斗，底部活动明细表。",
+  "slots": {
+    "campaignKpi": "活动效果KPI",
+    "channelChart": "渠道效果对比图",
+    "conversionFunnel": "转化漏斗",
+    "campaignTable": "活动明细"
+  },
+  "cssPath": "marketing/campaign-performance.css",
+  "containerClass": "layout-marketing-campaign"
+}

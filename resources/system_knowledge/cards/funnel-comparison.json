@@ -1,0 +1,13 @@
+{
+  "id": "funnel-comparison",
+  "type": "card",
+  "category": "B",
+  "name": "对比漏斗图",
+  "description": "ECharts 并排两个漏斗图（左右对比），用于比较两个渠道/时期/分组的转化率差异，适合A/B测试结果展示",
+  "tags": ["funnel", "comparison", "ab-test", "parallel", "conversion", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"funnel_cmp\"><div class=\"card-title\">A/B 版本转化对比</div><div class=\"chart-container md\" id=\"chart_funnel_cmp\"></div><script>(function(){var el=document.getElementById('chart_funnel_cmp');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6','#10b981'];c.setOption({legend:{data:['A版本','B版本'],bottom:0},tooltip:{trigger:'item'},series:[{name:'A版本',type:'funnel',left:'4%',width:'42%',label:{show:true,position:'inside'},data:[{value:100,name:'访问'},{value:55,name:'注册'},{value:28,name:'激活'},{value:12,name:'付费'}],itemStyle:{color:palette[0],opacity:0.85}},{name:'B版本',type:'funnel',left:'54%',width:'42%',label:{show:true,position:'inside'},data:[{value:100,name:'访问'},{value:62,name:'注册'},{value:36,name:'激活'},{value:18,name:'付费'}],itemStyle:{color:palette[1],opacity:0.85}}]});})();</script></div>",
+  "variants": ["AB测试漏斗对比", "渠道转化对比", "时期前后对比"],
+  "relatedCards": ["funnel-chart", "kpi-conversion-rate"]
+}

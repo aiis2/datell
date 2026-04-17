@@ -1,0 +1,13 @@
+{
+  "id": "bar-diverging",
+  "type": "card",
+  "category": "B",
+  "name": "发散型对比柱状图",
+  "description": "ECharts 正负对称发散条形图，用正负两侧同时展示两个对比指标（如满意/不满意、增长/收缩），适合态度对比/结构分析",
+  "tags": ["bar", "diverging", "symmetric", "comparison", "positive", "negative", "butterfly", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"bar_diverging\"><div class=\"card-title\">满意度两端对比</div><div class=\"chart-container md\" id=\"chart_diverging\"></div><script>(function(){var el=document.getElementById('chart_diverging');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6','#ef4444'];var categories=['产品质量','服务响应','价格合理','物流速度','售后支持'];c.setOption({color:palette,tooltip:{trigger:'axis'},legend:{data:['满意','不满意'],bottom:0},grid:{left:'15%',right:'4%',bottom:'15%',containLabel:true},xAxis:{type:'value',axisLabel:{formatter:function(v){return Math.abs(v)+'%'}}},yAxis:{type:'category',data:categories},series:[{name:'满意',type:'bar',stack:'total',data:[72,58,65,80,54]},{name:'不满意',type:'bar',stack:'total',data:[-28,-42,-35,-20,-46],itemStyle:{color:palette[1] || '#ef4444'}}]});})();</script></div>",
+  "variants": ["满意度对比", "净推荐值分布", "正负评价"],
+  "relatedCards": ["bar-chart-negative", "kpi-nps"]
+}

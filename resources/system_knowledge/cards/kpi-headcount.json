@@ -1,0 +1,30 @@
+{
+  "id": "kpi-headcount",
+  "type": "card",
+  "category": "kpi",
+  "name": "员工人数变动指标卡",
+  "description": "展示员工总数、本期入职离职净变动，带月度趋势折线，适合 HR 月报、组织规模分析、人员成本预算",
+  "tags": [
+    "kpi",
+    "headcount",
+    "员工人数",
+    "HR",
+    "人力资源",
+    "入职",
+    "离职",
+    "编制"
+  ],
+  "cssClass": "kpi-comparison",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>在职员工总数</div><div style='font-size:32px;font-weight:900;color:var(--text-accent)'>1,248</div><div style='display:flex;gap:16px;margin-top:8px;font-size:11px'><span style='color:var(--color-success)'>+23 入职</span><span style='color:var(--color-danger)'>-8 离职</span><span style='color:var(--color-primary)'>净+15</span></div></div>",
+  "variants": [
+    "部门编制达成率",
+    "HC预算执行率",
+    "兼职员工占比"
+  ],
+  "relatedCards": [
+    "kpi-attrition-rate",
+    "kpi-single"
+  ],
+  "htmlClassName": "card kpi-card"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "rolling-returns",
+  "type": "card",
+  "name": "滚动收益率图",
+  "category": "chart",
+  "tags": ["滚动收益率", "rolling returns", "年化收益", "金融", "基金", "历史回测"],
+  "description": "展示投资策略或基金的滚动 N 日/月年化收益率折线图，可对比多个策略或与基准的差异，直观还原不同投资窗口期的收益状况。适用于基金业绩报表、量化策略回测分析。",
+  "useCases": [
+    "基金12个月滚动收益率",
+    "量化策略3年滚动收益对比",
+    "投资组合vs基准滚动超额收益",
+    "不同风格因子滚动表现"
+  ],
+  "dataSchema": {
+    "dates": "日期数组（X轴，按滚动窗口末日）",
+    "series": "每条曲线含 name（策略/产品名）和 data（对应日期的滚动年化收益率，如0.12表示12%）"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["datazoom", "highlight"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_rolling\">\n  <h2 class=\"card-title\">12 个月滚动年化收益率</h2>\n  <div id=\"chart_rolling\" class=\"chart-container\" style=\"height:300px\"></div>\n  <script>\n  (function(){\n    var d=['2022Q1','2022Q2','2022Q3','2022Q4','2023Q1','2023Q2','2023Q3','2023Q4'];\n    var chart=echarts.init(document.getElementById('chart_rolling'));\n    chart.setOption({\n      legend:{},\n      xAxis:{type:'category',data:d},\n      yAxis:{type:'value',axisLabel:{formatter:function(v){return (v*100).toFixed(0)+'%';}}},\n      series:[\n        {name:'策略A',type:'line',data:[0.12,0.08,-0.03,0.15,0.22,0.18,0.10,0.25],smooth:true,areaStyle:{opacity:0.1},markLine:{data:[{yAxis:0,lineStyle:{color:'#999',type:'dashed'}}]}},\n        {name:'基准',type:'line',data:[0.06,0.04,-0.05,0.07,0.13,0.10,0.06,0.14],smooth:true,lineStyle:{type:'dashed'}}\n      ],\n      dataZoom:[{type:'inside'}]\n    });\n    window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.register('chart_rolling', chart);\n  })();\n  <\/script>\n</div>"
+}

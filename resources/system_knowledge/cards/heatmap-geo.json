@@ -1,0 +1,13 @@
+{
+  "id": "heatmap-geo",
+  "type": "card",
+  "category": "B",
+  "name": "地理热力图",
+  "description": "ECharts 地图+热力层叠加，展示地理空间上的数值密度分布，适合门店热度/用户分布/配送覆盖等地理可视化",
+  "tags": ["heatmap", "geo", "map", "geographic", "density", "spatial", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"heatmap_geo\"><div class=\"card-title\">用户地理热力分布</div><div class=\"chart-container md\"><div style=\"display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-sub);font-size:13px;flex-direction:column;gap:8px\"><span style=\"font-size:24px\">🗺️</span><span>地理热力图需要 GeoJSON 数据支持</span><span style=\"font-size:11px\">使用 echarts + china.json 地图数据渲染</span></div></div></div>",
+  "variants": ["全国用户热力", "城市门店密度", "配送范围覆盖"],
+  "relatedCards": ["map-geo", "heatmap-matrix"]
+}

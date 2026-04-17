@@ -1,0 +1,21 @@
+{
+  "id": "editorial-content-calendar",
+  "type": "layout",
+  "name": "内容日历看板",
+  "category": "editorial",
+  "tags": [
+    "内容",
+    "日历",
+    "排期",
+    "计划",
+    "编辑"
+  ],
+  "description": "内容排期日历布局，主区月度内容日历，右侧本周待发布队列，底部内容状态看板。",
+  "slots": {
+    "contentCalendar": "月度内容日历",
+    "publishQueue": "近期待发布",
+    "statusBoard": "内容状态看板"
+  },
+  "cssPath": "editorial/content-calendar.css",
+  "containerClass": "layout-editorial-calendar"
+}

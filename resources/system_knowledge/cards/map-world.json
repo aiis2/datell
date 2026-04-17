@@ -1,0 +1,13 @@
+{
+  "id": "map-world",
+  "type": "card",
+  "category": "B",
+  "name": "世界地图",
+  "description": "ECharts + world.json 世界国家着色地图，展示全球各国数据分布，适合跨国业务/全球市场分析",
+  "tags": ["map", "world", "global", "country", "geographic", "international", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"map_world\"><div class=\"card-title\">全球市场分布</div><div class=\"chart-container md\"><div style=\"display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-sub);font-size:13px;flex-direction:column;gap:8px\"><span style=\"font-size:24px\">🌍</span><span>世界地图需要注册 world.json</span><span style=\"font-size:11px\">echarts.registerMap('world', worldGeoJson)</span></div></div></div>",
+  "variants": ["全球用户分布", "国际营收地图", "出口市场热度"],
+  "relatedCards": ["map-china", "map-geo"]
+}

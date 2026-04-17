@@ -1,0 +1,31 @@
+{
+  "id": "gauge-chart",
+  "type": "card",
+  "name": "仪表盘/半圆进度",
+  "category": "chart",
+  "tags": [
+    "仪表盘",
+    "进度",
+    "仪表",
+    "半圆",
+    "完成度",
+    "速度计"
+  ],
+  "description": "仪表盘图，类似汽车转速表，展示单个指标的当前值在量程范围内的位置，适合展示完成率、负载率等。",
+  "useCases": [
+    "系统CPU使用率",
+    "销售完成率",
+    "目标达成度仪表"
+  ],
+  "dataSchema": {
+    "value": "当前值",
+    "min": "最小值",
+    "max": "最大值",
+    "label": "指标名"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "tooltip"
+  ]
+}

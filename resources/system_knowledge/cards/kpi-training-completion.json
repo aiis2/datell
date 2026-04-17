@@ -1,0 +1,29 @@
+{
+  "id": "kpi-training-completion",
+  "type": "card",
+  "category": "kpi",
+  "name": "培训完成率指标卡",
+  "description": "展示员工培训课程完成率和学习时长，适合学习发展部门报告、合规培训追踪、人才发展看板",
+  "tags": [
+    "kpi",
+    "training",
+    "培训完成率",
+    "学习发展",
+    "L&D",
+    "合规培训",
+    "人才发展"
+  ],
+  "cssClass": "kpi-target-bar",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>必修培训完成率</div><div style='font-size:32px;font-weight:900;color:var(--color-primary)'>87.3%</div><div class='kpi-target-bar-wrap' style='margin:8px 0'><div class='kpi-target-bar-fill' style='--bar-pct:87.3%'></div></div><div style='display:flex;justify-content:space-between;font-size:11px;color:var(--text-sub)'><span>已完成 436/500人</span><span>目标 100%</span></div></div>",
+  "variants": [
+    "合规培训达标率",
+    "平均学习时长",
+    "技能认证通过率"
+  ],
+  "relatedCards": [
+    "kpi-milestone-progress",
+    "kpi-ring-progress"
+  ],
+  "htmlClassName": "card kpi-card"
+}

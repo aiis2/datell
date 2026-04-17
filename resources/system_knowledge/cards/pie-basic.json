@@ -1,0 +1,13 @@
+{
+  "id": "pie-basic",
+  "type": "card",
+  "category": "B",
+  "name": "基础饼图",
+  "description": "ECharts 基础饼图，展示各部分占整体的比例，适合分类占比在5个以内的简单构成分析",
+  "tags": ["pie", "chart", "proportion", "share", "composition", "basic", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"pie_basic\"><div class=\"card-title\">收入来源分布</div><div class=\"chart-container short\" id=\"chart_pie_basic\"></div><script>(function(){var el=document.getElementById('chart_pie_basic');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6'];c.setOption({color:palette,tooltip:{trigger:'item',formatter:'{b}: {c} ({d}%)'},legend:{orient:'vertical',right:'5%',top:'center'},series:[{type:'pie',radius:'60%',center:['40%','50%'],data:[{value:480,name:'产品A'},{value:320,name:'产品B'},{value:200,name:'产品C'},{value:150,name:'产品D'}],emphasis:{itemStyle:{shadowBlur:10,shadowOffsetX:0,shadowColor:'rgba(0,0,0,0.3)'}},label:{formatter:'{b}\n{d}%'}}]});})();</script></div>",
+  "variants": ["产品占比", "区域贡献", "客户类型分布"],
+  "relatedCards": ["pie-chart-donut", "kpi-segmented"]
+}

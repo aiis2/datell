@@ -1,0 +1,15 @@
+/* 营销投放分析布局 */
+:root {
+  --layout-content-padding:   20px;
+  --layout-content-max-width: 1400px;
+  --layout-gap:               20px;
+  --layout-kpi-cols:          repeat(5, 1fr);
+  --layout-kpi-gap:           14px;
+  --layout-chart-cols:        2fr 1fr 1fr;
+  --layout-chart-gap:         20px;
+  --layout-card-padding:      18px;
+}
+
+@media (max-width: 1100px) {
+  :root { --layout-chart-cols: 2fr 1fr; }
+}

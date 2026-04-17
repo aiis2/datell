@@ -1,0 +1,25 @@
+{
+  "id": "scatter-correlation",
+  "type": "card",
+  "name": "相关性散点图（含趋势线）",
+  "category": "chart",
+  "tags": ["散点图", "相关性", "趋势线", "回归", "X-Y关系", "分布"],
+  "description": "展示两个变量相关性的散点图，带回归趋势线和相关系数（R²）标注，点可按第三维度颜色区分分类。适合证明或探索两个指标之间的关系，如价格与销量、广告费与 GMV、温度与用电量的相关性分析。",
+  "useCases": [
+    "广告投入 vs GMV 相关性",
+    "门店面积 vs 销售额散点",
+    "员工薪资 vs 绩效分散点",
+    "气温 vs 空调销量相关性"
+  ],
+  "dataSchema": {
+    "data": "数组：[{name, x, y, category}]",
+    "xLabel": "X轴标签",
+    "yLabel": "Y轴标签",
+    "rSquared": "相关系数R²（可选，自动标注）",
+    "showTrendLine": "true=展示趋势线"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["highlight"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_scatter_corr\">\n  <h2 class=\"card-title\">广告投入 vs GMV 相关性（R²=0.87）</h2>\n  <div id=\"chart_scatter_corr\" class=\"chart-container\" style=\"height:320px\"></div>\n  <script>\n  (function(){\n    var d=[[12,98],[18,145],[8,75],[25,210],[15,132],[30,265],[10,88],[22,190],[28,240],[5,55]];\n    var chart=echarts.init(document.getElementById('chart_scatter_corr'));\n    chart.setOption({\n      tooltip:{formatter:function(p){return '广告:'+p.data[0]+'万 GMV:'+p.data[1]+'万';}},\n      xAxis:{name:'广告投入（万元）',type:'value'},\n      yAxis:{name:'GMV（万元）',type:'value'},\n      series:[\n        {type:'scatter',data:d,symbolSize:10,label:{show:true,position:'top',formatter:function(p){return p.data[0]+'万';}}},\n        {type:'line',data:[[5,50],[30,268]],lineStyle:{type:'dashed',color:'#f59e0b'},symbol:'none',name:'趋势线'}\n      ]\n    });\n    chart.on('click',function(p){window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.emit({type:'highlight',cardId:'chart_scatter_corr',payload:p.data});});\n    window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.register('chart_scatter_corr', chart);\n  })();\n  <\/script>\n</div>"
+}

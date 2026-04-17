@@ -1,0 +1,21 @@
+{
+  "id": "marketing-social-analytics",
+  "type": "layout",
+  "name": "社媒数据分析",
+  "category": "marketing",
+  "tags": [
+    "社交媒体",
+    "粉丝",
+    "互动",
+    "内容",
+    "传播"
+  ],
+  "description": "社交媒体数据分析布局，顶部粉丝/互动率KPI，中部平台对比雷达图+增长趋势，底部内容表现排行。",
+  "slots": {
+    "socialKpi": "社媒KPI",
+    "platformRadar": "平台表现雷达图",
+    "contentRanking": "内容排行榜"
+  },
+  "cssPath": "marketing/social-analytics.css",
+  "containerClass": "layout-marketing-social"
+}

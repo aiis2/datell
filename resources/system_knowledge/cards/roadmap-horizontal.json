@@ -1,0 +1,23 @@
+{
+  "id": "roadmap-horizontal",
+  "type": "card",
+  "name": "横向产品路线图",
+  "category": "structure",
+  "tags": ["路线图", "roadmap", "计划", "甘特图", "产品计划", "时间规划"],
+  "description": "横向时间轴产品路线图，显示多个工作流或产品线在不同季度/月份的规划状态，每行代表一个泳道（产品线/团队），每项任务块显示名称和状态颜色（规划/进行中/完成/延期）。无外部依赖，纯 HTML/CSS 实现。",
+  "useCases": [
+    "产品季度路线图展示",
+    "多团队并行计划可视化",
+    "项目甘特图概要（季度粒度）",
+    "技术债务清理计划时间表"
+  ],
+  "dataSchema": {
+    "quarters": "时间列标题数组（如['Q1','Q2','Q3','Q4']）",
+    "swimlanes": "泳道数组：[{name, items:[{label, start, span, status}]}]",
+    "status颜色": "completed=绿, in-progress=蓝, planned=灰, delayed=红"
+  },
+  "htmlClassName": "card structure-card roadmap-card",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card structure-card\" data-card-id=\"roadmap_h\">\n  <h2 class=\"card-title\">2024 产品路线图</h2>\n  <div class=\"roadmap\" style=\"overflow-x:auto\">\n    <table style=\"width:100%;border-collapse:collapse;font-size:12px\">\n      <thead><tr><th style=\"width:100px\">泳道</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th></tr></thead>\n      <tbody>\n        <tr><td><strong>基础平台</strong></td><td colspan=\"2\" style=\"background:#10b981;color:white;border-radius:4px;padding:4px\">架构重构</td><td style=\"background:#3b82f6;color:white;border-radius:4px;padding:4px\">性能优化</td><td></td></tr>\n        <tr><td><strong>AI功能</strong></td><td></td><td style=\"background:#3b82f6;color:white;border-radius:4px;padding:4px\">智能推荐</td><td colspan=\"2\" style=\"background:#3b82f6;color:white;border-radius:4px;padding:4px\">NLP 增强</td></tr>\n        <tr><td><strong>移动端</strong></td><td style=\"background:#94a3b8;color:white;border-radius:4px;padding:4px\">需求评审</td><td colspan=\"2\" style=\"background:#f59e0b;color:white;border-radius:4px;padding:4px\">iOS/Android 开发</td><td style=\"background:#10b981;color:white;border-radius:4px;padding:4px\">发布</td></tr>\n      </tbody>\n    </table>\n  </div>\n</div>"
+}

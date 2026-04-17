@@ -1,0 +1,30 @@
+{
+  "id": "kpi-error-rate-tech",
+  "type": "card",
+  "category": "kpi",
+  "name": "系统错误率/异常率指标卡",
+  "description": "展示系统/API 错误率，含 4xx/5xx 分类，适合技术监控大屏、告警看板、系统健康度诊断",
+  "tags": [
+    "kpi",
+    "error rate",
+    "错误率",
+    "5xx",
+    "4xx",
+    "系统健康",
+    "监控",
+    "APM"
+  ],
+  "cssClass": "kpi-risk-flag",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card kpi-risk-flag risk-low' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>API 错误率</div><div style='font-size:32px;font-weight:900;color:var(--color-success)'>0.12%</div><div style='display:flex;gap:12px;margin-top:8px;font-size:11px;color:var(--text-sub)'><span>4xx: 0.08%</span><span>5xx: 0.04%</span></div><div style='font-size:11px;color:var(--color-success)'>✓ 低于告警阈值 0.5%</div></div>",
+  "variants": [
+    "支付失败率",
+    "登录错误率",
+    "消息消费失败率"
+  ],
+  "relatedCards": [
+    "kpi-sla-uptime",
+    "kpi-risk-flag"
+  ],
+  "htmlClassName": "card kpi-card kpi-risk-flag"
+}

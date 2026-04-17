@@ -1,0 +1,29 @@
+{
+  "id": "funnel-chart",
+  "type": "card",
+  "name": "漏斗图",
+  "category": "chart",
+  "tags": [
+    "漏斗图",
+    "转化率",
+    "流失",
+    "阶段",
+    "销售漏斗"
+  ],
+  "description": "漏斗图，展示业务流程各阶段的数量递减和转化率，适合销售漏斗、用户注册到购买的转化分析。",
+  "useCases": [
+    "销售线索转化漏斗",
+    "用户注册/激活/付费转化",
+    "电商购物流程转化率"
+  ],
+  "dataSchema": {
+    "stages": "阶段数组（name/value）",
+    "title": "标题"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "tooltip",
+    "highlight"
+  ]
+}

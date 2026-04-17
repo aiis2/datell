@@ -1,0 +1,21 @@
+{
+  "id": "table-risk-register",
+  "type": "card",
+  "name": "风险登记册表格",
+  "category": "table",
+  "tags": ["风险", "登记册", "risk register", "影响", "概率", "风险评估", "风控"],
+  "description": "项目/业务风险登记册表格，每行为一项风险，包含编号、风险描述、影响程度（高/中/低）、发生概率、风险等级（自动计算）、应对措施和负责人。风险等级自动用颜色标注（极高=红、高=橙、中=黄、低=绿）。",
+  "useCases": [
+    "项目风险管理清单",
+    "年度业务风险登记册",
+    "合规风险清单表",
+    "供应链风险评估表"
+  ],
+  "dataSchema": {
+    "risks": "风险数组：[{id, description, impact:'高'|'中'|'低', probability:'高'|'中'|'低', mitigation, owner}]"
+  },
+  "htmlClassName": "card table-card risk-table",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card table-card\" data-card-id=\"table_risk\">\n  <h2 class=\"card-title\">项目风险登记册</h2>\n  <div class=\"table-wrapper\">\n    <table class=\"data-table\" style=\"font-size:12px\">\n      <thead><tr><th>#</th><th>风险描述</th><th>影响</th><th>概率</th><th>风险级别</th><th>应对措施</th><th>负责人</th></tr></thead>\n      <tbody>\n        <tr><td>R01</td><td>核心系统迁移延期</td><td><span class=\"badge badge-red\">高</span></td><td><span class=\"badge badge-red\">高</span></td><td><span class=\"badge badge-red\">极高</span></td><td>提前准备备用方案</td><td>张三</td></tr>\n        <tr><td>R02</td><td>关键人员离职</td><td><span class=\"badge badge-red\">高</span></td><td><span class=\"badge badge-yellow\">中</span></td><td><span class=\"badge badge-yellow\">高</span></td><td>交叉培训，文档沉淀</td><td>李四</td></tr>\n        <tr><td>R03</td><td>预算超支</td><td><span class=\"badge badge-yellow\">中</span></td><td><span class=\"badge badge-yellow\">中</span></td><td><span class=\"badge badge-yellow\">中</span></td><td>严格月度审计</td><td>王五</td></tr>\n        <tr><td>R04</td><td>三方API更新变更</td><td><span class=\"badge badge-yellow\">中</span></td><td><span class=\"badge badge-gray\">低</span></td><td><span class=\"badge badge-green\">低</span></td><td>订阅变更通知</td><td>赵六</td></tr>\n      </tbody>\n    </table>\n  </div>\n</div>"
+}

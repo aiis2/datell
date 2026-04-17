@@ -1,0 +1,21 @@
+{
+  "id": "ecommerce-funnel-conversion",
+  "type": "layout",
+  "name": "电商转化漏斗",
+  "category": "ecommerce",
+  "tags": [
+    "电商",
+    "漏斗",
+    "转化率",
+    "购物流程",
+    "GMV"
+  ],
+  "description": "电商购物转化漏斗布局，顶部核心GMV/订单KPI，中部转化漏斗图，底部各环节详细数据表。",
+  "slots": {
+    "ecommerceKpi": "GMV/订单/转化率KPI",
+    "funnelChart": "购物流程漏斗图",
+    "stageTable": "各环节数据表"
+  },
+  "cssPath": "ecommerce/funnel-conversion.css",
+  "containerClass": "layout-ecommerce-funnel"
+}

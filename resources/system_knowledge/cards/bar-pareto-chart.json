@@ -1,0 +1,23 @@
+{
+  "id": "bar-pareto-chart",
+  "type": "card",
+  "name": "帕累托图（80/20分析）",
+  "category": "chart",
+  "tags": ["帕累托图", "pareto", "80/20", "柱状+折线", "累积占比", "质量分析"],
+  "description": "帕累托图：柱状图展示各分类数量（按降序），折线图展示累积占比（%），明确标识 80% 参考线。用于识别主要问题/主要贡献因子，遵循 80/20 法则。适合质量管理、客诉分析、成本集中度分析。",
+  "useCases": [
+    "产品缺陷类型帕累托分析",
+    "客服投诉原因 80/20 分析",
+    "成本驱动因素帕累托图",
+    "销售额集中度（前20%SKU贡献80%销售额）"
+  ],
+  "dataSchema": {
+    "categories": "分类标签数组（将自动降序排列）",
+    "values": "对应数量数组",
+    "unit": "数量单位"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["highlight"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_pareto\">\n  <h2 class=\"card-title\">产品缺陷类型帕累托分析</h2>\n  <div id=\"chart_pareto\" class=\"chart-container\" style=\"height:300px\"></div>\n  <script>\n  (function(){\n    var raw=[{c:'外观瑕疵',v:320},{c:'功能异常',v:210},{c:'包装破损',v:145},{c:'少配件',v:88},{c:'标签错误',v:45},{c:'其他',v:32}];\n    raw.sort(function(a,b){return b.v-a.v;});\n    var total=raw.reduce(function(s,d){return s+d.v;},0);\n    var cum=[],acc=0;\n    raw.forEach(function(d){acc+=d.v/total*100;cum.push(Math.round(acc*10)/10);});\n    var chart=echarts.init(document.getElementById('chart_pareto'));\n    chart.setOption({\n      tooltip:{trigger:'axis',axisPointer:{type:'cross'}},\n      legend:{},\n      xAxis:{type:'category',data:raw.map(function(d){return d.c;})},\n      yAxis:[{type:'value',name:'频次'},{type:'value',name:'累计占比(%)',max:100,axisLabel:{formatter:'{value}%'}}],\n      series:[\n        {name:'频次',type:'bar',data:raw.map(function(d){return d.v;}),barWidth:'50%'},\n        {name:'累计占比',type:'line',data:cum,yAxisIndex:1,symbol:'circle',markLine:{data:[{yAxis:80,name:'80%'}],lineStyle:{color:'#ef4444',type:'dashed'}}}\n      ]\n    });\n    window.__REPORT_EVENT_BUS__&&window.__REPORT_EVENT_BUS__.register('chart_pareto',chart);\n  })();\n  <\/script>\n</div>"
+}

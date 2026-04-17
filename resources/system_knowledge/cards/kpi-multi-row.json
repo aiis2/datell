@@ -1,0 +1,35 @@
+{
+  "id": "kpi-multi-row",
+  "type": "card",
+  "category": "kpi",
+  "name": "多行指标汇总卡",
+  "description": "在单张卡片内纵向列出多个 KPI 指标，每行含标签、数值、变化幅度与小进度条，适合浓缩摘要面板",
+  "tags": [
+    "kpi",
+    "multi",
+    "row",
+    "summary",
+    "metrics",
+    "overview",
+    "dashboard",
+    "多指标",
+    "综合概览",
+    "汇总看板",
+    "指标摘要",
+    "核心KPI",
+    "多行指标",
+    "首屏指标"
+  ],
+  "cssClass": "kpi-multi-row",
+  "exampleHtml": "<div class=\"card kpi-card kpi-multi-row\" data-card-id=\"metrics_summary\" style=\"padding:16px\"><span class=\"kpi-title\" style=\"font-weight:700;font-size:14px;display:block;margin-bottom:8px\">核心指标摘要</span><div class=\"kpi-multi-row\"><div class=\"kpi-row\"><span class=\"kpi-row-label\">总收入</span><span class=\"kpi-row-value\">¥284万</span><span class=\"kpi-row-change trend-up\">+12%</span><div class=\"kpi-row-bar\"><div class=\"kpi-row-bar-fill\" style=\"--bar-pct:82%\"></div></div></div><div class=\"kpi-row\"><span class=\"kpi-row-label\">新客户数</span><span class=\"kpi-row-value\">1,240</span><span class=\"kpi-row-change trend-up\">+8%</span><div class=\"kpi-row-bar\"><div class=\"kpi-row-bar-fill\" style=\"--bar-pct:68%\"></div></div></div><div class=\"kpi-row\"><span class=\"kpi-row-label\">客户流失率</span><span class=\"kpi-row-value\">3.2%</span><span class=\"kpi-row-change trend-down\">-0.5pp</span><div class=\"kpi-row-bar\"><div class=\"kpi-row-bar-fill\" style=\"--bar-pct:32%;background:var(--color-success)\"></div></div></div></div></div>",
+  "variants": [
+    "财务摘要",
+    "运营指标",
+    "人员指标"
+  ],
+  "relatedCards": [
+    "kpi-single",
+    "kpi-comparison"
+  ],
+  "htmlClassName": "card kpi-card kpi-multi-row"
+}

@@ -1,0 +1,29 @@
+{
+  "id": "kpi-feature-adoption",
+  "type": "card",
+  "category": "kpi",
+  "name": "功能渗透率指标卡",
+  "description": "多行展示各产品功能的用户渗透率和使用频率，适合产品功能优先级分析、用户行为研究、产品路线图决策",
+  "tags": [
+    "kpi",
+    "feature adoption",
+    "功能渗透",
+    "产品功能",
+    "使用率",
+    "用户行为",
+    "产品分析"
+  ],
+  "cssClass": "kpi-multi-row",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card kpi-multi-row' style='padding:16px'><div style='font-weight:700;margin-bottom:8px;font-size:13px'>功能渗透率</div><div class='kpi-row'><span class='kpi-row-label'>报表功能</span><span class='kpi-row-value' style='color:var(--color-primary)'>64%</span><div class='kpi-row-bar'><div class='kpi-row-bar-fill' style='--bar-pct:64%'></div></div></div><div class='kpi-row'><span class='kpi-row-label'>数据导出</span><span class='kpi-row-value'>38%</span><div class='kpi-row-bar'><div class='kpi-row-bar-fill' style='--bar-pct:38%'></div></div></div><div class='kpi-row'><span class='kpi-row-label'>协作共享</span><span class='kpi-row-value'>21%</span><div class='kpi-row-bar'><div class='kpi-row-bar-fill' style='--bar-pct:21%'></div></div></div></div>",
+  "variants": [
+    "功能使用深度",
+    "核心动作完成率",
+    "功能评分"
+  ],
+  "relatedCards": [
+    "kpi-user-adoption",
+    "kpi-dau-mau"
+  ],
+  "htmlClassName": "card kpi-card kpi-multi-row"
+}

@@ -1,0 +1,68 @@
+name: Build Windows
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-win:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Write build flags (community build)
+        run: node scripts/write-build-flags.js
+
+      - name: Build icon sprite
+        run: node scripts/build-icon-sprite.js
+
+      - name: Build system RAG index
+        run: node scripts/build-system-rag.js
+
+      - name: Build TypeScript (main)
+        run: npx tsc -p src/main/tsconfig.json
+
+      - name: Build frontend
+        run: npx vite build
+
+      - name: Package Windows (x64 portable)
+        run: npx electron-builder --win --publish=never
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          path: |
+            release/*.exe
+            release/*.zip
+          retention-days: 30
+
+      - name: Create GitHub Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Datell ${{ github.ref_name }}
+          body_path: .github/RELEASE_BODY.md
+          files: |
+            release/*.exe
+            release/*.zip
+          generate_release_notes: false
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

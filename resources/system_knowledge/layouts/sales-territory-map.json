@@ -1,0 +1,21 @@
+{
+  "id": "sales-territory-map",
+  "type": "layout",
+  "name": "区域销售地图",
+  "category": "sales",
+  "tags": [
+    "销售",
+    "地图",
+    "区域",
+    "地理",
+    "分布"
+  ],
+  "description": "区域销售分布布局，主区各省市销售热力地图，右侧区域排行榜，底部区域详细对比条形图。",
+  "slots": {
+    "salesMap": "省市销售热力图",
+    "regionRanking": "区域排行",
+    "regionComparison": "区域对比图"
+  },
+  "cssPath": "sales/territory-map.css",
+  "containerClass": "layout-sales-territory"
+}

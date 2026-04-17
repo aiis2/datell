@@ -1,0 +1,30 @@
+{
+  "id": "kpi-oee",
+  "type": "card",
+  "category": "kpi",
+  "name": "OEE 设备综合效率指标",
+  "description": "展示设备综合效率(OEE)及其三要素：可用率、性能率、质量率，适合制造业产线监控、设备维护看板",
+  "tags": [
+    "kpi",
+    "OEE",
+    "设备效率",
+    "制造",
+    "产线",
+    "可用率",
+    "性能率",
+    "质量率"
+  ],
+  "cssClass": "kpi-composite",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card kpi-composite' style='padding:16px'><div style='font-size:12px;color:var(--text-sub);margin-bottom:4px'>设备综合效率(OEE)</div><div style='font-size:36px;font-weight:900;color:var(--color-primary)'>76.4%</div><div style='display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;font-size:11px;text-align:center'><div><div style='color:var(--color-success);font-weight:700'>92%</div><div style='color:var(--text-sub)'>可用率</div></div><div><div style='color:var(--color-warning);font-weight:700'>85%</div><div style='color:var(--text-sub)'>性能率</div></div><div><div style='color:var(--color-success);font-weight:700'>97.8%</div><div style='color:var(--text-sub)'>质量率</div></div></div></div>",
+  "variants": [
+    "设备可用率",
+    "计划外停机率",
+    "产能利用率"
+  ],
+  "relatedCards": [
+    "kpi-capacity-util",
+    "kpi-health-score"
+  ],
+  "htmlClassName": "card kpi-card kpi-composite"
+}

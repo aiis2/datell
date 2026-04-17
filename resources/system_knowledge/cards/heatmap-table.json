@@ -1,0 +1,12 @@
+{
+  "id": "heatmap-table",
+  "type": "card",
+  "category": "C",
+  "name": "热力着色表格",
+  "description": "对单元格数值按高低染色（heat-1~heat-5 或 heat-low/mid/high），直观呈现矩阵分布、时段热度",
+  "tags": ["table", "heatmap", "color", "matrix", "intensity", "distribution"],
+  "cssClass": "heatmap-table",
+  "exampleHtml": "<div class=\"card\" data-card-id=\"weekly_heatmap\" style=\"padding:16px\"><h2 class=\"card-title\">各门店周销量热力表</h2><table class=\"data-table heatmap-table\"><thead><tr><th>门店</th><th>周一</th><th>周二</th><th>周三</th><th>周四</th><th>周五</th></tr></thead><tbody><tr><td>上海旗舰店</td><td class=\"heat-5\">98</td><td class=\"heat-4\">84</td><td class=\"heat-3\">71</td><td class=\"heat-4\">88</td><td class=\"heat-5\">105</td></tr><tr><td>北京中关村</td><td class=\"heat-3\">65</td><td class=\"heat-2\">52</td><td class=\"heat-2\">49</td><td class=\"heat-3\">68</td><td class=\"heat-4\">82</td></tr><tr><td>广州天河</td><td class=\"heat-2\">44</td><td class=\"heat-1\">28</td><td class=\"heat-2\">41</td><td class=\"heat-2\">50</td><td class=\"heat-3\">70</td></tr></tbody></table></div>",
+  "variants": ["时段热度分析", "产品交叉矩阵", "区域密度分布"],
+  "relatedCards": ["data-table-basic", "heatmap-matrix"]
+}

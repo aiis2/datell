@@ -1,0 +1,29 @@
+{
+  "id": "kpi-fill-rate",
+  "type": "card",
+  "category": "kpi",
+  "name": "订单满足率(Fill Rate)指标卡",
+  "description": "展示订单按时足量满足率，含行项目和订单级别满足率，适合仓储配送监控、供应链可用性分析",
+  "tags": [
+    "kpi",
+    "fill rate",
+    "订单满足率",
+    "供应链",
+    "仓储",
+    "配送",
+    "库存可用性"
+  ],
+  "cssClass": "kpi-dual-compare",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>订单满足率</div><div style='font-size:32px;font-weight:900;color:var(--color-primary)'>96.8%</div><div style='display:flex;gap:12px;margin-top:8px;font-size:11px'><div><div style='font-weight:700;color:var(--color-success)'>98.2%</div><div style='color:var(--text-sub)'>行项目满足率</div></div><div><div style='font-weight:700;color:var(--color-warning)'>94.1%</div><div style='color:var(--text-sub)'>订单完整满足</div></div></div></div>",
+  "variants": [
+    "缺货率",
+    "补货达成率",
+    "供应商供货率"
+  ],
+  "relatedCards": [
+    "kpi-on-time-delivery",
+    "kpi-inventory-turnover"
+  ],
+  "htmlClassName": "card kpi-card"
+}

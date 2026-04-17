@@ -1,0 +1,32 @@
+{
+  "id": "candlestick",
+  "type": "card",
+  "name": "K 线图",
+  "category": "chart",
+  "tags": [
+    "K线",
+    "蜡烛图",
+    "股票",
+    "金融",
+    "OHLC",
+    "涨跌"
+  ],
+  "description": "K线图（蜡烛图），展示金融时序的开盘/收盘/最高/最低价，适合股票、期货、加密货币价格走势展示。",
+  "useCases": [
+    "股票日K线走势",
+    "期货价格K线",
+    "加密货币行情"
+  ],
+  "dataSchema": {
+    "dates": "日期数组",
+    "ohlc": "OHLC数组（每项为[open,close,low,high]）",
+    "volume": "成交量数组（可选）",
+    "title": "标题"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "zoom",
+    "tooltip"
+  ]
+}

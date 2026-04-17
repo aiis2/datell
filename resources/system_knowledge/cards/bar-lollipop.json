@@ -1,0 +1,13 @@
+{
+  "id": "bar-lollipop",
+  "type": "card",
+  "category": "B",
+  "name": "棒棒糖图",
+  "description": "ECharts 棒棒糖图（细线+尾部圆点），比普通柱状图更优雅，适合展示排名/评分/有序数值对比",
+  "tags": ["bar", "lollipop", "dot", "rank", "comparison", "elegant", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"bar_lollipop\"><div class=\"card-title\">部门绩效评分</div><div class=\"chart-container md\" id=\"chart_lollipop\"></div><script>(function(){var el=document.getElementById('chart_lollipop');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6'];var depts=['销售部','技术部','市场部','运营部','客服部'];var scores=[92,88,76,84,79];c.setOption({color:palette,tooltip:{trigger:'axis'},grid:{left:'3%',right:'8%',bottom:'3%',containLabel:true},xAxis:{type:'category',data:depts},yAxis:{type:'value',min:60,max:100},series:[{type:'pictorialBar',symbol:'circle',symbolSize:[12,12],symbolPosition:'end',itemStyle:{color:palette[0]},data:scores,z:10},{type:'bar',barWidth:3,itemStyle:{color:palette[0],opacity:0.6},data:scores}]});})();</script></div>",
+  "variants": ["部门评分", "城市排名", "指标得分"],
+  "relatedCards": ["bar-chart-basic", "kpi-ranked-list"]
+}

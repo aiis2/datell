@@ -1,0 +1,33 @@
+{
+  "id": "line-chart-single",
+  "type": "card",
+  "name": "单线折线图",
+  "category": "chart",
+  "tags": [
+    "折线图",
+    "趋势",
+    "时间序列",
+    "单线",
+    "走势"
+  ],
+  "description": "单条折线图，展示一个指标随时间的变化趋势。适合连续时间序列数据，如月销售额走势、日活跃用户趋势。",
+  "useCases": [
+    "月度销售额趋势",
+    "日活用户变化",
+    "股价走势",
+    "温度变化曲线"
+  ],
+  "dataSchema": {
+    "dates": "时间轴数组",
+    "values": "数值数组",
+    "title": "标题",
+    "yUnit": "单位"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "highlight",
+    "tooltip",
+    "zoom"
+  ]
+}

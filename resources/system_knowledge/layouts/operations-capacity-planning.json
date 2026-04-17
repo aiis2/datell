@@ -1,0 +1,21 @@
+{
+  "id": "operations-capacity-planning",
+  "type": "layout",
+  "name": "产能规划看板",
+  "category": "operations",
+  "tags": [
+    "产能",
+    "规划",
+    "产线",
+    "利用率",
+    "制造"
+  ],
+  "description": "产能规划布局，顶部产能利用率KPI，中部各产线利用率条形图+趋势折线，底部排班/计划表格。",
+  "slots": {
+    "capacityKpi": "产能利用率KPI",
+    "utilizationChart": "各产线利用率图",
+    "planTable": "生产计划表"
+  },
+  "cssPath": "operations/capacity-planning.css",
+  "containerClass": "layout-operations-capacity"
+}

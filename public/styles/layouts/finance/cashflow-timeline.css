@@ -1,0 +1,24 @@
+/* 财务损益报告布局 — 以表格为主体 */
+:root {
+  --layout-content-padding:   32px;
+  --layout-content-max-width: 1100px;
+  --layout-gap:               24px;
+  --layout-kpi-cols:          repeat(4, 1fr);
+  --layout-kpi-gap:           16px;
+  --layout-chart-cols:        repeat(2, 1fr);
+  --layout-chart-gap:         24px;
+  --layout-card-padding:      24px;
+}
+
+/* 财务表格专项样式 */
+.data-table .profit    { color: var(--color-success); font-weight: 600; }
+.data-table .loss      { color: var(--color-danger);  font-weight: 600; }
+.data-table .total-row td { font-weight: 700; border-top: 2px solid var(--border-table); }
+.data-table .avg-row td   { font-style: italic; }
+.data-table .section-header td {
+  background: var(--bg-table-header);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

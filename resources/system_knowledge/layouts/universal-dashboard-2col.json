@@ -1,0 +1,22 @@
+{
+  "id": "universal-dashboard-2col",
+  "type": "layout",
+  "name": "双列仪表盘",
+  "category": "universal",
+  "tags": [
+    "双列",
+    "仪表盘",
+    "通用",
+    "均衡",
+    "看板"
+  ],
+  "description": "通用双列仪表盘布局：顶部4个KPI卡片一行，图表区2列均等分布，适合大多数商业报表场景。",
+  "slots": {
+    "kpiRow": "4个KPI指标卡",
+    "leftChart": "主要图表",
+    "rightChart": "辅助图表",
+    "fullTable": "全宽数据表（可选）"
+  },
+  "cssPath": "universal/dashboard-2col.css",
+  "containerClass": "layout-dashboard-2col"
+}

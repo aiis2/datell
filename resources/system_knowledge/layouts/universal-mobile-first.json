@@ -1,0 +1,21 @@
+{
+  "id": "universal-mobile-first",
+  "type": "layout",
+  "name": "移动端布局",
+  "category": "universal",
+  "tags": [
+    "移动端",
+    "响应式",
+    "手机",
+    "小屏",
+    "竖屏"
+  ],
+  "description": "移动端优先布局，KPI两列，图表单列，字体和间距适配小屏幕，适合手机查看的报表输出。",
+  "slots": {
+    "kpiRow": "2列KPI卡",
+    "charts": "单列图表",
+    "table": "单列数据表"
+  },
+  "cssPath": "universal/mobile-first.css",
+  "containerClass": "layout-mobile-first"
+}

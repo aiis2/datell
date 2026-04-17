@@ -1,0 +1,12 @@
+{
+  "id": "comparison-table",
+  "type": "card",
+  "category": "C",
+  "name": "双方案对比表格",
+  "description": "A/B 两列背景色区分，better/worse 高亮胜负方，适合产品特性对比、方案评估、竞品比较",
+  "tags": ["table", "comparison", "vs", "ab-test", "benchmark", "competitor"],
+  "cssClass": "comparison-table",
+  "exampleHtml": "<div class=\"card\" data-card-id=\"product_comparison\" style=\"padding:16px\"><h2 class=\"card-title\">方案 A vs 方案 B 对比</h2><table class=\"data-table comparison-table\"><thead><tr><th>维度</th><th class=\"col-a\">方案 A</th><th class=\"col-b\">方案 B</th></tr></thead><tbody><tr><td class=\"col-label\">上线周期</td><td class=\"col-a better\">2 周</td><td class=\"col-b worse\">6 周</td></tr><tr><td class=\"col-label\">开发成本</td><td class=\"col-a worse\">¥80万</td><td class=\"col-b better\">¥30万</td></tr><tr><td class=\"col-label\">预计转化提升</td><td class=\"col-a better\">+18%</td><td class=\"col-b worse\">+8%</td></tr><tr><td class=\"col-label\">技术风险</td><td class=\"col-a worse\">高</td><td class=\"col-b better\">低</td></tr></tbody></table></div>",
+  "variants": ["产品功能对比", "竞品分析", "方案评估矩阵"],
+  "relatedCards": ["pivot-table", "comparison-twoCol"]
+}

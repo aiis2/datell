@@ -1,0 +1,13 @@
+{
+  "id": "treemap-hierarchical",
+  "type": "card",
+  "category": "B",
+  "name": "层级矩形树图",
+  "description": "ECharts 多级嵌套矩形树图（treemap），支持下钻（drill down），适合展示多层级的部分占比关系，如组织架构/成本拆分",
+  "tags": ["treemap", "hierarchical", "drilldown", "nested", "proportion", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"treemap_hier\"><div class=\"card-title\">费用结构层级树图</div><div class=\"chart-container md\" id=\"chart_treemap_h\"></div><script>(function(){var el=document.getElementById('chart_treemap_h');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6','#10b981','#f59e0b','#ef4444'];c.setOption({series:[{type:'treemap',roam:false,nodeClick:false,data:[{name:'研发',value:480,itemStyle:{color:palette[0]},children:[{name:'前端',value:160},{name:'后端',value:200},{name:'测试',value:120}]},{name:'销售',value:360,itemStyle:{color:palette[1]},children:[{name:'ToB',value:220},{name:'ToC',value:140}]},{name:'运营',value:240,itemStyle:{color:palette[2]},children:[{name:'增长',value:130},{name:'内容',value:110}]},{name:'管理',value:120,itemStyle:{color:palette[3] || '#ef4444'}}],label:{show:true,formatter:'{b}\n{c}万'}}]});})();</script></div>",
+  "variants": ["费用科目拆解", "产品模块占比", "人力成本层级"],
+  "relatedCards": ["treemap", "pie-sunburst"]
+}

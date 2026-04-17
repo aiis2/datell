@@ -1,0 +1,46 @@
+/* Bento Grid 布局 — 苹果式不规则拼图卡片 */
+:root {
+  --layout-content-padding:   16px;
+  --layout-content-max-width: 1400px;
+  --layout-gap:               16px;
+  --layout-kpi-cols:          repeat(auto-fit, minmax(180px, 1fr));
+  --layout-kpi-gap:           16px;
+  --layout-chart-gap:         16px;
+  --layout-card-padding:      24px;
+  /* 三区结构 */
+  --layout-kpi-cols-n:        5;
+  --layout-kpi-row-h:         88px;
+  --layout-kpi-card-padding:  8px 12px;
+  --layout-zone-gap:          16px;
+}
+
+/* Bento Grid 用 CSS Grid dense 实现块状拼接 */
+.grid-charts {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: 200px;
+  grid-auto-flow: dense;
+  gap: var(--layout-chart-gap);
+}
+
+/* 图表卡片默认跨度 — use double .grid-charts to override base reset */
+.grid-charts.grid-charts > .card             { grid-column: span 6; grid-row: span 2; }
+.grid-charts.grid-charts > .card.col-full    { grid-column: span 12; grid-row: span 2; }
+.grid-charts.grid-charts > .card.col-wide    { grid-column: span 8; grid-row: span 2; }
+.grid-charts.grid-charts > .card.col-narrow  { grid-column: span 4; grid-row: span 2; }
+.grid-charts.grid-charts > .card.col-third   { grid-column: span 4; grid-row: span 2; }
+.grid-charts.grid-charts > .card.row-tall    { grid-row: span 3; }
+.grid-charts.grid-charts > .card.row-short   { grid-row: span 1; }
+/* Tables in bento always span full width */
+.grid-charts.grid-charts > .card.card-table,
+.grid-charts.grid-charts > .card[class*="table"],
+.grid-charts.grid-charts > .card:has(table)  { grid-column: span 12; grid-row: span 2; }
+
+@media (max-width: 900px) {
+  .grid-charts { grid-template-columns: repeat(4, 1fr); }
+  .grid-charts.grid-charts > .card             { grid-column: span 4; }
+  .grid-charts.grid-charts > .card.col-full,
+  .grid-charts.grid-charts > .card.col-wide,
+  .grid-charts.grid-charts > .card.col-narrow,
+  .grid-charts.grid-charts > .card.col-third   { grid-column: span 4; }
+}

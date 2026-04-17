@@ -1,0 +1,22 @@
+{
+  "id": "swimlane-process",
+  "type": "card",
+  "name": "泳道流程图",
+  "category": "structure",
+  "tags": ["泳道", "swimlane", "流程图", "多角色", "横向流程", "责任矩阵"],
+  "description": "多角色泳道流程图，每条水平泳道代表一个角色/部门，泳道内按顺序排列该角色负责的步骤，跨泳道的连接线表示信息传递/交接。用 HTML/CSS 表格实现，无需 js 图表库。适合展示跨部门业务流程、需求交付流程、IT 服务流程等。",
+  "useCases": [
+    "跨部门审批流程泳道图",
+    "产品需求从提交到上线全流程",
+    "客户服务处理流程（客户/客服/研发三道）",
+    "电商订单履约流程（用户/平台/物流三道）"
+  ],
+  "dataSchema": {
+    "lanes": "泳道数组：[{role, steps:[{id, label, type}]}]",
+    "connections": "跨泳道连接：[{fromLane, fromStep, toLane, toStep, label}]"
+  },
+  "htmlClassName": "card structure-card swimlane-card",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card structure-card\" data-card-id=\"swimlane_proc\">\n  <h2 class=\"card-title\">需求上线流程（泳道图）</h2>\n  <div style=\"overflow-x:auto\">\n    <table style=\"width:100%;border-collapse:collapse;font-size:12px\">\n      <colgroup><col style=\"width:80px\"><col><col><col><col></colgroup>\n      <tbody>\n        <tr style=\"background:var(--accent-bg,#eff6ff)\"><td style=\"font-weight:bold;padding:8px;border:1px solid var(--border)\">产品</td><td style=\"border:1px solid var(--border);padding:6px;text-align:center\"><div class=\"process-step\" style=\"background:#3b82f6;color:white;border-radius:4px;padding:4px\">需求评审</div></td><td style=\"border:1px solid var(--border);padding:6px\"></td><td style=\"border:1px solid var(--border);padding:6px;text-align:center\"><div class=\"process-step\" style=\"background:#3b82f6;color:white;border-radius:4px;padding:4px\">验收测试</div></td><td style=\"border:1px solid var(--border);padding:6px;text-align:center\"><div class=\"process-step\" style=\"background:#10b981;color:white;border-radius:4px;padding:4px\">上线发布</div></td></tr>\n        <tr><td style=\"font-weight:bold;padding:8px;border:1px solid var(--border)\">研发</td><td style=\"border:1px solid var(--border)\"></td><td style=\"border:1px solid var(--border);padding:6px;text-align:center\"><div class=\"process-step\" style=\"background:#8b5cf6;color:white;border-radius:4px;padding:4px\">编码实现</div></td><td style=\"border:1px solid var(--border)\"></td><td style=\"border:1px solid var(--border)\"></td></tr>\n        <tr style=\"background:var(--accent-bg,#eff6ff)\"><td style=\"font-weight:bold;padding:8px;border:1px solid var(--border)\">测试</td><td style=\"border:1px solid var(--border)\"></td><td style=\"border:1px solid var(--border)\"></td><td style=\"border:1px solid var(--border);padding:6px;text-align:center\"><div class=\"process-step\" style=\"background:#f59e0b;color:white;border-radius:4px;padding:4px\">功能测试</div></td><td style=\"border:1px solid var(--border)\"></td></tr>\n      </tbody>\n    </table>\n  </div>\n</div>"
+}

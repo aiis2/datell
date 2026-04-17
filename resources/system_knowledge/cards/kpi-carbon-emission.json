@@ -1,0 +1,30 @@
+{
+  "id": "kpi-carbon-emission",
+  "type": "card",
+  "category": "kpi",
+  "name": "碳排放量指标卡",
+  "description": "展示碳排放量（tCO₂e）及减排进度，含碳强度指标，适合 ESG 报告、碳中和目标看板、企业绿色发展报告",
+  "tags": [
+    "kpi",
+    "carbon emission",
+    "碳排放",
+    "ESG",
+    "碳中和",
+    "绿色",
+    "环保",
+    "可持续发展"
+  ],
+  "cssClass": "kpi-milestone-progress",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>本年碳排放量</div><div style='font-size:30px;font-weight:900;color:var(--color-success)'>8,420 tCO₂e</div><div class='kpi-target-bar-wrap' style='margin:8px 0'><div class='kpi-target-bar-fill' style='--bar-pct:58%;background:var(--color-success)'></div></div><div style='font-size:11px;color:var(--text-sub)'>减排目标: 6,000t | 已减 42%</div></div>",
+  "variants": [
+    "Scope1/2/3分解",
+    "碳强度kg/收入",
+    "可再生能源比例"
+  ],
+  "relatedCards": [
+    "kpi-milestone-progress",
+    "kpi-target-bar"
+  ],
+  "htmlClassName": "card kpi-card"
+}

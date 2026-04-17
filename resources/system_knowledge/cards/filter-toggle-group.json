@@ -1,0 +1,23 @@
+{
+  "id": "filter-toggle-group",
+  "type": "card",
+  "name": "切换按钮组筛选控件",
+  "category": "filter",
+  "tags": ["切换", "toggle", "按钮组", "单选", "筛选控件", "tab切换"],
+  "description": "一组互斥的切换按钮，类似 Tab 或 Segmented Control，每次只能选中一个选项，选中后触发 filterChange 事件。适合视图切换（日/周/月）、分类切换（全部/活跃/已关闭）等场景的快速筛选控件。",
+  "useCases": [
+    "报告时间粒度切换（日/周/月/年）",
+    "数据状态筛选（全部/进行中/已完成）",
+    "平台切换（App/网页/小程序）",
+    "图表类型切换联动"
+  ],
+  "dataSchema": {
+    "options": "选项数组：[{value, label}]",
+    "defaultValue": "默认选中值",
+    "field": "筛选字段名"
+  },
+  "htmlClassName": "card filter-card filter-toggle",
+  "engineHint": "pure-html",
+  "interactionSupport": ["filter"],
+  "exampleHtml": "<div class=\"card filter-card\" data-card-id=\"filter_toggle\">\n  <label class=\"filter-label\">时间粒度</label>\n  <div class=\"filter-btn-group segmented\" id=\"ft_group\">\n    <button class=\"filter-btn active\" data-value=\"day\">日</button>\n    <button class=\"filter-btn\" data-value=\"week\">周</button>\n    <button class=\"filter-btn\" data-value=\"month\">月</button>\n    <button class=\"filter-btn\" data-value=\"year\">年</button>\n  </div>\n  <script>\n  (function(){\n    document.getElementById('ft_group').addEventListener('click',function(e){\n      var btn=e.target.closest('[data-value]'); if(!btn) return;\n      this.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});\n      btn.classList.add('active');\n      document.dispatchEvent(new CustomEvent('filterChange',{detail:{field:'granularity',value:btn.dataset.value}}));\n    });\n  })();\n  <\/script>\n</div>"
+}

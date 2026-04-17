@@ -1,0 +1,12 @@
+{
+  "id": "table-tree",
+  "type": "card",
+  "category": "C",
+  "name": "可折叠树形表格",
+  "description": "支持父子节点折叠展开的层级表格，通过缩进和展开按钮呈现层级关系，适合科目/组织/文件目录类层级数据",
+  "tags": ["table", "tree", "hierarchical", "collapsible", "expand", "indent", "department"],
+  "cssClass": "tree-table",
+  "exampleHtml": "<div class=\"card\" data-card-id=\"tree_table\"><div style=\"font-size:14px;font-weight:700;margin-bottom:8px\">费用分类汇总</div><table class=\"data-table tree-table\" style=\"width:100%;border-collapse:collapse\"><thead><tr><th>科目</th><th style=\"text-align:right\">金额（万）</th><th style=\"text-align:right\">占比</th></tr></thead><tbody><tr class=\"tree-root\"><td style=\"display:flex;align-items:center;gap:4px\"><span class=\"tree-toggle\">▼</span>运营成本</td><td style=\"text-align:right\">1,240</td><td style=\"text-align:right\">62%</td></tr><tr><td style=\"padding-left:24px\">→ 人力费用</td><td style=\"text-align:right\">680</td><td style=\"text-align:right\">34%</td></tr><tr><td style=\"padding-left:24px\">→ 租金</td><td style=\"text-align:right\">320</td><td style=\"text-align:right\">16%</td></tr><tr><td style=\"padding-left:24px\">→ 其他</td><td style=\"text-align:right\">240</td><td style=\"text-align:right\">12%</td></tr><tr class=\"tree-root\"><td style=\"display:flex;align-items:center;gap:4px\"><span class=\"tree-toggle\">▼</span>营销费用</td><td style=\"text-align:right\">760</td><td style=\"text-align:right\">38%</td></tr></tbody></table></div>",
+  "variants": ["科目层级汇总", "组织架构费用", "产品类目汇总"],
+  "relatedCards": ["data-table-basic", "pivot-table"]
+}

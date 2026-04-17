@@ -1,0 +1,21 @@
+{
+  "id": "sales-quota-progress",
+  "type": "layout",
+  "name": "销售配额进度",
+  "category": "sales",
+  "tags": [
+    "销售",
+    "配额",
+    "目标",
+    "进度",
+    "团队"
+  ],
+  "description": "销售配额跟踪布局，顶部团队总体完成率KPI，中部个人进度条看板，底部趋势折线与预测。",
+  "slots": {
+    "quotaKpi": "团队完成率KPI",
+    "individualProgress": "员工进度条",
+    "trendForecast": "趋势与预测图"
+  },
+  "cssPath": "sales/quota-progress.css",
+  "containerClass": "layout-sales-quota"
+}

@@ -1,0 +1,15 @@
+/* SLA 指标看板 — SLA 百分比 + 故障时间线 */
+:root {
+  --layout-content-padding:   20px;
+  --layout-content-max-width: 1400px;
+  --layout-gap:               20px;
+  --layout-kpi-cols:          repeat(4, 1fr);
+  --layout-chart-cols:        2fr 1fr;
+  --layout-chart-gap:         20px;
+  --layout-card-padding:      20px;
+}
+
+/* SLA 达标色 */
+.sla-ok      { color: var(--color-success); font-weight: 700; }
+.sla-warn    { color: var(--color-warning); font-weight: 700; }
+.sla-breach  { color: var(--color-danger);  font-weight: 700; }

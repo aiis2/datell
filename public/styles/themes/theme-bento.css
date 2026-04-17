@@ -1,0 +1,20 @@
+/* theme-bento.css — 便当盒视觉主题（纯视觉变量，无布局规则）*/
+:root {
+  --bg-body:         #f4f5f7;
+  --bg-header:       transparent;
+  --text-header:     #1d1d1f;
+  --bg-card:         #ffffff;
+  --bg-card-alt:     #f5f5f7;
+  --radius-card:     24px;      /* 超大圆角 */
+  --shadow-card:     none;
+  --border-card:     none;
+  --text-main:       #1d1d1f;
+  --text-sub:        #86868b;
+  --text-accent:     #0071e3;   /* Apple 蓝 */
+  --color-primary:   #0071e3;
+  --color-success:   #34c759;
+  --color-danger:    #ff3b30;
+  --bg-table-header: #fbfbfd;
+  --border-table:    #d2d2d7;
+  --bg-table-hover:  #f5f5f7;
+}

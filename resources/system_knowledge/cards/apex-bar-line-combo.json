@@ -1,0 +1,25 @@
+{
+  "id": "apex-bar-line-combo",
+  "type": "card",
+  "name": "混合图（柱+折线双轴）— ApexCharts",
+  "category": "chart",
+  "tags": ["混合图", "柱状图", "折线图", "双轴", "ApexCharts", "combo", "双Y轴"],
+  "description": "使用 ApexCharts 实现柱状图与折线图的双 Y 轴混合图。左 Y 轴为柱状系列（绝对值/数量），右 Y 轴为折线系列（百分比/增长率），适合同时展示量与率的对比。使用 generate_chart_apex 工具生成此类图表。",
+  "useCases": [
+    "销售额（柱）与增长率（线）双轴",
+    "流量（柱）与转化率（线）",
+    "成本（柱）与毛利率（线）",
+    "订单量（柱）与客单价趋势（线）"
+  ],
+  "dataSchema": {
+    "categories": "横轴类别数组（如月份、地区）",
+    "barSeries": "柱状系列数据数组（整数/浮点数）",
+    "lineSeries": "折线系列数据数组（百分比或比率）",
+    "barName": "柱状系列名称",
+    "lineName": "折线系列名称"
+  },
+  "htmlClassName": "card chart-card apex-chart-card",
+  "engineHint": "apexcharts",
+  "interactionSupport": ["highlight", "filter"],
+  "exampleHtml": "<div class=\"card chart-card apex-chart-card\" data-card-id=\"chart_combo_example\">\n  <h2 class=\"card-title\">销售额与增长率</h2>\n  <div id=\"chart_combo_example\" class=\"chart-container\" style=\"height:320px\"></div>\n  <script>\n  (function(){\n    var options = {\n      chart: { type: 'bar', height: 320, toolbar: { show: false }, animations: { enabled: !window.__REPORT_PRINT_MODE__ } },\n      colors: window.__APEX_PALETTE__ || ['#3b82f6','#10b981'],\n      series: [\n        { name: '销售额', type: 'column', data: [440000, 505000, 414000, 671000, 727000] },\n        { name: '增长率', type: 'line', data: [23, 42, 35, 27, 43] }\n      ],\n      xaxis: { categories: ['一月','二月','三月','四月','五月'] },\n      yaxis: [\n        { title: { text: '销售额（元）' } },\n        { opposite: true, title: { text: '增长率（%）' }, labels: { formatter: function(v){ return v+'%'; } } }\n      ],\n      tooltip: { shared: true, intersect: false },\n      events: {\n        dataPointSelection: function(e, chart, opts) {\n          if (window.__REPORT_INTERACTION_DISABLED__) return;\n          var label = opts.w.globals.labels[opts.dataPointIndex];\n          var value = opts.w.globals.series[opts.seriesIndex][opts.dataPointIndex];\n          window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.emit('chart_combo_example', 'click', { name: label, value: value });\n        }\n      }\n    };\n    var chart = new ApexCharts(document.getElementById('chart_combo_example'), options);\n    chart.render().then(function(){ window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.registerApex('chart_combo_example', chart); });\n  })();\n  <\/script>\n</div>"
+}

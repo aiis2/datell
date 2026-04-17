@@ -1,0 +1,32 @@
+{
+  "id": "kpi-multi-metric",
+  "type": "card",
+  "name": "多指标 KPI 组合卡",
+  "category": "kpi",
+  "tags": [
+    "KPI",
+    "多指标",
+    "组合",
+    "汇总",
+    "矩阵",
+    "网格",
+    "看板",
+    "高管看板",
+    "多维指标",
+    "指标矩阵"
+  ],
+  "description": "2×2 或 3×2 网格排列的多个 KPI 指标，在单张卡片内集中展示多个相关指标。适合高管看板的汇总页。",
+  "useCases": [
+    "财务四大指标汇总（收入、利润、成本、毛利率）",
+    "运营核心指标组合"
+  ],
+  "dataSchema": {
+    "metrics": "指标数组，每项含 label/value/unit/change"
+  },
+  "htmlClassName": "card kpi-card kpi-multi",
+  "engineHint": "pure-html",
+  "interactionSupport": [
+    "highlight"
+  ],
+  "exampleHtml": "<div class=\"card kpi-card kpi-multi\" data-card-id=\"kpi_metric_grid\">\n  <div style=\"display:grid;grid-template-columns:repeat(2,1fr);gap:16px\">\n    <div style=\"padding:12px;border-radius:8px;background:var(--accent-bg,#eff6ff)\">\n      <div class=\"kpi-label\">收入</div>\n      <div class=\"kpi-value\" style=\"font-size:1.5rem\">¥8.2亿</div>\n      <div style=\"color:#10b981;font-size:12px\">↑ +18%</div>\n    </div>\n    <div style=\"padding:12px;border-radius:8px;background:var(--accent-bg,#f0fdf4)\">\n      <div class=\"kpi-label\">利润</div>\n      <div class=\"kpi-value\" style=\"font-size:1.5rem\">¥1.6亿</div>\n      <div style=\"color:#10b981;font-size:12px\">↑ +9%</div>\n    </div>\n    <div style=\"padding:12px;border-radius:8px;background:var(--accent-bg,#fef9c3)\">\n      <div class=\"kpi-label\">成本</div>\n      <div class=\"kpi-value\" style=\"font-size:1.5rem\">¥6.6亿</div>\n      <div style=\"color:#ef4444;font-size:12px\">↑ +22%</div>\n    </div>\n    <div style=\"padding:12px;border-radius:8px;background:var(--accent-bg,#fce7f3)\">\n      <div class=\"kpi-label\">毛利率</div>\n      <div class=\"kpi-value\" style=\"font-size:1.5rem\">19.5%</div>\n      <div style=\"color:#ef4444;font-size:12px\">↓ -2.1pp</div>\n    </div>\n  </div>\n</div>"
+}

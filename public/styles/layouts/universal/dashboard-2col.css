@@ -1,0 +1,34 @@
+/* 通用双列仪表盘 — 适合业务日报/监控面板 */
+:root {
+  --layout-content-padding:   20px;
+  --layout-content-max-width: 1400px;
+  --layout-gap:               20px;
+  --layout-kpi-cols:          repeat(4, 1fr);
+  --layout-kpi-gap:           16px;
+  --layout-chart-cols:        repeat(2, 1fr);
+  --layout-chart-gap:         20px;
+  --layout-card-padding:      20px;
+  /* 三区结构 */
+  --layout-kpi-cols-n:        4;
+  --layout-kpi-row-h:         110px;
+  --layout-kpi-card-padding:  10px 14px;
+  --layout-zone-gap:          16px;
+}
+
+/* Tables always span full width in 2-col layout */
+.grid-charts > .card.card-table,
+.grid-charts > .card[class*="table"],
+.grid-charts > .card:has(table),
+.zone-content > .card.card-table,
+.zone-content > .card[class*="table"],
+.zone-content > .card:has(table) {
+  grid-column: 1 / -1;
+}
+
+/* 宽度断点降级 */
+@media (max-width: 900px) {
+  :root {
+    --layout-kpi-cols:   repeat(2, 1fr);
+    --layout-chart-cols: 1fr;
+  }
+}

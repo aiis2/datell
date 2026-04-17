@@ -1,0 +1,29 @@
+{
+  "id": "kpi-patient-satisfaction",
+  "type": "card",
+  "category": "kpi",
+  "name": "患者满意度(HCAHPS)指标卡",
+  "description": "展示患者满意度评分和各维度（护理/环境/沟通）评分，适合医院管理看板、科室质量月报、评级认证报告",
+  "tags": [
+    "kpi",
+    "patient satisfaction",
+    "患者满意度",
+    "HCAHPS",
+    "医院",
+    "医疗",
+    "护理质量"
+  ],
+  "cssClass": "kpi-nps",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>患者满意度</div><div style='font-size:36px;font-weight:900;color:var(--color-success)'>92.4%</div><div style='display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;font-size:10px;text-align:center'><div><div style='font-weight:700;color:var(--color-primary)'>94%</div><div style='color:var(--text-sub)'>护理质量</div></div><div><div style='font-weight:700;color:var(--color-primary)'>89%</div><div style='color:var(--text-sub)'>医患沟通</div></div><div><div style='font-weight:700;color:var(--color-success)'>95%</div><div style='color:var(--text-sub)'>环境整洁</div></div></div></div>",
+  "variants": [
+    "医生评分",
+    "手术满意度",
+    "出院满意度"
+  ],
+  "relatedCards": [
+    "kpi-nps",
+    "kpi-csat"
+  ],
+  "htmlClassName": "card kpi-card"
+}

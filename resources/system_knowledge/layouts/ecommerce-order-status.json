@@ -1,0 +1,21 @@
+{
+  "id": "ecommerce-order-status",
+  "type": "layout",
+  "name": "订单状态看板",
+  "category": "ecommerce",
+  "tags": [
+    "电商",
+    "订单",
+    "状态",
+    "物流",
+    "监控"
+  ],
+  "description": "订单状态实时看板，顶部各状态数量KPI，中部状态分布饼图+时间轴趋势，底部订单明细列表。",
+  "slots": {
+    "statusKpi": "各状态数量KPI",
+    "statusChart": "状态分布图",
+    "orderList": "订单明细列表"
+  },
+  "cssPath": "ecommerce/order-status.css",
+  "containerClass": "layout-ecommerce-orders"
+}

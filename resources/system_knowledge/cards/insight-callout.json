@@ -1,0 +1,12 @@
+{
+  "id": "insight-callout",
+  "type": "card",
+  "category": "D",
+  "name": "洞察醒目框",
+  "description": "带左边彩色竖条的醒目提示框，支持默认蓝/warning黄/success绿/danger红，适合关键洞察、重要结论、风险说明",
+  "tags": ["insight", "callout", "highlight", "conclusion", "analysis", "alert", "warning"],
+  "cssClass": "insight-callout",
+  "exampleHtml": "<div class=\"card insight-callout warning\" data-card-id=\"revenue_insight\"><span class=\"insight-icon\">&#9889;</span><div class=\"insight-body\"><div class=\"insight-title\">收入预警：Q3 环比下滑 8.3%</div><div class=\"insight-text\">华北区域是主要拖累因素，占下滑总量的 60%。建议重点关注华北区域渠道疏通，同时加大促销投入以拉动 Q4 增长。</div></div></div>",
+  "variants": ["主要发现", "预警通知", "成功亮点", "风险说明"],
+  "relatedCards": ["text-summary", "kpi-risk-flag", "metric-narrative"]
+}

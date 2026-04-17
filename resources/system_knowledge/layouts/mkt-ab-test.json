@@ -1,0 +1,16 @@
+{
+  "id": "mkt-ab-test",
+  "type": "layout",
+  "name": "A/B 测试结果报告",
+  "category": "marketing",
+  "tags": ["AB测试", "实验", "转化率", "显著性", "营销实验"],
+  "description": "A/B 测试结果展示布局，清晰呈现实验组vs对照组核心指标。顶部实验摘要卡（实验名/状态/置信度/推荐结论），中部核心指标对比柱状图+日度转化率时序折线对比图，底部各细分维度（设备/年龄/渠道）子组分析表。",
+  "slots": {
+    "experimentSummary": "实验摘要卡（名称/状态/置信度/结论）",
+    "metricCompare": "核心指标A vs B对比柱状图",
+    "conversionTrend": "实验期间日度转化率趋势对比折线",
+    "subgroupTable": "各细分维度子组分析结果表"
+  },
+  "cssPath": "marketing/mkt-ab-test.css",
+  "containerClass": "layout-mkt-abtest"
+}

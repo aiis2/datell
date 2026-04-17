@@ -1,0 +1,13 @@
+{
+  "id": "pie-waffle",
+  "type": "card",
+  "category": "B",
+  "name": "华夫图（格子比例图）",
+  "description": "纯HTML/CSS 10×10格子=100%的华夫饼图，通过填色格子视觉化百分比，比饼图更直观易读，适合达成率/占比展示",
+  "tags": ["pie", "waffle", "grid", "percentage", "proportion", "pure-html", "visual"],
+  "cssClass": "chart-card",
+  "renderLib": "pure-html",
+  "exampleHtml": "<div class=\"card\" data-card-id=\"waffle_chart\"><div style=\"font-size:14px;font-weight:700;margin-bottom:8px\">用户活跃率</div><div style=\"display:grid;grid-template-columns:repeat(10,1fr);gap:2px;width:100%;max-width:200px\"><script>(function(){var pct=73;var cells=100;var filled=Math.round(pct);var out='';for(var i=0;i<cells;i++){var color=i<filled?'var(--color-primary)':'var(--bg-card-alt)';out+='<div style=\"aspect-ratio:1;background:'+color+';border-radius:2px\"></div>';}document.write(out);})();</script></div><div style=\"margin-top:8px;font-size:24px;font-weight:900;color:var(--text-accent)\">73%<span style=\"font-size:13px;font-weight:400;color:var(--text-sub);margin-left:8px\">活跃用户</span></div></div>",
+  "variants": ["活跃率", "完成率", "覆盖率"],
+  "relatedCards": ["pie-half-donut", "kpi-target-bar"]
+}

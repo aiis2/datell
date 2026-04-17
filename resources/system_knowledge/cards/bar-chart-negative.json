@@ -1,0 +1,29 @@
+{
+  "id": "bar-chart-negative",
+  "type": "card",
+  "name": "正负对称条形图",
+  "category": "chart",
+  "tags": [
+    "条形图",
+    "正负",
+    "盈亏",
+    "蝴蝶图",
+    "正负对比"
+  ],
+  "description": "正负值对称条形图，正值向右，负值向左，适合展示盈亏、净变化、满意度净推荐值等正负混合数据。",
+  "useCases": [
+    "各月盈亏分析",
+    "NPS净推荐值分布",
+    "各项目利润亏损对比"
+  ],
+  "dataSchema": {
+    "categories": "类别",
+    "values": "可含负值的数值数组",
+    "title": "标题"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "tooltip"
+  ]
+}

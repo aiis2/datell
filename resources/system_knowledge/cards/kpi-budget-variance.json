@@ -1,0 +1,34 @@
+{
+  "id": "kpi-budget-variance",
+  "type": "card",
+  "name": "预算差异 KPI 卡",
+  "category": "kpi",
+  "tags": [
+    "预算",
+    "差异",
+    "budget",
+    "variance",
+    "KPI",
+    "实际vs预算",
+    "财务"
+  ],
+  "description": "财务预算差异 KPI 卡，展示实际值 vs 预算值，包含差异金额和差异率，用颜色区分正负差异（超支为红，节省或超达为绿）。适合财务管理报表中的预算执行监控卡片。",
+  "useCases": [
+    "部门费用预算执行情况",
+    "项目成本预算偏差",
+    "营收预算达成率",
+    "年度预算 vs 实际支出对比"
+  ],
+  "dataSchema": {
+    "label": "指标名称",
+    "actual": "实际值（数字）",
+    "budget": "预算值（数字）",
+    "variance": "差异值（实际-预算）",
+    "variancePct": "差异百分比",
+    "isRevenueType": "是否收入类型（true=超实际为正向，false=成本类超预算为负向）"
+  },
+  "htmlClassName": "card kpi-card kpi-budget-variance",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card kpi-card kpi-budget-variance\" data-card-id=\"kpi_budget\">\n  <div class=\"kpi-label\">Q1 营销费用</div>\n  <div class=\"kpi-value\">¥12.3万</div>\n  <div class=\"kpi-sub\">预算 ¥10.0万 <span class=\"text-red-500\">超支 ¥2.3万 (+23%)</span></div>\n  <div class=\"kpi-progress\"><div class=\"kpi-progress-bar\" style=\"width:123%;background:#ef4444\"></div></div>\n</div>"
+}

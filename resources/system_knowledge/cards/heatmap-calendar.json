@@ -1,0 +1,29 @@
+{
+  "id": "heatmap-calendar",
+  "type": "card",
+  "name": "日历热力图",
+  "category": "chart",
+  "tags": [
+    "日历",
+    "热力图",
+    "活跃度",
+    "GitHub contributions",
+    "每日"
+  ],
+  "description": "类 GitHub contributions 的日历格热力图，展示每日数据密度，适合展示访问量/提交量/活跃度的全年分布。",
+  "useCases": [
+    "每日用户活跃度日历",
+    "全年销售热力日历",
+    "工作日提交频率"
+  ],
+  "dataSchema": {
+    "year": "年份",
+    "data": "日期+数值数组（date/value）",
+    "title": "标题"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "tooltip"
+  ]
+}

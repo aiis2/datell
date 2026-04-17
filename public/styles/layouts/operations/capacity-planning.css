@@ -1,0 +1,15 @@
+/* 服务器监控大屏 — 高密度指标 */
+:root {
+  --layout-content-padding:   12px;
+  --layout-content-max-width: 1920px;
+  --layout-gap:               12px;
+  --layout-kpi-cols:          repeat(auto-fit, minmax(140px, 1fr));
+  --layout-kpi-gap:           10px;
+  --layout-chart-cols:        repeat(4, 1fr);
+  --layout-chart-gap:         12px;
+  --layout-card-padding:      12px;
+  --font-size-base:           12px;
+}
+
+.chart-container { height: 200px; }
+.chart-container.tall { height: 360px; }

@@ -1,0 +1,23 @@
+{
+  "id": "table-cohort-retention",
+  "type": "card",
+  "name": "同期群留存率矩阵表",
+  "category": "table",
+  "tags": ["留存率", "cohort", "同期群", "矩阵表", "热力矩阵", "用户留存"],
+  "description": "同期群（Cohort）留存率矩阵表格，行为注册月份（队列），列为第 N 天/周/月的留存率，单元格用颜色热力渲染（深色=高留存，浅色=低留存）。能直观看出留存随时间的衰减规律和不同队列之间的差异。",
+  "useCases": [
+    "用户注册后 D1/D7/D30 留存",
+    "月度新用户各月留存矩阵",
+    "客户购买后复购率矩阵",
+    "会员激活后各周活跃率"
+  ],
+  "dataSchema": {
+    "cohorts": "队列标签数组（行，如['Jan','Feb'...]）",
+    "periods": "时间段标签数组（列，如['M0','M1','M2'...]）",
+    "data": "二维数组，每行代表一个队列各时期留存率（0-1之间）"
+  },
+  "htmlClassName": "card table-card cohort-table",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card table-card\" data-card-id=\"table_cohort\">\n  <h2 class=\"card-title\">月度用户留存矩阵</h2>\n  <div class=\"table-wrapper\">\n    <table class=\"data-table\" style=\"font-size:12px\">\n      <thead><tr><th>注册月</th><th>M0</th><th>M1</th><th>M2</th><th>M3</th><th>M4</th><th>M5</th></tr></thead>\n      <tbody id=\"cohort_body\"></tbody>\n    </table>\n  </div>\n  <script>\n  (function(){\n    var cohorts=['2024-01','2024-02','2024-03','2024-04','2024-05','2024-06'];\n    var data=[[1,0.42,0.28,0.22,0.18,0.15],[1,0.45,0.30,0.24,0.20,null],[1,0.38,0.25,0.19,null,null],[1,0.44,0.29,null,null,null],[1,0.40,null,null,null,null],[1,null,null,null,null,null]];\n    var tbody=document.getElementById('cohort_body');\n    data.forEach(function(row,i){\n      var tr=document.createElement('tr');\n      var td=document.createElement('td');\n      td.textContent=cohorts[i];\n      tr.appendChild(td);\n      row.forEach(function(v){\n        var c=document.createElement('td');\n        if(v===null){c.textContent='-';c.style.opacity='0.3';}else{\n          c.textContent=Math.round(v*100)+'%';\n          var alpha=0.15+v*0.7;\n          c.style.background='rgba(59,130,246,'+alpha+')';\n          c.style.color=v>0.4?'white':'inherit';\n          c.style.fontWeight=v>=1?'700':'';\n        }\n        tr.appendChild(c);\n      });\n      tbody.appendChild(tr);\n    });\n  })();\n  <\/script>\n</div>"
+}

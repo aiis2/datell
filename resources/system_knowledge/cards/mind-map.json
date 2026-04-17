@@ -1,0 +1,13 @@
+{
+  "id": "mind-map",
+  "type": "card",
+  "category": "D",
+  "name": "思维导图",
+  "description": "纯HTML/CSS 简单放射状思维导图，中心主题向外发散多个分支，适合结论拆解/战略分析/问题根因",
+  "tags": ["mind-map", "radial", "brainstorm", "analysis", "structure", "topic", "pure-html"],
+  "cssClass": "chart-card",
+  "renderLib": "pure-html",
+  "exampleHtml": "<div class=\"card\" data-card-id=\"mind_map\"><div style=\"font-size:14px;font-weight:700;margin-bottom:16px\">增长瓶颈分析</div><div style=\"display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;min-height:140px\"><div style=\"display:flex;flex-direction:column;gap:8px;align-items:flex-end\"><div style=\"padding:5px 14px;background:var(--bg-card-alt);border:1px solid var(--border-table);border-radius:16px;font-size:12px;white-space:nowrap\">渠道单一</div><div style=\"padding:5px 14px;background:var(--bg-card-alt);border:1px solid var(--border-table);border-radius:16px;font-size:12px;white-space:nowrap\">产品老化</div><div style=\"padding:5px 14px;background:var(--bg-card-alt);border:1px solid var(--border-table);border-radius:16px;font-size:12px;white-space:nowrap\">团队瓶颈</div></div><div style=\"padding:10px 18px;background:var(--color-primary);color:#fff;border-radius:24px;font-weight:700;font-size:14px;white-space:nowrap;text-align:center;min-width:72px\">增长瓶颈</div><div style=\"display:flex;flex-direction:column;gap:8px;align-items:flex-start\"><div style=\"padding:5px 14px;background:var(--bg-card-alt);border:1px solid var(--border-table);border-radius:16px;font-size:12px;white-space:nowrap\">获客成本高</div><div style=\"padding:5px 14px;background:var(--bg-card-alt);border:1px solid var(--border-table);border-radius:16px;font-size:12px;white-space:nowrap\">留存率低</div><div style=\"padding:5px 14px;background:var(--bg-card-alt);border:1px solid var(--border-table);border-radius:16px;font-size:12px;white-space:nowrap\">客单价下滑</div><div style=\"padding:5px 14px;background:var(--bg-card-alt);border:1px solid var(--border-table);border-radius:16px;font-size:12px;white-space:nowrap\">竞品压力</div></div></div></div>",
+  "variants": ["问题根因分析", "战略拆解", "决策思维导图"],
+  "relatedCards": ["insight-callout", "process-steps"]
+}

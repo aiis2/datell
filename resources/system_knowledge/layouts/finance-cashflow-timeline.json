@@ -1,0 +1,21 @@
+{
+  "id": "finance-cashflow-timeline",
+  "type": "layout",
+  "name": "现金流时间轴",
+  "category": "finance",
+  "tags": [
+    "现金流",
+    "时间轴",
+    "财务",
+    "资金",
+    "流水"
+  ],
+  "description": "现金流专用布局，顶部流入流出KPI，中部时间轴瀑布图，底部分类明细表，适合财务现金流分析报告。",
+  "slots": {
+    "cashKpi": "流入/流出/净额KPI",
+    "waterfallChart": "瀑布图",
+    "detailTable": "分类明细表"
+  },
+  "cssPath": "finance/cashflow-timeline.css",
+  "containerClass": "layout-finance-cashflow"
+}

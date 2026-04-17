@@ -1,0 +1,29 @@
+{
+  "id": "kpi-cohort-retention",
+  "type": "card",
+  "category": "kpi",
+  "name": "留存率矩阵 KPI 卡",
+  "description": "表格形式展示按注册月份分组的用户在后续N个月的留存率，颜色深浅反映留存强度，是用户质量/产品粘性的核心指标",
+  "tags": [
+    "kpi",
+    "cohort",
+    "retention",
+    "matrix",
+    "table",
+    "lifecycle",
+    "churn",
+    "user"
+  ],
+  "cssClass": "kpi-cohort-retention",
+  "exampleHtml": "<div class=\"card kpi-card kpi-cohort-retention\" data-card-id=\"cohort_retention\"><span class=\"kpi-title\" style=\"font-size:14px;font-weight:700;display:block;margin-bottom:8px\">用户留存矩阵</span><div class=\"kpi-cohort-retention\"><table><thead><tr><th>队列</th><th>M0</th><th>M1</th><th>M2</th><th>M3</th></tr></thead><tbody><tr><td class=\"cohort-label\">23年1月</td><td style=\"background:rgba(59,130,246,0.5);color:#fff\">100%</td><td style=\"background:rgba(59,130,246,0.32)\">42%</td><td style=\"background:rgba(59,130,246,0.20)\">28%</td><td style=\"background:rgba(59,130,246,0.12)\">19%</td></tr><tr><td class=\"cohort-label\">23年2月</td><td style=\"background:rgba(59,130,246,0.5);color:#fff\">100%</td><td style=\"background:rgba(59,130,246,0.30)\">38%</td><td style=\"background:rgba(59,130,246,0.18)\">24%</td><td></td></tr></tbody></table></div></div>",
+  "variants": [
+    "用户月留存矩阵",
+    "订阅续费率",
+    "功能使用留存"
+  ],
+  "relatedCards": [
+    "kpi-churn-rate",
+    "data-table-basic"
+  ],
+  "htmlClassName": "card kpi-card kpi-cohort-retention"
+}

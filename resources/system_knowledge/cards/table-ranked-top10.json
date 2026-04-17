@@ -1,0 +1,25 @@
+{
+  "id": "table-ranked-top10",
+  "type": "card",
+  "name": "排名表格 Top 10",
+  "category": "table",
+  "tags": ["排名", "TOP10", "榜单", "表格", "排行榜", "数据表"],
+  "description": "带排名序号、增减趋势箭头和进度条的 TOP 10 排行榜表格。每行显示排名、名称、数值和同比变化，支持颜色编码区分涨跌，适合客户排名、产品销量榜单、区域绩效排行等场景。",
+  "useCases": [
+    "销售额 TOP10 客户/产品",
+    "员工绩效排行榜",
+    "页面访问量前10排名",
+    "城市/区域业绩排名表"
+  ],
+  "dataSchema": {
+    "rank": "排名序号（1-10）",
+    "name": "排名主体名称（客户/产品/区域）",
+    "value": "核心指标数值",
+    "change": "同比变化值（正负）",
+    "changePct": "同比变化百分比"
+  },
+  "htmlClassName": "card table-card",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card table-card\" data-card-id=\"table_top10\">\n  <h2 class=\"card-title\">销售额 TOP 10</h2>\n  <table class=\"data-table\">\n    <thead><tr><th>排名</th><th>产品/客户</th><th>销售额</th><th>同比</th></tr></thead>\n    <tbody>\n      <tr><td>1</td><td>产品A</td><td>¥128,000</td><td class=\"text-green-500\">▲12.3%</td></tr>\n      <tr><td>2</td><td>产品B</td><td>¥95,500</td><td class=\"text-red-500\">▼3.1%</td></tr>\n    </tbody>\n  </table>\n</div>"
+}

@@ -1,0 +1,22 @@
+/* 风险矩阵布局 — 风险热图 + 详情表格 */
+:root {
+  --layout-content-padding:   24px;
+  --layout-content-max-width: 1200px;
+  --layout-gap:               24px;
+  --layout-kpi-cols:          repeat(4, 1fr);
+  --layout-chart-cols:        3fr 2fr;
+  --layout-chart-gap:         24px;
+  --layout-card-padding:      20px;
+}
+
+/* 风险等级徽标 */
+.risk-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.risk-badge.high     { background: #fee2e2; color: #b91c1c; }
+.risk-badge.medium   { background: #fef9c3; color: #b45309; }
+.risk-badge.low      { background: #dcfce7; color: #15803d; }

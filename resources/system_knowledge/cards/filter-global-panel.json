@@ -1,0 +1,12 @@
+{
+  "id": "filter-global-panel",
+  "type": "card",
+  "category": "E",
+  "name": "全局复合筛选面板",
+  "description": "多个筛选控件组合在一个横排面板中，含时间/地区/品类等多维度，底部含应用/重置按钮，适合仪表盘顶部筛选栏",
+  "tags": ["filter", "global", "panel", "dashboard", "multi-filter", "toolbar", "header"],
+  "cssClass": "filter-global-panel",
+  "exampleHtml": "<div class=\"filter-global-panel\"><div class=\"filter-group\"><label class=\"filter-label\">时间范围</label><select class=\"filter-select\" data-filter-id=\"date_period\" data-filter-type=\"dropdown\"><option value=\"this_month\">本月</option><option value=\"last_month\">上月</option><option value=\"this_quarter\" selected>本季度</option><option value=\"this_year\">本年</option></select></div><div class=\"filter-group\"><label class=\"filter-label\">地区</label><select class=\"filter-select\" data-filter-id=\"region\" data-filter-type=\"dropdown\"><option value=\"all\">全部地区</option><option value=\"east\">华东</option><option value=\"south\">华南</option><option value=\"north\">华北</option></select></div><div class=\"filter-group\"><label class=\"filter-label\">产品线</label><select class=\"filter-select\" data-filter-id=\"product_line\" data-filter-type=\"dropdown\"><option value=\"all\">全部产品</option><option value=\"a\">产品线A</option><option value=\"b\">产品线B</option></select></div><div class=\"filter-group-actions\"><button class=\"filter-reset-button\">重置</button><button class=\"filter-apply-btn\">查询</button></div></div>",
+  "variants": ["仪表盘顶部筛选栏", "报表查询条件面板", "多维度过滤器"],
+  "relatedCards": ["filter-year-month", "filter-dropdown", "filter-tag-pills"]
+}

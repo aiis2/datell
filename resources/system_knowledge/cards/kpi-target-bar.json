@@ -1,0 +1,39 @@
+{
+  "id": "kpi-target-bar",
+  "type": "card",
+  "category": "kpi",
+  "name": "目标进度条 KPI 卡",
+  "description": "带横向进度条的目标完成率展示，支持超额绿色/低于60%红色，适合月度/季度目标跟踪",
+  "tags": [
+    "KPI",
+    "target",
+    "progress",
+    "bar",
+    "goal",
+    "completion",
+    "milestone",
+    "目标",
+    "完成率",
+    "达成率",
+    "达成",
+    "进度",
+    "目标vs实际",
+    "指标达成",
+    "完成目标",
+    "目标进度",
+    "季度目标",
+    "月度目标"
+  ],
+  "cssClass": "kpi-target-bar",
+  "exampleHtml": "<div class=\"card kpi-card kpi-target-bar\" data-card-id=\"monthly_target\"><div class=\"target-header\"><span class=\"target-pct\">73%</span><span class=\"kpi-title\">月度销售目标</span></div><div class=\"target-track\"><div class=\"target-fill\" style=\"--fill-pct:73%\"></div></div><div class=\"target-meta\"><span>当前: ¥219万</span><span>目标: ¥300万</span></div></div>",
+  "variants": [
+    "季度达标率",
+    "预算使用率",
+    "OKR进度"
+  ],
+  "relatedCards": [
+    "kpi-bullet-card",
+    "kpi-progress-card"
+  ],
+  "htmlClassName": "card kpi-card kpi-target-bar"
+}

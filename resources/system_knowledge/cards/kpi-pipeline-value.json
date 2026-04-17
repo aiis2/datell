@@ -1,0 +1,29 @@
+{
+  "id": "kpi-pipeline-value",
+  "type": "card",
+  "category": "kpi",
+  "name": "销售管道价值 KPI 卡",
+  "description": "展示销售各阶段（线索→商机→谈判→赢单）的管道金额及占比，用分段彩条+图例显示，适合销售预测与转化管理",
+  "tags": [
+    "kpi",
+    "pipeline",
+    "sales",
+    "crm",
+    "stage",
+    "forecast",
+    "opportunity",
+    "funnel"
+  ],
+  "cssClass": "kpi-pipeline-value",
+  "exampleHtml": "<div class=\"card kpi-card kpi-pipeline-value\" data-card-id=\"sales_pipeline\"><div class=\"kpi-title\" style=\"font-size:14px;font-weight:700;margin-bottom:8px\">销售管道（¥2,140万）</div><div class=\"pipe-stages\"><div class=\"pipe-stage\" style=\"--stage-weight:4;background:var(--palette-0)\"></div><div class=\"pipe-stage\" style=\"--stage-weight:3;background:var(--palette-1)\"></div><div class=\"pipe-stage\" style=\"--stage-weight:2;background:var(--palette-2)\"></div><div class=\"pipe-stage\" style=\"--stage-weight:1;background:var(--palette-3)\"></div></div><div class=\"pipe-legend\"><div class=\"pipe-legend-item\"><div class=\"pipe-legend-left\"><div class=\"pipe-dot\" style=\"background:var(--palette-0)\"></div>线索</div><div class=\"pipe-val\">¥860万</div></div><div class=\"pipe-legend-item\"><div class=\"pipe-legend-left\"><div class=\"pipe-dot\" style=\"background:var(--palette-1)\"></div>商机</div><div class=\"pipe-val\">¥640万</div></div><div class=\"pipe-legend-item\"><div class=\"pipe-legend-left\"><div class=\"pipe-dot\" style=\"background:var(--palette-2)\"></div>谈判</div><div class=\"pipe-val\">¥430万</div></div><div class=\"pipe-legend-item\"><div class=\"pipe-legend-left\"><div class=\"pipe-dot\" style=\"background:var(--palette-3)\"></div>赢单</div><div class=\"pipe-val\">¥210万</div></div></div></div>",
+  "variants": [
+    "销售管道总额",
+    "CRM阶段分布",
+    "季度赢单预测"
+  ],
+  "relatedCards": [
+    "kpi-segmented",
+    "funnel-chart"
+  ],
+  "htmlClassName": "card kpi-card kpi-pipeline-value"
+}

@@ -1,0 +1,16 @@
+{
+  "id": "finance-monitoring-realtime",
+  "type": "layout",
+  "name": "财务实时监控看板",
+  "category": "finance",
+  "tags": ["财务监控", "实时", "看板", "预算跟踪", "日度监控"],
+  "description": "财务日度/实时监控看板，顶部Today关键指标（当日收入/支出/余额），中部预算达成率环形图+实时收支流水表，底部各业务线当日财务状态版。适合财务团队日常监控日报。",
+  "slots": {
+    "todayKpi": "当日收入/支出/净现金KPI",
+    "budgetGauge": "各项预算当前达成率仪表/环形图",
+    "cashflowTable": "当日收支流水列表",
+    "bizLineStatus": "各业务线当日状态看板"
+  },
+  "cssPath": "finance/monitoring-realtime.css",
+  "containerClass": "layout-finance-monitoring"
+}

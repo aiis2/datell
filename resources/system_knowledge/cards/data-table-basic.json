@@ -1,0 +1,32 @@
+{
+  "id": "data-table-basic",
+  "type": "card",
+  "name": "基础数据表格",
+  "category": "table",
+  "tags": [
+    "表格",
+    "数据表",
+    "列表",
+    "明细",
+    "清单"
+  ],
+  "description": "标准数据明细表，支持多列、斑马纹、表头固定。适合展示明细数据、清单列表、汇总行。",
+  "useCases": [
+    "订单明细列表",
+    "员工信息表",
+    "销售明细清单",
+    "交易记录表"
+  ],
+  "dataSchema": {
+    "columns": "列定义（key/label/align）",
+    "rows": "数据行数组",
+    "title": "标题",
+    "showTotal": "是否显示合计行"
+  },
+  "htmlClassName": "card data-table",
+  "engineHint": "pure-html",
+  "interactionSupport": [
+    "sort",
+    "highlight"
+  ]
+}

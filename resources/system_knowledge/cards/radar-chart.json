@@ -1,0 +1,30 @@
+{
+  "id": "radar-chart",
+  "type": "card",
+  "name": "雷达图",
+  "category": "chart",
+  "tags": [
+    "雷达图",
+    "多维度",
+    "能力图",
+    "评估",
+    "蜘蛛图"
+  ],
+  "description": "多维度雷达图，展示一个或多个对象在多个维度的综合表现，适合能力评估、竞品对比分析。",
+  "useCases": [
+    "员工绩效多维评估",
+    "产品竞品维度对比",
+    "区域综合实力雷达"
+  ],
+  "dataSchema": {
+    "indicators": "维度数组（name/max）",
+    "series": "数据系列（name/values数组）",
+    "title": "标题"
+  },
+  "htmlClassName": "card chart-container",
+  "engineHint": "echarts",
+  "interactionSupport": [
+    "tooltip",
+    "legend"
+  ]
+}

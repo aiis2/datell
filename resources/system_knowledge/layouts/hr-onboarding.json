@@ -1,0 +1,16 @@
+{
+  "id": "hr-onboarding",
+  "type": "layout",
+  "name": "HR 入职进度追踪",
+  "category": "hr",
+  "tags": ["HR", "入职", "Onboarding", "新员工", "流程追踪"],
+  "description": "HR 新员工入职进度追踪布局，展示批次或个人入职流程完成情况。顶部本批次入职人数/完成率/待办任务数KPI，中部入职流程甘特/进度追踪图+各阶段完成率柱状图，底部员工入职任务明细表（含负责人/截止日/状态）。",
+  "slots": {
+    "batchKpi": "本批次人数/入职完成率/待办KPI",
+    "onboardingGantt": "入职流程阶段进度甘特图",
+    "stageCompletion": "各阶段完成率柱状图",
+    "taskTable": "员工入职任务明细表（含状态/负责人）"
+  },
+  "cssPath": "hr/hr-onboarding.css",
+  "containerClass": "layout-hr-onboarding"
+}

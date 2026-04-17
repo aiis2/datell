@@ -1,0 +1,10 @@
+/* 商品绩效布局 — 排行榜表格 + 散点图 */
+:root {
+  --layout-content-padding:   20px;
+  --layout-content-max-width: 1300px;
+  --layout-gap:               20px;
+  --layout-kpi-cols:          repeat(3, 1fr);
+  --layout-chart-cols:        1fr 2fr;
+  --layout-chart-gap:         20px;
+  --layout-card-padding:      20px;
+}

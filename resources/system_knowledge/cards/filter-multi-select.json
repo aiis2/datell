@@ -1,0 +1,24 @@
+{
+  "id": "filter-multi-select",
+  "type": "card",
+  "name": "多选下拉筛选控件",
+  "category": "filter",
+  "tags": ["多选", "下拉", "filter", "筛选", "multi-select", "联动控件"],
+  "description": "支持多值选择的下拉筛选控件（checkboxes in dropdown），允许用户同时选择多个维度值（如多个地区、多个品类）进行联动过滤。选中值以 tag/chip 方式展示在选框内，触发 filterChange 事件更新图表数据。",
+  "useCases": [
+    "多地区/多城市筛选",
+    "多品类/多SKU筛选",
+    "多状态/多渠道筛选",
+    "复杂报表多条件组合筛选"
+  ],
+  "dataSchema": {
+    "options": "选项数组，如 ['北京','上海','广州','深圳']",
+    "label": "控件标签文字",
+    "field": "筛选字段名称（与数据列名对应）",
+    "placeholder": "未选择时的提示文字"
+  },
+  "htmlClassName": "card filter-card filter-multi-select",
+  "engineHint": "pure-html",
+  "interactionSupport": ["filter"],
+  "exampleHtml": "<div class=\"card filter-card filter-multi-select\" data-card-id=\"filter_region_multi\">\n  <label class=\"filter-label\">地区（多选）</label>\n  <div class=\"filter-multi-dropdown\">\n    <div class=\"filter-multi-toggle\" onclick=\"this.parentElement.classList.toggle('open')\">选择地区 ▾</div>\n    <div class=\"filter-multi-options\">\n      <label><input type=\"checkbox\" value=\"北京\"> 北京</label>\n      <label><input type=\"checkbox\" value=\"上海\"> 上海</label>\n      <label><input type=\"checkbox\" value=\"广州\"> 广州</label>\n      <label><input type=\"checkbox\" value=\"深圳\"> 深圳</label>\n    </div>\n  </div>\n  <script>\n  (function(){\n    var container = document.querySelector('[data-card-id=\"filter_region_multi\"]');\n    container.querySelectorAll('input[type=checkbox]').forEach(function(cb){\n      cb.addEventListener('change', function(){\n        var vals = Array.from(container.querySelectorAll('input:checked')).map(function(el){return el.value;});\n        document.dispatchEvent(new CustomEvent('filterChange', { detail: { field: 'region', value: vals } }));\n      });\n    });\n  })();\n  <\/script>\n</div>"
+}

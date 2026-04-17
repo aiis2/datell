@@ -1,0 +1,24 @@
+{
+  "id": "line-multi-series",
+  "type": "card",
+  "name": "多系列趋势折线图",
+  "category": "chart",
+  "tags": ["多折线", "多系列", "趋势对比", "multi-line", "指标趋势", "时序"],
+  "description": "展示多条趋势线对比的折线图（3-6条线），每条线代表一个维度/类目/系列，支持图例筛选显示/隐藏系列，配合 datazoom 可缩放时间轴。适合多指标、多产品线、多区域趋势对比分析。",
+  "useCases": [
+    "多城市 DAU 趋势对比",
+    "多产品线 GMV 月趋势",
+    "多渠道转化率走势对比",
+    "各部门费用趋势对比"
+  ],
+  "dataSchema": {
+    "dates": "时间轴数组",
+    "series": "系列数组：[{name, data:[]}]，建议3-6条",
+    "smooth": "true=平滑曲线",
+    "enableDataZoom": "true=添加数据缩放"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["highlight", "datazoom"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_multi_line\">\n  <h2 class=\"card-title\">各渠道月度 GMV 趋势（万元）</h2>\n  <div id=\"chart_multi_line\" class=\"chart-container\" style=\"height:300px\"></div>\n  <script>\n  (function(){\n    var m=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];\n    var chart=echarts.init(document.getElementById('chart_multi_line'));\n    chart.setOption({\n      legend:{},\n      tooltip:{trigger:'axis'},\n      dataZoom:[{type:'inside',start:0,end:100},{type:'slider',height:20,bottom:5}],\n      grid:{bottom:50},\n      xAxis:{type:'category',data:m},\n      yAxis:{type:'value',axisLabel:{formatter:'{value}万'}},\n      series:[\n        {name:'直播',type:'line',smooth:true,data:[180,210,195,240,260,290,310,280,320,350,380,420]},\n        {name:'搜索',type:'line',smooth:true,data:[320,295,330,310,300,285,275,290,280,270,265,260]},\n        {name:'推荐',type:'line',smooth:true,data:[130,145,160,175,185,200,215,210,225,235,250,275]},\n        {name:'社交',type:'line',smooth:true,data:[60,70,75,85,90,100,110,115,120,130,140,160]}\n      ]\n    });\n    window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.register('chart_multi_line', chart);\n  })();\n  <\/script>\n</div>"
+}

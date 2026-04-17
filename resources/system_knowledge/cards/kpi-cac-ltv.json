@@ -1,0 +1,29 @@
+{
+  "id": "kpi-cac-ltv",
+  "type": "card",
+  "category": "kpi",
+  "name": "CAC/LTV 比值 KPI 卡",
+  "description": "展示客户获取成本(CAC)与生命周期价值(LTV)的对比和比值，是SaaS/电商经济单元健康度核心指标",
+  "tags": [
+    "kpi",
+    "cac",
+    "ltv",
+    "ratio",
+    "saas",
+    "acquisition",
+    "value",
+    "unit-economics"
+  ],
+  "cssClass": "kpi-cac-ltv",
+  "exampleHtml": "<div class=\"card kpi-card kpi-cac-ltv\" data-card-id=\"cac_ltv\"><div class=\"kpi-title\" style=\"font-size:13px;color:var(--text-sub);margin-bottom:4px\">获客经济模型</div><div class=\"ratio-row\"><div><div class=\"ratio-big\">¥1,200</div><div class=\"ratio-label\">LTV（生命周期价值）</div></div><div class=\"ratio-divider\">/</div><div><div class=\"ratio-big\" style=\"font-size:22px;color:var(--text-main)\">¥300</div><div class=\"ratio-label\">CAC（获客成本）</div></div><div class=\"ratio-badge\">LTV:CAC = 4×</div></div></div>",
+  "variants": [
+    "SaaS经济单元",
+    "电商ROI",
+    "广告CPR"
+  ],
+  "relatedCards": [
+    "kpi-churn-rate",
+    "kpi-single"
+  ],
+  "htmlClassName": "card kpi-card kpi-cac-ltv"
+}

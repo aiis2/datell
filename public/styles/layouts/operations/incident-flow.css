@@ -1,0 +1,10 @@
+/* 事件流布局 — 时间轴为主体 */
+:root {
+  --layout-content-padding:   24px;
+  --layout-content-max-width: 1000px;
+  --layout-gap:               24px;
+  --layout-kpi-cols:          repeat(4, 1fr);
+  --layout-chart-cols:        1fr;
+  --layout-chart-gap:         20px;
+  --layout-card-padding:      24px;
+}

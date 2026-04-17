@@ -1,0 +1,41 @@
+node_modules/
+dist/
+dist-electron/
+release/
+*.log
+.env
+.env.*
+autoReportData/
+tmp-*/
+tmp-*.js
+tmp-*.py
+tmp-*.ts
+tmp-*.tsx
+tmp-*.txt
+build-log-*.txt
+tsc-out.txt
+vite-out.txt
+vite-*.txt
+public/test-*.html
+docs/snapshot/
+docs/test-*.png
+docs/*.md
+userdata/
+*.yml
+!package.json
+!.github/**/*.yml
+.playwright-mcp/
+.vscode/
+tmp_*.md
+.agents/*
+.agents/skills/*
+docs/plan/*
+AGENTS.md
+.github/copilot-*.md
+
+# Enterprise plugins — private credentials; NOT included in open-source repo
+# Only plugins/README.md is tracked (to document the interface)
+plugins/enterprise-model.js
+
+# Auth code generation script — admin-only tool, not part of open-source
+scripts/generate-auth-code.js

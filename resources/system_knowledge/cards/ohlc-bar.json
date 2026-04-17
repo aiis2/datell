@@ -1,0 +1,26 @@
+{
+  "id": "ohlc-bar",
+  "type": "card",
+  "name": "OHLC 条形图",
+  "category": "chart",
+  "tags": ["OHLC", "金融", "股票", "开高低收", "条形图", "行情"],
+  "description": "使用 ECharts 实现标准 OHLC 条形图，通过竖线和横刻表示每日或每期开高低收四个价格。相较于 K线蜡烛图，OHLC 条形图更简洁，适合密集时间序列的关键价格区间展示。",
+  "useCases": [
+    "股票日内价格区间条形图",
+    "期货价格波动展示",
+    "指数月度价格区间对比",
+    "大宗商品OHLC走势"
+  ],
+  "dataSchema": {
+    "series": "系列数组，type: 'candlestick'，data: [{[open, close, low, high]}]",
+    "date": "日期列，X 轴时间",
+    "open": "开盘价",
+    "high": "最高价",
+    "low": "最低价",
+    "close": "收盘价"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["datazoom", "highlight"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_ohlc\">\n  <h2 class=\"card-title\">OHLC 价格区间</h2>\n  <div id=\"chart_ohlc\" class=\"chart-container\" style=\"height:320px\"></div>\n  <script>\n  (function(){\n    var chart = echarts.init(document.getElementById('chart_ohlc'), null, {renderer:'canvas'});\n    chart.setOption({\n      xAxis: { type: 'category', data: ['01/02','01/03','01/04','01/05','01/08'] },\n      yAxis: { type: 'value', min: 98, scale: true },\n      series: [{ type: 'candlestick', data: [[100.2,103.1,99.8,104.5],[103.1,105.4,102.3,106.2],[105.4,104.2,103.8,107.1],[104.2,107.6,103.5,108.3],[107.6,106.8,106.1,109.0]], itemStyle: { color: '#ef4444', color0: '#10b981', borderColor: '#ef4444', borderColor0: '#10b981' } }],\n      dataZoom: [{ type: 'inside' }, { type: 'slider', bottom: 10 }]\n    });\n    window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.register('chart_ohlc', chart);\n  })();\n  <\/script>\n</div>"
+}

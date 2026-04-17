@@ -1,0 +1,23 @@
+{
+  "id": "filter-segment-tabs",
+  "type": "card",
+  "name": "分段标签页筛选控件",
+  "category": "filter",
+  "tags": ["标签页", "segment", "tab", "分组筛选", "切换", "分页筛选"],
+  "description": "上方横排的分段标签页筛选控件（类似 iOS Segment Control 样式），点击标签切换后触发 filterChange 事件。与 filter-toggle-group 类似但样式区别：Segment Tabs 更像页面导航 tab，有底部活跃线指示，适合视觉上更突出、需要区分页面内容板块的筛选。",
+  "useCases": [
+    "报告板块切换（概况/详情/趋势/对比）",
+    "数据视图切换（表格/图表/地图）",
+    "时间维度快速切换（日/周/月/年）",
+    "产品分类 Tab 切换筛选"
+  ],
+  "dataSchema": {
+    "tabs": "[{value, label}]",
+    "defaultTab": "默认激活的tab value",
+    "field": "筛选字段名"
+  },
+  "htmlClassName": "card filter-card filter-tabs",
+  "engineHint": "pure-html",
+  "interactionSupport": ["filter"],
+  "exampleHtml": "<div class=\"card filter-card\" data-card-id=\"filter_seg_tab\">\n  <nav class=\"segment-tabs\" id=\"stab_nav\" style=\"display:flex;gap:0;border-bottom:2px solid var(--border,#e2e8f0)\">\n    <button class=\"stab-btn active\" data-v=\"overview\" style=\"padding:8px 16px;background:none;border:none;cursor:pointer;border-bottom:3px solid var(--accent,#3b82f6);margin-bottom:-2px;font-weight:600;color:var(--accent,#3b82f6)\">概况</button>\n    <button class=\"stab-btn\" data-v=\"detail\" style=\"padding:8px 16px;background:none;border:none;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;color:inherit;opacity:0.7\">详情</button>\n    <button class=\"stab-btn\" data-v=\"trend\" style=\"padding:8px 16px;background:none;border:none;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;color:inherit;opacity:0.7\">趋势</button>\n    <button class=\"stab-btn\" data-v=\"compare\" style=\"padding:8px 16px;background:none;border:none;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;color:inherit;opacity:0.7\">对比</button>\n  </nav>\n  <script>\n  (function(){\n    document.getElementById('stab_nav').addEventListener('click',function(e){\n      var btn=e.target.closest('[data-v]'); if(!btn) return;\n      this.querySelectorAll('.stab-btn').forEach(function(b){\n        b.style.borderBottomColor='transparent';\n        b.style.fontWeight='normal';\n        b.style.opacity='0.7';\n        b.style.color='inherit';\n      });\n      btn.style.borderBottomColor='var(--accent,#3b82f6)';\n      btn.style.fontWeight='600';\n      btn.style.opacity='1';\n      btn.style.color='var(--accent,#3b82f6)';\n      document.dispatchEvent(new CustomEvent('filterChange',{detail:{field:'view',value:btn.dataset.v}}));\n    });\n  })();\n  <\/script>\n</div>"
+}

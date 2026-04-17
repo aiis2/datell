@@ -1,0 +1,25 @@
+{
+  "id": "bar-population-pyramid",
+  "type": "card",
+  "name": "人口金字塔图（双向横向柱）",
+  "category": "chart",
+  "tags": ["人口金字塔", "年龄分布", "性别分布", "双向柱状图", "pyramid", "用户画像"],
+  "description": "人口金字塔式双向横向柱状图，Y轴为年龄段/分类，左侧为一组（如女/上年），右侧为另一组（如男/今年），中间Y轴居中为0。适合用户年龄-性别分布分析、今昔对比横向分布、A/B组数据对比等场景。",
+  "useCases": [
+    "用户年龄 × 性别分布金字塔",
+    "各年龄段今年/去年对比图",
+    "A组/B组各分类分布对比",
+    "员工职级男女分布图"
+  ],
+  "dataSchema": {
+    "ageGroups": "Y轴年龄/分类标签数组",
+    "leftValues": "左侧数据（负数或正数均可，会自动镜像）",
+    "rightValues": "右侧数据",
+    "leftLabel": "左侧系列名（如女/去年）",
+    "rightLabel": "右侧系列名（如男/今年）"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": ["highlight"],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_pyramid\">\n  <h2 class=\"card-title\">用户年龄 × 性别分布</h2>\n  <div id=\"chart_pyramid\" class=\"chart-container\" style=\"height:340px\"></div>\n  <script>\n  (function(){\n    var groups=['55+','45-54','35-44','25-34','18-24','<18'];\n    var female=[-2,-5,-12,-28,-22,-8];\n    var male=[1,4,10,30,25,9];\n    var chart=echarts.init(document.getElementById('chart_pyramid'));\n    chart.setOption({\n      legend:{data:['女性','男性']},\n      tooltip:{formatter:function(p){return p.seriesName+' '+p.name+': '+Math.abs(p.value)+'%';}},\n      xAxis:{type:'value',axisLabel:{formatter:function(v){return Math.abs(v)+'%';}},min:-35,max:35},\n      yAxis:{type:'category',data:groups},\n      series:[\n        {name:'女性',type:'bar',data:female,itemStyle:{color:'#ec4899'},label:{show:true,formatter:function(p){return Math.abs(p.value)+'%';},position:'left'}},\n        {name:'男性',type:'bar',data:male,itemStyle:{color:'#3b82f6'},label:{show:true,formatter:function(p){return p.value+'%';},position:'right'}}\n      ]\n    });\n    window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.register('chart_pyramid', chart);\n  })();\n  <\/script>\n</div>"
+}

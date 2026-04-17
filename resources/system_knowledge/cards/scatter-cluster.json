@@ -1,0 +1,13 @@
+{
+  "id": "scatter-cluster",
+  "type": "card",
+  "category": "B",
+  "name": "聚类散点图",
+  "description": "ECharts 散点图按分组/聚类着色，展示数据自然分组结构，适合客户分层/商品聚类/用户行为分类",
+  "tags": ["scatter", "cluster", "segment", "group", "classification", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"scatter_cluster\"><div class=\"card-title\">客户 RFM 聚类</div><div class=\"chart-container md\" id=\"chart_cluster\"></div><script>(function(){var el=document.getElementById('chart_cluster');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6','#10b981','#f59e0b','#ef4444'];var data=[{name:'高价值',data:[[85,90],[78,88],[90,85],[82,92]],color:palette[0]},{name:'潜力',data:[[60,70],[55,68],[65,72],[58,65]],color:palette[1]},{name:'低活跃',data:[[30,40],[25,45],[35,38]],color:palette[2]},{name:'流失风险',data:[[15,20],[20,18],[12,25]],color:palette[3] || '#ef4444'}];c.setOption({tooltip:{trigger:'item'},legend:{bottom:0},grid:{left:'3%',right:'4%',bottom:'15%',containLabel:true},xAxis:{type:'value',name:'频率分'},yAxis:{type:'value',name:'消费分'},series:data.map(function(g){return{name:g.name,type:'scatter',data:g.data,symbolSize:10,itemStyle:{color:g.color,opacity:0.8}};})});})();</script></div>",
+  "variants": ["客户RFM分层", "商品聚类", "用户行为分组"],
+  "relatedCards": ["scatter-chart", "scatter-regression"]
+}

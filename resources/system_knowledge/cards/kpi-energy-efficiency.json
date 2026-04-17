@@ -1,0 +1,30 @@
+{
+  "id": "kpi-energy-efficiency",
+  "type": "card",
+  "category": "kpi",
+  "name": "能源利用效率(PUE)指标卡",
+  "description": "展示 PUE（电力利用效率）或单位产出能耗，适合数据中心运营监控、工厂节能减排看板、双碳目标追踪",
+  "tags": [
+    "kpi",
+    "PUE",
+    "energy efficiency",
+    "能源效率",
+    "数据中心",
+    "节能",
+    "碳排放",
+    "双碳"
+  ],
+  "cssClass": "kpi-composite",
+  "engineHint": "pure-html",
+  "exampleHtml": "<div class='card kpi-composite' style='padding:16px'><div style='font-size:12px;color:var(--text-sub)'>数据中心 PUE</div><div style='font-size:36px;font-weight:900;color:var(--color-success)'>1.28</div><div style='font-size:11px;color:var(--color-success)'>✓ 低于行业优秀值 1.3</div><div style='display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;font-size:11px'><div><div style='font-weight:700'>¥ 380万/月</div><div style='color:var(--text-sub)'>电力成本</div></div><div><div style='font-weight:700;color:var(--color-success)'>-8.4%</div><div style='color:var(--text-sub)'>同比节能</div></div></div></div>",
+  "variants": [
+    "机房WUE用水效率",
+    "单位产品能耗",
+    "绿电使用比例"
+  ],
+  "relatedCards": [
+    "kpi-oee",
+    "kpi-capacity-util"
+  ],
+  "htmlClassName": "card kpi-card kpi-composite"
+}

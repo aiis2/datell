@@ -1,0 +1,23 @@
+{
+  "id": "apex-candlestick",
+  "type": "card",
+  "name": "K 线图（OHLC）— ApexCharts",
+  "category": "chart",
+  "tags": ["K线", "candlestick", "OHLC", "股票", "金融", "ApexCharts", "蜡烛图"],
+  "description": "使用 ApexCharts candlestick 类型实现标准 K 线蜡烛图，每根蜡烛包含开盘/收盘/最高/最低四个价格。适合展示股票价格走势、期货行情、加密货币价格等金融时间序列数据。使用 generate_chart_apex 工具生成。",
+  "useCases": [
+    "股票日 K/周 K 走势图",
+    "期货价格波动分析",
+    "加密货币价格区间图",
+    "商品价格OHLC时间序列"
+  ],
+  "dataSchema": {
+    "series": "系列数组：[{data: [{x: 日期, y: [开盘, 最高, 最低, 收盘]}]}]",
+    "x": "日期字符串或时间戳（毫秒）",
+    "y": "四元素数组 [open, high, low, close]"
+  },
+  "htmlClassName": "card chart-card apex-chart-card",
+  "engineHint": "apexcharts",
+  "interactionSupport": ["datazoom"],
+  "exampleHtml": "<div class=\"card chart-card apex-chart-card\" data-card-id=\"chart_candlestick_apex\">\n  <h2 class=\"card-title\">K 线走势</h2>\n  <div id=\"chart_candlestick_apex\" class=\"chart-container\" style=\"height:320px\"></div>\n  <script>\n  (function(){\n    var data = [\n      { x: '2024-01-02', y: [100.2, 104.5, 99.8, 103.1] }, { x: '2024-01-03', y: [103.1, 106.2, 102.3, 105.4] },\n      { x: '2024-01-04', y: [105.4, 107.1, 103.8, 104.2] }, { x: '2024-01-05', y: [104.2, 108.3, 103.5, 107.6] },\n      { x: '2024-01-08', y: [107.6, 109.0, 106.1, 106.8] }\n    ];\n    var options = {\n      chart: { type: 'candlestick', height: 320, toolbar: { show: true }, animations: { enabled: !window.__REPORT_PRINT_MODE__ } },\n      series: [{ data: data }],\n      xaxis: { type: 'category', labels: { rotate: -30 } },\n      plotOptions: { candlestick: { colors: { upward: '#10b981', downward: '#ef4444' }, wick: { useFillColor: true } } },\n      tooltip: { enabled: true }\n    };\n    var chart = new ApexCharts(document.getElementById('chart_candlestick_apex'), options);\n    chart.render().then(function(){ window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.registerApex('chart_candlestick_apex', chart); });\n  })();\n  <\/script>\n</div>"
+}

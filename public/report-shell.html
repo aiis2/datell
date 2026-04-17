@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Report Shell</title>
+  <!--
+    Report Shell — loaded as app://localhost/report-shell.html (same-origin as main window)
+    Responsibilities:
+      1. Pre-loads local ECharts + ApexCharts vendor scripts
+      2. Receives postMessage { type:'render', html, theme } from React parent
+      3. Builds inner srcdoc that:
+         - Inherits echarts/ApexCharts objects via parent reference (same-origin cross-frame)
+         - Has theme CSS variables injected at the TOP of <head> (highest specificity)
+         - Has AI's external CDN script tags stripped (local vendor used instead)
+      4. Forwards errors + ready signals back via postMessage
+      5. Accepts { type:'theme-update', theme } to patch live without rebuilding iframe
+  -->
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: transparent; }
+    #report-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+    #shell-error {
+      display: none;
+      position: fixed;
+      bottom: 8px;
+      left: 8px;
+      right: 8px;
+      background: rgba(220, 38, 38, 0.92);
+      color: #fff;
+      font-size: 12px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', monospace, sans-serif;
+      padding: 8px 12px;
+      border-radius: 8px;
+      z-index: 9999;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+    #shell-loading {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f8f9fa;
+      color: #94a3b8;
+      font-size: 13px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+      transition: opacity 0.3s;
+    }
+    html.dark #shell-loading { background: #1e293b; }
+  </style>
+</head>
+<body>
+  <div id="shell-loading">正在准备渲染引擎…</div>
+  <iframe id="report-frame" sandbox="allow-scripts allow-same-origin" title="Report"></iframe>
+  <div id="shell-error"></div>
+
+  <!--
+    Load local vendor scripts SYNCHRONOUSLY in shell's window scope.
+    Because shell is app://localhost, the inner srcdoc iframe is also app://localhost origin,
+    allowing: innerIframe.contentWindow.echarts = window.echarts (same-origin cross-frame)
+  -->
+  <script src="./vendor/echarts.min.js"></script>
+  <script src="./vendor/apexcharts.min.js"></script>
+  <script src="./vendor/vtable.min.js"></script>
+  <script src="./vendor/interactivity-engine.js"></script>
+
+  <script>
+  (function () {
+    'use strict';
+
+    var frame = document.getElementById('report-frame');
+    var errorEl = document.getElementById('shell-error');
+    var loadingEl = document.getElementById('shell-loading');
+    var currentTheme = 'tech'; // default theme
+    var pendingRender = null; // queued while shell is not ready
+    var shellReady = false;
+
+    // ── Vendor libraries now available in this window ──────────────────
+    // After inner frame loads srcdoc we transfer them into its scope.
+
+    function showError(msg) {
+      if (!errorEl) return;
+      errorEl.style.display = 'block';
+      errorEl.textContent = '⚠ 渲染错误: ' + String(msg).slice(0, 400);
+      try { window.parent.postMessage({ type: 'report-error', message: msg }, '*'); } catch (e) { /* ignore */ }
+    }
+
+    function clearError() {
+      if (errorEl) { errorEl.style.display = 'none'; errorEl.textContent = ''; }
+    }
+
+    // ── Strip external CDN <script src> tags from AI HTML ───────────────
+    // The shell provides the libraries; we don't want duplicate loading.
+    var CDN_PATTERNS = [
+      /cdn\.jsdelivr\.net/i,
+      /unpkg\.com/i,
+      /cdn\.bootcdn\.net/i,
+      /cdnjs\.cloudflare\.com/i,
+      /staticfile\.org/i,
+      /echarts\.apache\.org/i,
+      /visactor/i,
+    ];
+
+    // Patterns for local vendor scripts that are already loaded by the shell.
+    // AI-generated HTML may reference these via wrong paths (e.g. assets/ instead of vendor/).
+    var LOCAL_VENDOR_PATTERNS = [
+      /interactivity-engine/i,
+      /filter-controls/i,
+      /vtable/i,
+      /duckdb/i,
+    ];
+
+    function stripExternalScripts(html) {
+      // Strip external CDN <script src> tags — local vendor is used instead
+      var stripped = html.replace(/<script[^>]+src=["'][^"']*["'][^>]*><\/script>/gi, function (tag) {
+        var isCdn = CDN_PATTERNS.some(function (re) { return re.test(tag); });
+        // Also strip local vendor scripts that AI may have duplicated with wrong paths
+        var isLocalVendor = LOCAL_VENDOR_PATTERNS.some(function (re) { return re.test(tag); });
+        return (isCdn || isLocalVendor) ? ('<!-- [shell] script stripped: loaded by shell -->' ) : tag;
+      });
+      // Strip external CDN <link rel="stylesheet"> tags to prevent 404 errors
+      stripped = stripped.replace(/<link[^>]+href=["'][^"']*["'][^>]*/gi, function (tag) {
+        var isExtCdn = CDN_PATTERNS.some(function (re) { return re.test(tag); });
+        // Also strip links that reference local-looking paths that don't exist (e.g. vendor/themes.css)
+        var isBadLocal = /href=["'](?!https?:\/\/)(?!app:\/\/)(?:vendor\/|\/vendor\/)/i.test(tag);
+        return (isExtCdn || isBadLocal) ? '<!-- [shell] external link stripped -->' : tag;
+      });
+      return stripped;
+    }
+
+    // ── Animated background CSS generator ──────────────────────────────
+    // Returns raw CSS lines (no <style> wrapper) for the chosen preset ID.
+    // Keyframes are included once; the ::before pseudo-element acts as the bg layer.
+    var ANIMATED_BG_KEYFRAMES = [
+      '@keyframes abg-shift-lr{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}',
+      '@keyframes abg-shift-diag{0%{background-position:0% 0%}33%{background-position:100% 50%}66%{background-position:50% 100%}100%{background-position:0% 0%}}',
+      '@keyframes abg-blob-a{0%,100%{transform:translate(0%,0%) scale(1)}25%{transform:translate(4%,-6%) scale(1.08)}50%{transform:translate(-4%,6%) scale(0.94)}75%{transform:translate(6%,3%) scale(1.06)}}',
+      '@keyframes abg-blob-b{0%,100%{transform:translate(0%,0%) scale(1)}30%{transform:translate(-5%,4%) scale(1.10)}60%{transform:translate(5%,-5%) scale(0.92)}}',
+      '@keyframes abg-blob-c{0%,100%{transform:translate(0%,0%) scale(1)}40%{transform:translate(3%,8%) scale(1.06)}80%{transform:translate(-6%,-3%) scale(0.96)}}',
+      '@keyframes abg-grid-glow{0%,100%{opacity:0.25}50%{opacity:0.55}}',
+      '@keyframes abg-poly-hue{0%,100%{filter:hue-rotate(0deg) brightness(1)}50%{filter:hue-rotate(25deg) brightness(1.05)}}',
+    ].join('\n');
+
+    var ANIMATED_BG_CONFIGS = {
+      'warm-flow':      { type:'gradient', bg:'linear-gradient(-45deg,#f97316,#fcd34d,#ec4899,#a855f7,#f43f5e,#f97316)', size:'400% 400%', anim:'abg-shift-lr 12s ease infinite' },
+      'blue-aurora':    { type:'blob', base:'#1a0533', blobs:[
+        { w:'100%',h:'120%',l:'-20%',t:'-20%', c:'rgba(124,58,237,0.55)', a:'abg-blob-a 16s ease-in-out infinite' },
+        { w:'80%', h:'80%', r:'-10%',b:'-15%', c:'rgba(14,165,233,0.5)',  a:'abg-blob-b 20s ease-in-out infinite 4s' },
+        { w:'60%', h:'60%', l:'30%', t:'25%',  c:'rgba(232,121,249,0.45)',a:'abg-blob-c 13s ease-in-out infinite 2s' },
+      ]},
+      'cotton-candy':   { type:'blob', base:'linear-gradient(135deg,#c7d2fe 0%,#e9d5ff 50%,#fce7f3 100%)', blobs:[
+        { w:'90%',h:'90%',l:'-20%',t:'-25%', c:'rgba(191,219,254,0.7)', a:'abg-blob-a 9s ease-in-out infinite' },
+        { w:'75%',h:'75%',r:'-15%',b:'-20%', c:'rgba(240,171,252,0.75)',a:'abg-blob-b 11s ease-in-out infinite 3s' },
+        { w:'55%',h:'55%',l:'25%', t:'20%',  c:'rgba(253,186,116,0.35)',a:'abg-blob-c 15s ease-in-out infinite 1s' },
+      ]},
+      'northern-lights':{ type:'blob', base:'#050d1e', blobs:[
+        { w:'110%',h:'70%',l:'-5%', t:'-10%', c:'rgba(6,78,59,0.7)',    a:'abg-blob-a 18s ease-in-out infinite' },
+        { w:'80%', h:'80%',r:'-20%',t:'10%',  c:'rgba(76,29,149,0.6)',  a:'abg-blob-b 22s ease-in-out infinite 5s' },
+        { w:'60%', h:'60%',l:'20%', b:'-10%', c:'rgba(14,165,233,0.4)', a:'abg-blob-c 14s ease-in-out infinite 2s' },
+      ]},
+      'cyber-grid':     { type:'grid', base:'linear-gradient(135deg,#0f172a,#1e1b4b,#0f172a)', gridColor:'rgba(59,130,246,0.12)', gridSize:'42px 42px' },
+      'sunset-wave':    { type:'gradient', bg:'linear-gradient(-45deg,#1e3a5f,#7c2d12,#c2410c,#ea580c,#fcd34d,#c2410c,#1e3a5f)', size:'400% 400%', anim:'abg-shift-lr 14s ease infinite' },
+      'deep-ocean':     { type:'gradient', bg:'linear-gradient(180deg,#0c4a6e,#0369a1,#38bdf8,#0369a1,#0c4a6e)', size:'200% 400%', anim:'abg-shift-lr 18s ease infinite' },
+      'prism-burst':    { type:'gradient', bg:'linear-gradient(135deg,#f43f5e,#f97316,#22c55e,#3b82f6,#a855f7,#f43f5e)', size:'400% 400%', anim:'abg-shift-diag 10s ease infinite' },
+      'neon-pulse':     { type:'blob', base:'#0f172a', blobs:[
+        { w:'70%',h:'70%',l:'15%',t:'15%', c:'rgba(79,70,229,0.4)', a:'abg-blob-a 8s ease-in-out infinite' },
+        { w:'50%',h:'50%',r:'5%', b:'5%',  c:'rgba(232,121,249,0.5)',a:'abg-blob-b 11s ease-in-out infinite 2s' },
+      ]},
+      'cosmic-drift':   { type:'blob', base:'#020617', blobs:[
+        { w:'80%',h:'80%',l:'-10%',t:'-10%', c:'rgba(30,27,75,0.8)', a:'abg-blob-a 20s ease-in-out infinite' },
+        { w:'60%',h:'60%',r:'-5%', b:'-5%',  c:'rgba(12,74,110,0.6)',a:'abg-blob-b 25s ease-in-out infinite 5s' },
+      ]},
+      'emerald-mist':   { type:'blob', base:'#064e3b', blobs:[
+        { w:'90%',h:'90%',l:'-15%',t:'-15%', c:'rgba(13,148,136,0.5)', a:'abg-blob-a 14s ease-in-out infinite' },
+        { w:'70%',h:'70%',r:'-10%',b:'-10%', c:'rgba(167,243,208,0.3)',a:'abg-blob-b 18s ease-in-out infinite 3s' },
+      ]},
+      'finance-gold':   { type:'gradient', bg:'linear-gradient(135deg,#1c1917,#292524,#78350f,#b45309,#292524,#1c1917)', size:'300% 300%', anim:'abg-shift-diag 16s ease infinite' },
+      'stock-green':    { type:'gradient', bg:'linear-gradient(135deg,#052e16,#14532d,#16a34a,#4ade80,#16a34a,#052e16)', size:'300% 300%', anim:'abg-shift-lr 12s ease infinite' },
+      'corporate-blue': { type:'gradient', bg:'linear-gradient(135deg,#0f172a,#1e3a5f,#1d4ed8,#3b82f6,#1d4ed8,#0f172a)', size:'300% 300%', anim:'abg-shift-diag 14s ease infinite' },
+      'data-flow':      { type:'gradient', bg:'linear-gradient(135deg,#0c0c1e,#1e3a8a,#3b82f6,#22d3ee,#3b82f6,#1e3a8a)', size:'400% 400%', anim:'abg-shift-lr 10s ease infinite' },
+      'matrix-rain':    { type:'gradient', bg:'linear-gradient(180deg,#0a0f0a,#052e16,#15803d,#052e16,#0a0f0a)', size:'200% 400%', anim:'abg-shift-lr 8s ease infinite' },
+      'circuit-board':  { type:'grid', base:'#0f172a', gridColor:'rgba(14,165,233,0.1)', gridSize:'24px 24px' },
+      'medical-clean':  { type:'gradient', bg:'linear-gradient(135deg,#f0f9ff,#e0f2fe,#bae6fd,#7dd3fc,#bae6fd,#f0f9ff)', size:'300% 300%', anim:'abg-shift-diag 18s ease infinite' },
+      'health-pulse':   { type:'blob', base:'#0f172a', blobs:[
+        { w:'80%',h:'80%',l:'-10%',t:'-10%', c:'rgba(12,74,110,0.7)',  a:'abg-blob-a 12s ease-in-out infinite' },
+        { w:'60%',h:'60%',r:'-5%', b:'-5%',  c:'rgba(6,95,70,0.6)',   a:'abg-blob-b 16s ease-in-out infinite 3s' },
+      ]},
+      'campus-sky':     { type:'gradient', bg:'linear-gradient(135deg,#eff6ff,#dbeafe,#bfdbfe,#93c5fd,#bfdbfe,#eff6ff)', size:'300% 300%', anim:'abg-shift-diag 20s ease infinite' },
+      'knowledge-deep': { type:'gradient', bg:'linear-gradient(135deg,#1e1b4b,#312e81,#4338ca,#6366f1,#4338ca,#1e1b4b)', size:'300% 300%', anim:'abg-shift-lr 14s ease infinite' },
+      'retail-warm':    { type:'gradient', bg:'linear-gradient(-45deg,#7c2d12,#dc2626,#f97316,#fbbf24,#f97316,#7c2d12)', size:'300% 300%', anim:'abg-shift-lr 10s ease infinite' },
+      'pastel-shop':    { type:'blob', base:'#fdf4ff', blobs:[
+        { w:'80%',h:'80%',l:'-10%',t:'-10%', c:'rgba(217,70,239,0.15)',a:'abg-blob-a 12s ease-in-out infinite' },
+        { w:'70%',h:'70%',r:'-10%',b:'-10%', c:'rgba(236,72,153,0.12)',a:'abg-blob-b 15s ease-in-out infinite 3s' },
+      ]},
+      'industrial-steel':{ type:'gradient', bg:'linear-gradient(135deg,#0f172a,#1e293b,#475569,#94a3b8,#475569,#1e293b)', size:'300% 300%', anim:'abg-shift-diag 18s ease infinite' },
+      'energy-flow':    { type:'gradient', bg:'linear-gradient(-45deg,#1c1917,#292524,#b45309,#f59e0b,#fcd34d,#f59e0b,#b45309)', size:'400% 400%', anim:'abg-shift-lr 12s ease infinite' },
+      'geo-poly':       { type:'gradient', bg:'linear-gradient(135deg,#1e3a8a 0%,#0ea5e9 45%,#14b8a6 75%,#fbbf24 100%)', size:'200% 200%', anim:'abg-poly-hue 18s ease-in-out infinite' },
+    };
+
+    function buildAnimatedBgCss(presetId, opacity, cardBg) {
+      var cfg = ANIMATED_BG_CONFIGS[presetId];
+      var lines = [];
+      // Always include keyframes so they are available
+      lines.push(ANIMATED_BG_KEYFRAMES);
+      // Base page background (transparent so ::before shows through)
+      lines.push('html, body { background-color: transparent !important; position: relative; }');
+      if (cfg) {
+        if (cfg.type === 'gradient') {
+          lines.push('body::before {');
+          lines.push('  content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none;');
+          lines.push('  background: ' + cfg.bg + ';');
+          lines.push('  background-size: ' + cfg.size + ';');
+          lines.push('  animation: ' + cfg.anim + ';');
+          lines.push('  opacity: ' + opacity + ';');
+          lines.push('}');
+        } else if (cfg.type === 'blob') {
+          // Base color layer via ::before
+          lines.push('body::before {');
+          lines.push('  content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none;');
+          if (cfg.base.indexOf('gradient') !== -1) {
+            lines.push('  background: ' + cfg.base + ';');
+          } else {
+            lines.push('  background-color: ' + cfg.base + ';');
+          }
+          lines.push('  opacity: ' + opacity + ';');
+          lines.push('}');
+          // Blob layers via ::after (combined with pseudo-elements on body direct children is not feasible in pure CSS;
+          // We simulate blobs by injecting an absolutely-positioned overlay div via a data-uri SVG background trick,
+          // or simply using radial-gradient layers on ::before itself for blob-like effect)
+          var blobGrads = cfg.blobs.map(function(b) {
+            // Each blob is a radial-gradient centered at approximate position
+            return 'radial-gradient(ellipse ' + b.w + ' ' + b.h + ' at ' +
+              (b.l ? b.l : 'calc(100% - ' + b.r + ')') + ' ' +
+              (b.t ? b.t : 'calc(100% - ' + b.b + ')') + ', ' +
+              b.c + ', transparent 65%)';
+          });
+          lines.push('body::after {');
+          lines.push('  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;');
+          lines.push('  background: ' + blobGrads.join(',') + ';');
+          lines.push('  animation: abg-blob-a ' + (cfg.blobs[0] ? cfg.blobs[0].a.split(' ')[1] || '16s' : '16s') + ' ease-in-out infinite;');
+          lines.push('  opacity: ' + Math.min(1, opacity * 1.4) + ';');
+          lines.push('}');
+        } else if (cfg.type === 'grid') {
+          lines.push('body::before {');
+          lines.push('  content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none;');
+          if (cfg.base.indexOf('gradient') !== -1) {
+            lines.push('  background: ' + cfg.base + ';');
+          } else {
+            lines.push('  background-color: ' + cfg.base + ';');
+          }
+          lines.push('  opacity: ' + opacity + ';');
+          lines.push('}');
+          lines.push('body::after {');
+          lines.push('  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;');
+          lines.push('  background-image: linear-gradient(' + cfg.gridColor + ' 1px,transparent 1px),linear-gradient(90deg,' + cfg.gridColor + ' 1px,transparent 1px);');
+          lines.push('  background-size: ' + cfg.gridSize + ';');
+          lines.push('  animation: abg-grid-glow 5s ease-in-out infinite;');
+          lines.push('  opacity: ' + opacity + ';');
+          lines.push('}');
+        }
+      } else {
+        // Unknown preset — fallback gradient
+        lines.push('body::before { content:""; position:fixed; inset:0; z-index:-2; pointer-events:none; background:linear-gradient(135deg,#667eea,#764ba2); opacity:' + opacity + '; }');
+      }
+      // Make cards semi-transparent so background shows through
+      if (cardBg) {
+        lines.push('.card,.kpi-card,.chart-card,.section,section,[class*="card"],[class*="panel"],[class*="widget"] {');
+        lines.push('  background-color: ' + cardBg + 'cc !important;');
+        lines.push('  backdrop-filter: blur(2px);');
+        lines.push('}');
+      } else {
+        lines.push('.card,.kpi-card,.chart-card,.section,section,[class*="card"],[class*="panel"],[class*="widget"] {');
+        lines.push('  background-color: rgba(255,255,255,0.15) !important;');
+        lines.push('  backdrop-filter: blur(2px);');
+        lines.push('}');
+      }
+      return lines.join('\n');
+    }
+
+    // ── Build User-selected Theme + Layout Links ─────────────────────────
+    function buildThemeLink(themeId, layoutId) {
+      if (!themeId || themeId === 'auto') themeId = 'business';
+      var mapping = {
+        'classic':        'business',
+        'business':       'business',
+        'tech':           'tech',
+        'bento':          'bento',
+        'neo-brutalism':  'neo-brutalism',
+        'editorial':      'editorial',
+        'glassmorphism':  'glassmorphism',
+        'base':           'base',
+      };
+      var resolved = mapping[themeId] || 'business';
+      var baseUrl = window.location.origin || 'app://localhost';
+      // 1. Base theme (reset + default vars)
+      var links = '<link rel="stylesheet" href="' + baseUrl + '/styles/themes/theme-base.css">\n' +
+                  '<link rel="stylesheet" id="__shell-theme-link" href="' + baseUrl + '/styles/themes/theme-' + resolved + '.css">';
+      // 2. Layout base
+      links += '\n<link rel="stylesheet" id="__shell-layout-base-link" href="' + baseUrl + '/styles/layouts/_layout-base.css">';
+      // 3. Specific layout override (if any)
+      if (layoutId) {
+        // Sanitize: only allow alphanumeric, forward-slash, hyphen, underscore, dot
+        var safeLayoutId = layoutId.replace(/[^a-zA-Z0-9\-_./]/g, '');
+        links += '\n<link rel="stylesheet" id="__shell-layout-link" href="' + baseUrl + '/styles/layouts/' + safeLayoutId + '.css">';
+      }
+      return links;
+    }
+
+    // ── Build CSS variable block from theme object ───────────────────────
+    function buildThemeCss(theme) {
+      if (!theme) return '';
+      var lines = [':root {'];
+      if (theme.bodyBg)      lines.push('  --bg: ' + theme.bodyBg + ';');
+      if (theme.cardBg)      lines.push('  --card: ' + theme.cardBg + ';');
+      if (theme.primary)     lines.push('  --primary: ' + theme.primary + ';');
+      if (theme.textColor)   lines.push('  --text: ' + theme.textColor + ';');
+      if (theme.subTextColor)lines.push('  --sub: ' + theme.subTextColor + ';');
+
+      // ── Mini chart / palette CSS variables ──────────────────────────────
+      // These are used by inline SVG mini charts (sparkline, bar, pie, etc.)
+      if (theme.primary)   lines.push('  --palette-primary: ' + theme.primary + ';');
+      if (theme.colors && theme.colors.length > 0) {
+        theme.colors.forEach(function(c, i) {
+          lines.push('  --palette-color-' + (i + 1) + ': ' + c + ';');
+        });
+      }
+      lines.push('  --mini-chart-height: 40px;');
+      lines.push('  --mini-chart-line-width: 2px;');
+
+      // ── Report header CSS variables — override hardcoded theme values with palette ──
+      // Without this, theme-business.css always wins with its fixed blue gradient regardless
+      // of the user's selected palette.
+      if (theme.primary) {
+        if (theme.isDark) {
+          // Dark palette: use card/body background for header
+          var hdrBgDark = theme.cardBg || theme.bodyBg || theme.primary;
+          lines.push('  --bg-header: ' + hdrBgDark + ';');
+          lines.push('  --text-header: ' + (theme.textColor || '#e2e8f0') + ';');
+          lines.push('  --border-header: 1px solid rgba(255,255,255,0.12);');
+        } else {
+          // Light palette: build gradient from primary → second palette color
+          var hdrColor2 = (theme.colors && theme.colors.length > 1) ? theme.colors[1] : theme.primary;
+          lines.push('  --bg-header: linear-gradient(135deg, ' + theme.primary + ' 0%, ' + hdrColor2 + ' 100%);');
+          lines.push('  --text-header: #ffffff;');
+          lines.push('  --border-header: none;');
+        }
+      }
+
+      lines.push('}');
+
+      var overrides = [];
+      if (theme.bodyBg)    overrides.push('  background-color: ' + theme.bodyBg + ' !important;');
+      if (theme.textColor) overrides.push('  color: ' + theme.textColor + ' !important;');
+      if (theme.fontFamily) overrides.push('  font-family: ' + theme.fontFamily + ' !important;');
+      if (theme.fontSize)   overrides.push('  font-size: ' + theme.fontSize + ' !important;');
+      if (overrides.length > 0) {
+        lines.push('html, body {');
+        lines = lines.concat(overrides);
+        lines.push('}');
+      }
+
+      if (theme.cardBg) {
+        lines.push('.card, [class*="card"], .kpi-card, .chart-card, .section {');
+        lines.push('  background-color: ' + theme.cardBg + ' !important;');
+        lines.push('}');
+      }
+
+      if (theme.textColor) {
+        lines.push('table, th, td, tr { color: ' + theme.textColor + '; }');
+      }
+
+      if (theme.cardBg && theme.textColor) {
+        lines.push('th { background-color: ' + theme.cardBg + ' !important; color: ' + theme.textColor + ' !important; }');
+        lines.push('tr:nth-child(even) td { background-color: ' + (theme.bodyBg || theme.cardBg) + ' !important; }');
+      }
+
+      if (theme.isDark) {
+        lines.push('a { color: ' + (theme.primary || '#60a5fa') + ' !important; }');
+        if (theme.bodyBg) lines.push('input, select, textarea { background: ' + theme.cardBg + '; color: ' + theme.textColor + '; }');
+      }
+
+      if (theme.backgroundImage) {
+        var bgSize = theme.backgroundSize === 'fill'
+          ? '100% 100%'
+          : (theme.backgroundSize || 'cover');
+        var bgRepeat = theme.backgroundRepeat || 'no-repeat';
+        var bgPos = theme.backgroundPosition || 'center';
+        var bgOpacity = typeof theme.backgroundOpacity === 'number'
+          ? Math.min(1, Math.max(0, theme.backgroundOpacity / 100))
+          : 0.5;
+        lines.push('html, body { position: relative; }');
+        lines.push('body::before {');
+        lines.push('  content: "";');
+        lines.push('  position: fixed; inset: 0; z-index: -1; pointer-events: none;');
+        lines.push('  background-image: url("' + theme.backgroundImage.replace(/"/g, '\\"') + '");');
+        lines.push('  background-size: ' + bgSize + ';');
+        lines.push('  background-repeat: ' + bgRepeat + ';');
+        lines.push('  background-position: ' + bgPos + ';');
+        lines.push('  background-attachment: fixed;');
+        lines.push('  opacity: ' + bgOpacity + ';');
+        lines.push('}');
+      }
+
+      // ── Animated background preset ─────────────────────────────────────
+      if (theme.bgAnimated) {
+        var animOp = typeof theme.backgroundOpacity === 'number'
+          ? Math.min(1, Math.max(0, theme.backgroundOpacity / 100))
+          : 0.5;
+        var animCss = buildAnimatedBgCss(theme.bgAnimated, animOp, theme.cardBg);
+        lines.push(animCss);
+      }
+
+      return '<style id="__shell-theme">\n' + lines.join('\n') + '\n</style>';
+    }
+
+    // ── Build ECharts color patch script ────────────────────────────────
+    function buildEchartsColorScript(colors) {
+      if (!colors || colors.length === 0) return '';
+      return '<script>\n(function(){\n' +
+        '  var colors = ' + JSON.stringify(colors) + ';\n' +
+        '  // Expose palette globally for ECharts color option\n' +
+        '  window.__REPORT_PALETTE__ = colors;\n' +        '  // P1-A: Expose palette for ApexCharts\n' +
+        '  window.__APEX_PALETTE__ = colors;\n' +        '  // Sync palette CSS variables\n' +
+        '  try {\n' +
+        '    colors.forEach(function(c,i){ document.documentElement.style.setProperty("--palette-"+i, c); });\n' +
+        '  } catch(e) {}\n' +
+        '  function applyColors() {\n' +
+        '    if (typeof echarts !== "undefined") {\n' +
+        '      echarts.registerTheme("__userTheme", { color: colors });\n' +
+        '    }\n' +
+        '  }\n' +
+        '  if (document.readyState === "loading") {\n' +
+        '    document.addEventListener("DOMContentLoaded", applyColors);\n' +
+        '  } else { applyColors(); }\n' +
+        '})();\n' +
+        '<\/script>';
+    }
+
+    // ── Base URL tag — fixes ./vendor/icons.svg relative path in srcdoc ────────
+    // srcdoc iframes have no base URL; without this tag SVG <use href="./..."> renders
+    // as a black square/border in Electron/WebKit (the path fails to resolve).
+    // Dynamic: use actual shell origin so dev mode (http://localhost:PORT) also works.
+    var _SHELL_ORIGIN = (window.location.origin && window.location.origin !== 'null') ? window.location.origin : 'app://localhost';
+    var BASE_TAG = '<base href="' + _SHELL_ORIGIN + '/">';
+
+    // ── Bridge script injected into inner frame ──────────────────────────────────
+    // Transfers shell's preloaded libraries into the inner frame's scope (same-origin).
+    // Also installs an error forwarder and chart-instance trackers for theme patching.
+    var BRIDGE_SCRIPT = '<script id="__shell-bridge">\n' +
+      '(function(){\n' +
+      '  // Inherit libraries from shell (same-origin cross-frame)\n' +
+      '  try {\n' +
+      '    if (typeof echarts === "undefined" && parent && parent.echarts) {\n' +
+      '      window.echarts = parent.echarts;\n' +
+      '    }\n' +
+      '    if (typeof ApexCharts === "undefined" && parent && parent.ApexCharts) {\n' +
+      '      window.ApexCharts = parent.ApexCharts;\n' +
+      '    }\n' +
+      '    if (typeof VTable === "undefined" && parent && parent.VTable) {\n' +
+      '      // Note: VTable is loaded directly in the inner frame (not cross-frame inherited)\n' +
+      '      // to avoid cross-realm instanceof issues. This block is a no-op kept for compatibility.\n' +
+      '      // The actual VTable is injected via <script src="vendor/vtable.min.js"> in the head.\n' +
+      '    }\n' +
+      '  } catch(e) { /* cross-origin fallback — should not happen */ }\n' +
+      '  // Always initialize instance arrays for THIS frame (fixes blank charts on second render)\n' +
+      '  window.__ecInstances = [];\n' +
+      '  window.__apexInstances = [];\n' +
+      '  window.__vtableInstances = [];\n' +
+      '  // Initialize filter event bus: prefer InteractivityEngine from shell parent, fallback to EventTarget stub\n' +
+      '  try {\n' +
+      '    if (!window.__REPORT_EVENT_BUS__) {\n' +
+      '      // Try to inherit the full engine from shell\n' +
+      '      if (parent && parent.__REPORT_EVENT_BUS__ && parent.__REPORT_EVENT_BUS__.init) {\n' +
+      '        window.__REPORT_EVENT_BUS__ = parent.__REPORT_EVENT_BUS__;\n' +
+      '      } else {\n' +
+      '        // Lightweight stub — will be upgraded by interactivity-engine.js when loaded\n' +
+      '        window.__REPORT_EVENT_BUS__ = new EventTarget();\n' +
+      '      }\n' +
+      '    }\n' +
+      '    if (!window.__FILTER_STATE__) window.__FILTER_STATE__ = {};\n' +
+      '  } catch(e) {}\n' +
+      '  // Monkey-patch echarts.init to track all chart instances for theme updates\n' +
+      '  // We always re-patch using the stored original to handle re-use of the same echarts object\n' +
+      '  try {\n' +
+      '    if (typeof echarts !== "undefined") {\n' +
+      '      // Store the original once; re-use it on subsequent frames so we never double-wrap\n' +
+      '      if (!echarts._origInit) echarts._origInit = echarts.init;\n' +
+      '      var _winRef = window;\n' +
+      '      // ResizeObserver: auto-resize ECharts when container dims change (layout switch, panel resize)\n' +
+      '      var _ecRO = null;\n' +
+      '      try {\n' +
+      '        if (typeof ResizeObserver !== "undefined") {\n' +
+      '          _ecRO = new ResizeObserver(function(entries) {\n' +
+      '            // Use RAF to break synchronous layout chain and prevent ResizeObserver loop warning\n' +
+      '            var _snapEntries = Array.prototype.slice.call(entries);\n' +
+      '            var _raf3 = typeof requestAnimationFrame !== "undefined" ? requestAnimationFrame : function(fn) { setTimeout(fn, 16); };\n' +
+      '            _raf3(function() {\n' +
+      '              for (var ei = 0; ei < _snapEntries.length; ei++) {\n' +
+      '                var eel = _snapEntries[ei].target;\n' +
+      '                try { if (eel._ecInst && !eel._ecInst.isDisposed()) eel._ecInst.resize(); } catch(re3) {}\n' +
+      '              }\n' +
+      '            });\n' +
+      '          });\n' +
+      '        }\n' +
+      '      } catch(e3) {}\n' +
+      '      echarts.init = (function(orig, winRef, ecRO) {\n' +
+      '        return function() {\n' +
+      '          // Guard: skip if container is null/not found to avoid TypeError: Cannot read properties of null (reading getAttribute)\n' +
+      '          var _initArg = arguments[0];\n' +
+      '          var _initEl = typeof _initArg === "string" ? document.getElementById(_initArg) : _initArg;\n' +
+      '          if (!_initEl) { console.warn("[bridge] echarts.init skipped: container not found \u2014", _initArg); return undefined; }\n' +
+      '          var inst;\n' +
+      '          try { inst = orig.apply(echarts, arguments); } catch(initErr) { console.error("[bridge] echarts.init error:", initErr.message, "container:", _initArg); return undefined; }\n' +
+      '          if (!inst) return undefined;\n' +
+      '          try { if (winRef.__ecInstances) winRef.__ecInstances.push(inst); } catch(e) {}\n' +
+      '          // Auto-register with InteractivityEngine if the container has data-card-id\n' +
+      '          try {\n' +
+      '            var container = arguments[0];\n' +
+      '            var el = (typeof container === "string") ? document.getElementById(container) : container;\n' +
+      '            // BRIDGE-01 FIX: prefer data-card-id (closest ancestor first) over raw el.id\n' +
+      '            var regCardId = (el && el.closest && el.closest("[data-card-id]")\n' +
+      '                ? el.closest("[data-card-id]").getAttribute("data-card-id") : null) ||\n' +
+      '              (el && el.getAttribute ? el.getAttribute("data-card-id") : null) ||\n' +
+      '              (el && el.id ? el.id : null);\n' +
+      '            if (regCardId && winRef.__REPORT_EVENT_BUS__ && winRef.__REPORT_EVENT_BUS__.register) {\n' +
+      '              winRef.__REPORT_EVENT_BUS__.register(regCardId, inst);\n' +
+      '            }\n' +
+      '            // Attach ResizeObserver on container for auto-resize on layout/panel changes\n' +
+      '            if (el) { el._ecInst = inst; if (ecRO) { try { ecRO.observe(el); } catch(roe) {} } }\n' +
+      '          } catch(re) {}\n' +
+      '          // Double-RAF deferred resize: fixes blank charts (0-height at init when external CSS not yet applied)\n' +
+      '          if (inst) {\n' +
+      '            var _raf = typeof requestAnimationFrame !== "undefined" ? requestAnimationFrame : function(fn) { setTimeout(fn, 16); };\n' +
+      '            _raf(function() { _raf(function() { try { if (!inst.isDisposed()) inst.resize(); } catch(re4) {} }); });\n' +
+      '          }\n' +
+      '          return inst;\n' +
+      '        };\n' +
+      '      })(echarts._origInit, _winRef, _ecRO);\n' +
+      '      echarts._shellBridged = true;\n' +
+      '    }\n' +
+      '  } catch(e) { /* non-critical */ }\n' +
+      '  // Monkey-patch ApexCharts.prototype.render to track instances\n' +
+      '  try {\n' +
+      '    if (typeof ApexCharts !== "undefined") {\n' +
+      '      if (!ApexCharts._origRender) ApexCharts._origRender = ApexCharts.prototype.render;\n' +
+      '      var _apWinRef = window;\n' +
+      '      // Safety: sanitize series data to prevent spread-of-non-iterable in ApexCharts internals\n' +
+      '      // ── Pre-construction ApexCharts options sanitizer ──────────────────\n' +
+      '      // Fixes "Cannot read properties of undefined (reading length)" thrown\n' +
+      '      // inside the ApexCharts constructor when series/categories are malformed.\n' +
+      '      function _sanitizeApexOpts(opts) {\n' +
+      '        if (!opts) return;\n' +
+      '        try {\n' +
+      '          // Ensure series is a proper array\n' +
+      '          if (opts.series !== undefined && opts.series !== null && !Array.isArray(opts.series)) {\n' +
+      '            opts.series = typeof opts.series === "number" ? [opts.series] : [];\n' +
+      '          }\n' +
+      '          if (Array.isArray(opts.series)) {\n' +
+      '            for (var _si = 0; _si < opts.series.length; _si++) {\n' +
+      '              var _s = opts.series[_si];\n' +
+      '              if (_s === null || _s === undefined) { opts.series[_si] = {data:[]}; continue; }\n' +
+      '              if (typeof _s === "object" && !Array.isArray(_s)) {\n' +
+      '                if (_s.data === undefined || _s.data === null) _s.data = [];\n' +
+      '                else if (!Array.isArray(_s.data)) _s.data = [];\n' +
+      '                else { for (var _di = 0; _di < _s.data.length; _di++) {\n' +
+      '                  if (_s.data[_di] === undefined) { _s.data[_di] = null; }\n' +
+      '                  else if (typeof _s.data[_di] === "object" && _s.data[_di] !== null && "y" in _s.data[_di] && _s.data[_di].y === undefined) { _s.data[_di].y = null; }\n' +
+      '                } }\n' +
+      '              }\n' +
+      '            }\n' +
+      '          }\n' +
+      '          // BUG-APEX-GROUP FIX: ApexCharts.seriesYAxisMap 会尝试给每个 series 项添加\n' +
+      '          // .group 属性，数字原始值无法被赋属性 → TypeError。\n' +
+      '          // 当图表非 pie 类型但 series 含裸数字时，自动转换为标准对象格式。\n' +
+      '          var _pieTypes2 = {pie:1,donut:1,polarArea:1,radialBar:1};\n' +
+      '          var _ct2 = (opts.chart && opts.chart.type) ? opts.chart.type : "line";\n' +
+      '          if (!_pieTypes2[_ct2] && Array.isArray(opts.series)) {\n' +
+      '            var _hasNum = false;\n' +
+      '            for (var _ni = 0; _ni < opts.series.length; _ni++) {\n' +
+      '              if (typeof opts.series[_ni] === "number") { _hasNum = true; break; }\n' +
+      '            }\n' +
+      '            if (_hasNum) {\n' +
+      '              var _numData = [], _objSer = [];\n' +
+      '              for (var _ni2 = 0; _ni2 < opts.series.length; _ni2++) {\n' +
+      '                if (typeof opts.series[_ni2] === "number") _numData.push(opts.series[_ni2]);\n' +
+      '                else _objSer.push(opts.series[_ni2]);\n' +
+      '              }\n' +
+      '              if (_numData.length > 0) {\n' +
+      '                if (!opts.xaxis) opts.xaxis = {};\n' +
+      '                if (!opts.xaxis.categories && Array.isArray(opts.labels) && opts.labels.length > 0)\n' +
+      '                  opts.xaxis.categories = opts.labels.slice();\n' +
+      '                _objSer.unshift({data: _numData});\n' +
+      '                opts.series = _objSer;\n' +
+      '              }\n' +
+      '            }\n' +
+      '          }\n' +
+      '          // Guard xaxis.categories\n' +
+      '          if (opts.xaxis && opts.xaxis.categories !== undefined && !Array.isArray(opts.xaxis.categories)) opts.xaxis.categories = [];\n' +
+      '          // Guard labels (pie/donut)\n' +
+      '          if (opts.labels !== undefined && !Array.isArray(opts.labels)) opts.labels = [];\n' +
+      '          // EXP-APEX-EMPTY-SERIES FIX: Empty series [] causes createBorderRadiusArr([]) crash.\n' +
+      '          // globals.series gets populated from config.series during init(), and then\n' +
+      '          // Bar.draw() calls createBorderRadiusArr(globals.series) reading t[0].length.\n' +
+      '          // If series is empty do not try to pre-patch globals (it does not exist yet);\n' +
+      '          // instead ensure config.series has at least a placeholder so globals.series = [[]] after init.\n' +
+      '          if (Array.isArray(opts.series) && opts.series.length === 0) {\n' +
+      '            var _ct3 = (opts.chart && opts.chart.type) ? opts.chart.type : "bar";\n' +
+      '            var _noPlaceholder = {pie:1,donut:1,polarArea:1,radialBar:1};\n' +
+      '            if (!_noPlaceholder[_ct3]) opts.series = [{ name: "", data: [] }];\n' +
+      '          }\n' +
+      '          // Guard annotations arrays\n' +
+      '          if (opts.annotations) {\n' +
+      '            ["yaxis","xaxis","points"].forEach(function(k) {\n' +
+      '              if (opts.annotations[k] !== undefined && !Array.isArray(opts.annotations[k])) opts.annotations[k] = [];\n' +
+      '            });\n' +
+      '          }\n' +
+      '        } catch(_se) {}\n' +
+      '      }\n' +
+      '      // ── Post-construction series sanitizer (runs before render) ──────────\n' +
+      '      function _sanitizeApexSeries(inst) {\n' +
+      '        try {\n' +
+      '          var w = inst.w;\n' +
+      '          if (!w || !w.config) return;\n' +
+      '          var cfg = w.config;\n' +
+      '          // Ensure series is array\n' +
+      '          if (cfg.series === undefined || cfg.series === null) cfg.series = [];\n' +
+      '          else if (!Array.isArray(cfg.series)) cfg.series = typeof cfg.series === "number" ? [cfg.series] : [];\n' +
+      '          if (Array.isArray(cfg.series)) {\n' +
+      '            for (var si = 0; si < cfg.series.length; si++) {\n' +
+      '              var s = cfg.series[si];\n' +
+      '              if (s === null || s === undefined) { cfg.series[si] = {data:[]}; continue; }\n' +
+      '              if (typeof s === "object" && !Array.isArray(s)) {\n' +
+      '                if (s.data === undefined || s.data === null) s.data = [];\n' +
+      '                else if (!Array.isArray(s.data)) s.data = [];\n' +
+      '                else { for (var di = 0; di < s.data.length; di++) { if (s.data[di] === undefined) s.data[di] = null; } }\n' +
+      '              }\n' +
+      '            }\n' +
+      '          }\n' +
+      '          // BUG-APEX-GROUP FIX (post-construction): 与 _sanitizeApexOpts 一致的保护\n' +
+      '          var _pieTypes3 = {pie:1,donut:1,polarArea:1,radialBar:1};\n' +
+      '          var _ct3 = (cfg.chart && cfg.chart.type) ? cfg.chart.type : "line";\n' +
+      '          if (!_pieTypes3[_ct3] && Array.isArray(cfg.series)) {\n' +
+      '            var _hasNum2 = false;\n' +
+      '            for (var _ni3 = 0; _ni3 < cfg.series.length; _ni3++) {\n' +
+      '              if (typeof cfg.series[_ni3] === "number") { _hasNum2 = true; break; }\n' +
+      '            }\n' +
+      '            if (_hasNum2) {\n' +
+      '              var _numData2 = [], _objSer2 = [];\n' +
+      '              for (var _ni4 = 0; _ni4 < cfg.series.length; _ni4++) {\n' +
+      '                if (typeof cfg.series[_ni4] === "number") _numData2.push(cfg.series[_ni4]);\n' +
+      '                else _objSer2.push(cfg.series[_ni4]);\n' +
+      '              }\n' +
+      '              if (_numData2.length > 0) {\n' +
+      '                if (!cfg.xaxis) cfg.xaxis = {};\n' +
+      '                if (!cfg.xaxis.categories && Array.isArray(cfg.labels) && cfg.labels.length > 0)\n' +
+      '                  cfg.xaxis.categories = cfg.labels.slice();\n' +
+      '                _objSer2.unshift({data: _numData2});\n' +
+      '                cfg.series = _objSer2;\n' +
+      '              }\n' +
+      '            }\n' +
+      '          }\n' +
+      '          // Guard xaxis.categories\n' +
+      '          if (cfg.xaxis && cfg.xaxis.categories !== undefined && !Array.isArray(cfg.xaxis.categories)) cfg.xaxis.categories = [];\n' +
+      '          // Guard labels\n' +
+      '          if (cfg.labels !== undefined && !Array.isArray(cfg.labels)) cfg.labels = [];\n' +
+      '          // EXP-APEX-SERIES FIX: Sanitize globals.series to prevent createBorderRadiusArr crash.\n' +
+      '          // Bar chart calls createBorderRadiusArr(globals.series) reading t[0].length.\n' +
+      '          // If globals.series is empty [] or has non-array elements, t[0].length throws TypeError.\n' +
+      '          try {\n' +
+      '            if (w && w.globals) {\n' +
+      '              var _gs = w.globals.series;\n' +
+      '              if (!Array.isArray(_gs)) { w.globals.series = [[]]; _gs = w.globals.series; }\n' +
+      '              if (_gs.length === 0) {\n' +
+      '                // Empty globals.series causes createBorderRadiusArr([])[0].length to fail.\n' +
+      '                // Add a placeholder empty array so t[0] is always defined.\n' +
+      '                _gs.push([]);\n' +
+      '              } else {\n' +
+      '                for (var _gsi = 0; _gsi < _gs.length; _gsi++) {\n' +
+      '                  if (!Array.isArray(_gs[_gsi])) _gs[_gsi] = [];\n' +
+      '                }\n' +
+      '              }\n' +
+      '            }\n' +
+      '          } catch(_gse) {}\n' +
+      '        } catch(e) {}\n' +
+      '      }\n' +
+      '      ApexCharts.prototype.render = (function(orig, winRef) {\n' +
+      '        return function() {\n' +
+      '          try { if (winRef.__apexInstances && winRef.__apexInstances.indexOf(this) === -1) winRef.__apexInstances.push(this); } catch(e) {}\n' +
+      '          // BRIDGE-AP-01 FIX: 立即向 IE 注册 ApexCharts 实例，确保 click 事件绑定不延迟\n' +
+      '          // 之前只 push 到 __apexInstances，click 事件绑定要等 800ms 后 _registerExistingChartInstances() 跑完\n' +
+      '          try {\n' +
+      '            var _apEl = this.el;\n' +
+      '            var _apCardId = (_apEl && _apEl.closest && _apEl.closest("[data-card-id]")\n' +
+      '                ? _apEl.closest("[data-card-id]").getAttribute("data-card-id") : null) ||\n' +
+      '              (_apEl && _apEl.getAttribute ? _apEl.getAttribute("data-card-id") : null) ||\n' +
+      '              (_apEl && _apEl.id ? _apEl.id : null);\n' +
+      '            if (_apCardId && winRef.__REPORT_EVENT_BUS__ && winRef.__REPORT_EVENT_BUS__.registerApex) {\n' +
+      '              winRef.__REPORT_EVENT_BUS__.registerApex(_apCardId, this);\n' +
+      '            }\n' +
+      '          } catch(e2) {}\n' +
+      '          _sanitizeApexSeries(this);\n' +
+      '          return orig.apply(this, arguments);\n' +
+      '        };\n' +
+      '      })(ApexCharts._origRender, _apWinRef);\n' +
+      '      ApexCharts._shellBridged = true;\n' +
+      '      // ── Patch updateSeries to sanitize data before update ──────────────────\n' +
+      '      // Prevents TypeError when filterChange/theme-patch calls updateSeries with bad data.\n' +
+      '      if (ApexCharts.prototype.updateSeries && !ApexCharts._origUpdateSeries) {\n' +
+      '        ApexCharts._origUpdateSeries = ApexCharts.prototype.updateSeries;\n' +
+      '        ApexCharts.prototype.updateSeries = function(newSeries, animate, overwriteInitialConfig) {\n' +
+      '          try {\n' +
+      '            if (Array.isArray(newSeries)) {\n' +
+      '              for (var _usi = 0; _usi < newSeries.length; _usi++) {\n' +
+      '                var _us = newSeries[_usi];\n' +
+      '                if (_us === null || _us === undefined) { newSeries[_usi] = {data:[]}; continue; }\n' +
+      '                if (typeof _us === "object" && !Array.isArray(_us)) {\n' +
+      '                  if (!Array.isArray(_us.data)) _us.data = [];\n' +
+      '                  else { for (var _udi = 0; _udi < _us.data.length; _udi++) {\n' +
+      '                    if (_us.data[_udi] === undefined) { _us.data[_udi] = null; }\n' +
+      '                    else if (typeof _us.data[_udi] === "object" && _us.data[_udi] !== null && "y" in _us.data[_udi] && _us.data[_udi].y === undefined) { _us.data[_udi].y = null; }\n' +
+      '                  }}\n' +
+      '                }\n' +
+      '              }\n' +
+      '            }\n' +
+      '          } catch(_use) {}\n' +
+      '          return ApexCharts._origUpdateSeries.apply(this, arguments);\n' +
+      '        };\n' +
+      '      }\n' +
+      '      // ── Shim: ApexCharts.getInstanceById ──────────────────────────────────\n' +
+      '      // AI-generated reports sometimes call this non-existent static method.\n' +
+      '      // We provide it by searching window.__apexInstances by container element id.\n' +
+      '      if (!ApexCharts.getInstanceById) {\n' +
+      '        ApexCharts.getInstanceById = function(id) {\n' +
+      '          var instances = window.__apexInstances || [];\n' +
+      '          for (var _gi = 0; _gi < instances.length; _gi++) {\n' +
+      '            try {\n' +
+      '              var _inst = instances[_gi];\n' +
+      '              if (!_inst) continue;\n' +
+      '              // el is the chart container element\n' +
+      '              var _el = _inst.el;\n' +
+      '              if (_el && _el.id === id) return _inst;\n' +
+      '              // Some charts wrap the container — check parent\n' +
+      '              if (_el && _el.parentElement && _el.parentElement.id === id) return _inst;\n' +
+      '            } catch(_ge) {}\n' +
+      '          }\n' +
+      '          // Also check IE registry by cardId\n' +
+      '          if (window.__REPORT_EVENT_BUS__ && window.__REPORT_EVENT_BUS__.getApexInstance) {\n' +
+      '            return window.__REPORT_EVENT_BUS__.getApexInstance(id);\n' +
+      '          }\n' +
+      '          return null;\n' +
+      '        };\n' +
+      '      }\n' +
+      '      // ── Proxy-wrap ApexCharts constructor to sanitize options BEFORE construction ──\n' +
+      '      // Root cause: ApexCharts reads series[i].data.length inside the constructor;\n' +
+      '      // if data is undefined the constructor throws before render() is ever called.\n' +
+      '      if (typeof Proxy !== "undefined" && !window.ApexCharts._shellProxied) {\n' +
+      '        var _OrigApexCls = window.ApexCharts;\n' +
+      '        window.ApexCharts = new Proxy(_OrigApexCls, {\n' +
+      '          construct: function(Target, args) {\n' +
+      '            _sanitizeApexOpts(args[1]);\n' +
+      '            return Reflect.construct(Target, args);\n' +
+      '          }\n' +
+      '        });\n' +
+      '        window.ApexCharts._shellProxied = true;\n' +
+      '      }\n' +
+      '    }\n' +
+      '  } catch(e) { /* non-critical */ }\n' +
+      '  // Layer 2: window.load — resize all ECharts once CSS/images fully loaded\n' +
+      '  window.addEventListener("load", function() {\n' +
+      '    if (window.__ecInstances) {\n' +
+      '      window.__ecInstances.forEach(function(inst) {\n' +
+      '        try { if (!inst.isDisposed()) inst.resize(); } catch(ex) {}\n' +
+      '      });\n' +
+      '    }\n' +
+      '  });\n' +
+      '  // Layer 3: setTimeout(300) final net for CSS transitions and font-loading\n' +
+      '  setTimeout(function() {\n' +
+      '    if (window.__ecInstances) {\n' +
+      '      window.__ecInstances.forEach(function(inst) {\n' +
+      '        try { if (!inst.isDisposed()) inst.resize(); } catch(ex) {}\n' +
+      '      });\n' +
+      '    }\n' +
+      '    if (window.__apexInstances) {\n' +
+      '      window.__apexInstances.forEach(function(inst) {\n' +
+      '        try { inst.updateOptions({}); } catch(ex) {}\n' +
+      '      });\n' +
+      '    }\n' +
+      '    if (window.__vtableInstances) {\n' +
+      '      window.__vtableInstances.forEach(function(inst) {\n' +
+      '        try { inst.resize(); } catch(ex) {}\n' +
+      '      });\n' +
+      '    }\n' +
+      '  }, 300);\n' +
+      '  // Forward errors to shell\n' +
+      '  window.addEventListener("error", function(e) {\n' +
+      '    // Only forward genuine JS errors or <script> load failures — ignore img/link/source\n' +
+      '    var tgt = e.target;\n' +
+      '    var tag = tgt && tgt.tagName ? tgt.tagName.toUpperCase() : "";\n' +
+      '    if (tag && tag !== "SCRIPT") return;\n' +
+      '    var msg = e.message || (tgt && tgt.src ? "Script load error: " + tgt.src : "JS Error");\n' +
+      '    // Suppress non-fatal known-optional resource errors\n' +
+      '    if (msg && msg.indexOf("ResizeObserver") !== -1) return;\n' +
+      '    // DuckDB is optional — suppress load failures to avoid false-alarm error toasts\n' +
+      '    if (tgt && tgt.src && /duckdb/i.test(tgt.src)) return;\n' +
+      '    if (msg && /duckdb/i.test(msg)) return;\n' +
+      '    // Suppress any script marked as data-optional (e.g. dynamically loaded optional deps)\n' +
+      '    if (tgt && tgt.getAttribute && tgt.getAttribute("data-optional")) return;\n' +
+      '    try { parent.postMessage({ type: "inner-error", message: msg }, "*"); } catch(ex) {}\n' +
+      '  }, true);\n' +
+      '  window.addEventListener("unhandledrejection", function(e) {\n' +
+      '    var msg = e.reason && e.reason.message ? e.reason.message : String(e.reason || "Promise rejected");\n' +
+      '    if (msg && msg.indexOf("ResizeObserver") !== -1) return;\n' +
+      '    // Suppress DuckDB optional load failures\n' +
+      '    if (msg && /duckdb/i.test(msg)) return;\n' +
+      '    try { parent.postMessage({ type: "inner-error", message: msg }, "*"); } catch(ex) {}\n' +
+      '  });\n' +
+      '  // Listen for chart-resize from shell: re-render all tracked chart instances\n' +
+      '  window.addEventListener("message", function(e) {\n' +
+      '    if (!e.data || e.data.type !== "chart-resize") return;\n' +
+      '    if (window.__ecInstances) {\n' +
+      '      window.__ecInstances.forEach(function(inst) {\n' +
+      '        try { if (!inst.isDisposed()) inst.resize(); } catch(ex) {}\n' +
+      '      });\n' +
+      '    }\n' +
+      '    if (window.__apexInstances) {\n' +
+      '      window.__apexInstances.forEach(function(inst) {\n' +
+      '        try { inst.updateOptions({}); } catch(ex) {}\n' +
+      '      });\n' +
+      '    }\n' +
+      '    if (window.__vtableInstances) {\n' +
+      '      window.__vtableInstances.forEach(function(inst) {\n' +
+      '        try { inst.resize(); } catch(ex) {}\n' +
+      '      });\n' +
+      '    }\n' +
+      '  });\n' +
+      '  // Layer 4: 自动为 .insight-callout 注入关闭按钮\n' +
+      '  (function _attachDismissButtons() {\n' +
+      '    function inject(doc) {\n' +
+      '      var callouts = doc.querySelectorAll(".insight-callout");\n' +
+      '      callouts.forEach(function(el) {\n' +
+      '        if (el.querySelector(".btn-dismiss")) return;\n' +
+      '        var btn = doc.createElement("button");\n' +
+      '        btn.className = "btn-dismiss";\n' +
+      '        btn.setAttribute("type", "button");\n' +
+      '        btn.setAttribute("aria-label", "关闭提示");\n' +
+      '        btn.innerHTML = "&#10005;";\n' +
+      '        btn.addEventListener("click", function() {\n' +
+      '          el.classList.add("dismissed");\n' +
+      '        });\n' +
+      '        el.appendChild(btn);\n' +
+      '      });\n' +
+      '    }\n' +
+      '    if (document.readyState === "loading") {\n' +
+      '      document.addEventListener("DOMContentLoaded", function() { inject(document); });\n' +
+      '    } else {\n' +
+      '      inject(document);\n' +
+      '    }\n' +
+      '    // 监听动态渲染后的 DOM 变化\n' +
+      '    var mo = new MutationObserver(function(muts) {\n' +
+      '      muts.forEach(function(m) {\n' +
+      '        m.addedNodes.forEach(function(n) {\n' +
+      '          if (n.nodeType !== 1) return;\n' +
+      '          if (n.classList && n.classList.contains("insight-callout")) inject(document);\n' +
+      '          else if (n.querySelector && n.querySelector(".insight-callout")) inject(document);\n' +
+      '        });\n' +
+      '      });\n' +
+      '    });\n' +
+      '    mo.observe(document.body || document.documentElement, { childList: true, subtree: true });\n' +
+      '  })();\n' +
+      '})();\n' +
+      '<\/script>';
+
+    // ── Render an HTML string ────────────────────────────────────────────
+    function renderHtml(html, theme) {
+      currentTheme = theme || null;
+      var themeId = theme && theme.id ? theme.id : (window.__preferredThemeId || 'business');
+      var layoutId = theme && theme.layoutId ? theme.layoutId : null;
+      clearError();
+
+      var stripped = stripExternalScripts(html);
+      var themeLinkCss = buildThemeLink(themeId, layoutId);
+      var themeCss = buildThemeCss(theme);
+      var colorScript = theme && theme.colors && theme.colors.length > 0 ? buildEchartsColorScript(theme.colors) : '';
+      // Use shell's own origin for ALL resource URLs — works in both Electron (app://localhost) and browser dev (http://localhost:PORT)
+      var _shellOrigin = (window.location.origin && window.location.origin !== 'null') ? window.location.origin : 'app://localhost';
+      var cardLibLink = '<link rel="stylesheet" href="' + _shellOrigin + '/styles/card-library.css">';
+      var filterControlsScript = '<script src="' + _shellOrigin + '/filter-controls.js"><\/script>';
+      var interactivityScript = '<script src="' + _shellOrigin + '/vendor/interactivity-engine.js"><\/script>';
+      // Conditionally inject VTable directly in the inner frame (avoids cross-realm instanceof issues).
+      // VTable is only loaded if the report HTML actually uses VTable to avoid 800KB overhead.
+      var hasVTable = /\bVTable\b/.test(html);
+      // vtable-init: wrap constructors to track instances + ensure min container height
+      var vtableInitScript = hasVTable
+        ? '<script src="' + _shellOrigin + '/vendor/vtable.min.js"><\/script>\n' +
+          '<script>\n' +
+          '(function(){\n' +
+          '  if (typeof VTable === "undefined") return;\n' +
+          '  window.__vtableInstances = window.__vtableInstances || [];\n' +
+          '  ["ListTable","PivotTable","PivotChart"].forEach(function(name) {\n' +
+          '    var Orig = VTable[name]; if (!Orig) return;\n' +
+          '    function SafeInit(container, opts) {\n' +
+          '      var el = typeof container === "string" ? document.getElementById(container) : container;\n' +
+          '      if (!el) {\n' +
+          '        // Container not in DOM yet — defer to DOMContentLoaded\n' +
+          '        var _pCalls = [], _rInst = null, proxy = {};\n' +
+          '        function _mkM(m) { return function() { var a = Array.prototype.slice.call(arguments); if (_rInst) { try { _rInst[m].apply(_rInst,a); } catch(e){} } else { _pCalls.push({m:m,a:a}); } }; }\n' +
+          '        ["setRecords","updateRecords","updateOption","updateOptions","on","off","resize","updateTheme","release"].forEach(function(m){proxy[m]=_mkM(m);});\n' +
+          '        var _c=container, _o=opts;\n' +
+          '        function _retry() {\n' +
+          '          var e2 = typeof _c==="string" ? document.getElementById(_c) : _c;\n' +
+          '          if (!e2) { console.warn("[VTable] container not found:", _c); return; }\n' +
+          '          if (e2.offsetHeight === 0) e2.style.minHeight = "300px";\n' +
+          '          try {\n' +
+          '            _rInst = new Orig(e2, _o);\n' +
+          '            window.__vtableInstances.push(_rInst);\n' +
+          '            _pCalls.forEach(function(c){try{_rInst[c.m].apply(_rInst,c.a);}catch(e){}});\n' +
+          '            _pCalls = [];\n' +
+          '            setTimeout(function(){try{_rInst.resize();}catch(e){}}, 50);\n' +
+          '          } catch(e3) { console.warn("[VTable] deferred init failed:", e3); }\n' +
+          '        }\n' +
+          '        document.readyState==="loading"\n' +
+          '          ? document.addEventListener("DOMContentLoaded",_retry,{once:true})\n' +
+          '          : setTimeout(_retry,0);\n' +
+          '        return proxy;\n' +
+          '      }\n' +
+          '      if (el.offsetHeight === 0) el.style.minHeight = "300px";\n' +
+          '      var inst = new Orig(el, opts);\n' +
+          '      window.__vtableInstances.push(inst);\n' +
+          '      return inst;\n' +
+          '    }\n' +
+          '    SafeInit.prototype = Orig.prototype;\n' +
+          '    VTable[name] = SafeInit;\n' +
+          '  });\n' +
+          '})();\n' +
+          '<\/script>\n'
+        : '';
+      // PDF 导出时禁用交互，注入全局禁用标志
+      var pdfDisableScript = (theme && theme.pdfExport)
+        ? '<script>window.__REPORT_INTERACTION_DISABLED__ = true;<\/script>'
+        : '';
+      // 底部脚本块：interactivity + filter-controls（顺序不能颠倒：engine 先于 filter-controls）
+      var bottomScripts = pdfDisableScript + '\n' + interactivityScript + '\n' + filterControlsScript;
+
+      // Build srcdoc: inject bridge + theme CSS into <head> at HIGHEST priority (before everything)
+      var srcdoc;
+      if (/<head[^>]*>/i.test(stripped)) {
+        // Insert immediately after <head>: BASE_TAG must come first so relative URLs in the rest of the doc resolve correctly
+        srcdoc = stripped.replace(/(<head[^>]*>)/i, function(m) {
+          return m + '\n' + BASE_TAG + '\n' + BRIDGE_SCRIPT + '\n' + themeLinkCss + '\n' + cardLibLink + '\n' + themeCss + '\n' + colorScript + '\n' + vtableInitScript;
+        });
+        // Inject bottom scripts before </body> or </html>
+        srcdoc = srcdoc.replace(/(<\/body>)/i, function(m) { return bottomScripts + '\n' + m; });
+        if (srcdoc === stripped.replace(/(<head[^>]*>)/i, function(m) {
+          return m + '\n' + BASE_TAG + '\n' + BRIDGE_SCRIPT + '\n' + themeLinkCss + '\n' + cardLibLink + '\n' + themeCss + '\n' + colorScript + '\n' + vtableInitScript;
+        })) {
+          // No </body> found, append before </html>
+          srcdoc = srcdoc.replace(/(<\/html>)/i, function(m) { return bottomScripts + '\n' + m; });
+        }
+      } else if (/<html[^>]*>/i.test(stripped)) {
+        srcdoc = stripped.replace(/(<html[^>]*>)/i, function(m) {
+          return m + '\n<head>\n' + BASE_TAG + '\n' + BRIDGE_SCRIPT + '\n' + themeLinkCss + '\n' + cardLibLink + '\n' + themeCss + '\n' + colorScript + '\n' + vtableInitScript + '\n</head>';
+        });
+        srcdoc = srcdoc.replace(/(<\/body>)/i, function(m) { return bottomScripts + '\n' + m; });
+      } else {
+        srcdoc = BASE_TAG + '\n' + BRIDGE_SCRIPT + '\n' + themeLinkCss + '\n' + cardLibLink + '\n' + themeCss + '\n' + colorScript + '\n' + vtableInitScript + '\n' + stripped + '\n' + bottomScripts;
+      }
+
+      frame.srcdoc = srcdoc;
+    }
+
+    // ── Live theme patch without rebuilding iframe ───────────────────────
+    function patchTheme(theme) {
+      currentTheme = theme;
+      var themeId = theme && theme.id ? theme.id : (window.__preferredThemeId || 'business');
+      var layoutId = theme && theme.layoutId ? theme.layoutId : null;
+      
+      try {
+        var innerDoc = frame.contentDocument;
+        var innerWin = frame.contentWindow;
+        if (!innerDoc || !innerWin) return;
+
+        // 1. Patch theme <link>
+        var existingLink = innerDoc.getElementById('__shell-theme-link');
+        if (existingLink) {
+          var mapping = {
+            'classic':        'business',
+            'business':       'business',
+            'tech':           'tech',
+            'bento':          'bento',
+            'neo-brutalism':  'neo-brutalism',
+            'editorial':      'editorial',
+            'glassmorphism':  'glassmorphism',
+            'base':           'base',
+          };
+          var resolved = mapping[themeId] || 'business';
+          var baseUrl = window.location.origin || 'app://localhost';
+          var newHref = baseUrl + '/styles/themes/theme-' + resolved + '.css';
+          if (existingLink.href !== newHref) {
+            existingLink.href = newHref;
+          }
+        }
+
+        // 2. Patch layout <link>
+        var existingLayoutLink = innerDoc.getElementById('__shell-layout-link');
+        if (layoutId) {
+          var baseUrlL = window.location.origin || 'app://localhost';
+          var safeId = layoutId.replace(/[^a-zA-Z0-9\-_./]/g, '');
+          var layoutHref = baseUrlL + '/styles/layouts/' + safeId + '.css';
+          if (existingLayoutLink) {
+            if (existingLayoutLink.href !== layoutHref) {
+              existingLayoutLink.href = layoutHref;
+              // Layout CSS changed — schedule a resize so ECharts adapts to new column widths
+              (function(frameRef) {
+                setTimeout(function() {
+                  try { if (frameRef && frameRef.contentWindow) frameRef.contentWindow.postMessage({type:'chart-resize'}, '*'); } catch(e) {}
+                }, 120);
+              })(frame);
+            }
+          } else {
+            // Create the layout link element
+            var newLayoutLink = innerDoc.createElement('link');
+            newLayoutLink.rel = 'stylesheet';
+            newLayoutLink.id = '__shell-layout-link';
+            newLayoutLink.href = layoutHref;
+            innerDoc.head.appendChild(newLayoutLink);
+            // New layout injected — schedule resize
+            (function(frameRef) {
+              setTimeout(function() {
+                try { if (frameRef && frameRef.contentWindow) frameRef.contentWindow.postMessage({type:'chart-resize'}, '*'); } catch(e) {}
+              }, 120);
+            })(frame);
+          }
+        } else if (existingLayoutLink) {
+          // Layout cleared — remove the link
+          existingLayoutLink.remove();
+          (function(frameRef) {
+            setTimeout(function() {
+              try { if (frameRef && frameRef.contentWindow) frameRef.contentWindow.postMessage({type:'chart-resize'}, '*'); } catch(e) {}
+            }, 120);
+          })(frame);
+        }
+
+        // 3. Patch inline theme CSS block
+        var existing = innerDoc.getElementById('__shell-theme');
+        if (!theme) {
+          // Switching back to default (no override) — remove the injected theme style
+          if (existing) existing.remove();
+        } else {
+          var newCss = buildThemeCss(theme);
+          // Parse new CSS out of the <style> tag string
+          var tmp = document.createElement('div');
+          tmp.innerHTML = newCss;
+          var newStyle = tmp.querySelector('style');
+          if (newStyle) {
+            if (existing) {
+              existing.textContent = newStyle.textContent;
+            } else {
+              innerDoc.head.insertBefore(newStyle, innerDoc.head.firstChild);
+            }
+          }
+        }
+
+        // ── Update __REPORT_PALETTE__ and __APEX_PALETTE__ in running iframe ──────────────────────
+        var paletteColors = theme && theme.colors && theme.colors.length > 0 ? theme.colors : null;
+        if (paletteColors && innerWin) {
+          try {
+            innerWin.__REPORT_PALETTE__ = paletteColors;
+            // 同步写入 ApexCharts 调色板
+            innerWin.__APEX_PALETTE__ = paletteColors;
+            paletteColors.forEach(function(c, i) {
+              innerDoc.documentElement.style.setProperty('--palette-' + i, c);
+            });
+            // 更新 ECharts 注册主题（在 patchTheme 时重新注册，确保新初始化的图表也能用上）
+            try {
+              var innerEcharts = innerWin.echarts;
+              if (innerEcharts && innerEcharts.registerTheme) {
+                innerEcharts.registerTheme('__userTheme', { color: paletteColors });
+              }
+            } catch(ex) { /* 非阻断 */ }
+            // 遍历已注册的 ApexCharts 实例，热更新颜色
+            try {
+              var bus = innerWin.__REPORT_EVENT_BUS__;
+              if (bus && bus.getApexInstances) {
+                bus.getApexInstances().forEach(function(inst) {
+                  try {
+                    inst.updateOptions({ colors: paletteColors }, false, true);
+                  } catch(ex) { /* 非阻断 */ }
+                });
+              }
+            } catch(ex) { /* 非阻断 */ }
+          } catch(e) { /* non-critical */ }
+        }
+
+        // ── Update chart instance backgrounds ─────────────────────────────
+        var bgColor = theme ? (theme.cardBg || 'transparent') : 'transparent';
+
+        // ECharts instances tracked by the bridge monkeypatch
+        if (innerWin.__ecInstances) {
+          innerWin.__ecInstances = innerWin.__ecInstances.filter(function(i) {
+            return i && !i.isDisposed();
+          });
+          innerWin.__ecInstances.forEach(function(inst) {
+            try {
+              var ecOpt = { backgroundColor: bgColor };
+              if (paletteColors) {
+                ecOpt.color = paletteColors;
+                // Force-update series-level colors so hardcoded LLM colors get overridden
+                try {
+                  var curOpt = inst.getOption();
+                  if (curOpt && curOpt.series) {
+                    var seriesUpdate = [];
+                    for (var si = 0; si < curOpt.series.length; si++) {
+                      var s = curOpt.series[si];
+                      var sType = s.type;
+                      var pColor = paletteColors[si % paletteColors.length];
+                      if (sType === 'pie' || sType === 'sunburst' || sType === 'treemap' || sType === 'funnel') {
+                        // Multi-color series: re-color each data item from palette
+                        var sData = s.data;
+                        if (sData && sData.length) {
+                          var newData = [];
+                          for (var di = 0; di < sData.length; di++) {
+                            var d = sData[di];
+                            var dObj = (typeof d === 'object' && d !== null) ? d : { value: d };
+                            newData.push(Object.assign({}, dObj, { itemStyle: Object.assign({}, dObj.itemStyle || {}, { color: paletteColors[di % paletteColors.length] }) }));
+                          }
+                          seriesUpdate.push({ data: newData });
+                        } else {
+                          seriesUpdate.push({});
+                        }
+                      } else {
+                        // Single-color series (bar, line, scatter, etc.)
+                        var su = { itemStyle: { color: pColor } };
+                        if (s.lineStyle) su.lineStyle = { color: pColor };
+                        if (s.areaStyle) su.areaStyle = { color: pColor + '40' };
+                        seriesUpdate.push(su);
+                      }
+                    }
+                    ecOpt.series = seriesUpdate;
+                  }
+                } catch(se) { /* fallback: just set global color */ }
+              }
+              inst.setOption(ecOpt);
+            } catch(e) { /* ignore */ }
+          });
+        }
+
+        // ApexCharts instances tracked by the bridge monkeypatch
+        if (innerWin.__apexInstances) {
+          innerWin.__apexInstances.forEach(function(inst) {
+            try {
+              var apOpt = { chart: { background: bgColor } };
+              if (paletteColors) apOpt.colors = paletteColors;
+              inst.updateOptions(apOpt, false, true);
+            } catch(e) { /* ignore */ }
+          });
+        }
+
+        // VTable instances theme update
+        if (innerWin.__vtableInstances && innerWin.VTable) {
+          innerWin.__vtableInstances.forEach(function(inst) {
+            try {
+              var vtTheme = {};
+              if (theme) {
+                vtTheme.headerStyle = { bgColor: theme.cardBg || '#f8f9fa', color: theme.textColor || '#333' };
+                vtTheme.bodyStyle = { bgColor: 'transparent', color: theme.textColor || '#333' };
+                vtTheme.frameStyle = { borderColor: paletteColors ? paletteColors[0] : '#e5e7eb' };
+              }
+              if (innerWin.VTable.themes && innerWin.VTable.themes.DEFAULT) {
+                inst.updateTheme(innerWin.VTable.themes.DEFAULT.extends(vtTheme));
+              }
+            } catch(e) { /* ignore */ }
+          });
+        }
+
+      } catch (e) {
+        // Can't access inner frame (e.g. cross-origin fallback) - re-render instead
+        if (pendingRender) renderHtml(pendingRender.html, theme);
+      }
+    }
+
+    // ── Forward inner frame errors ────────────────────────────────────────
+    window.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'inner-error') {
+        // Suppress non-fatal ResizeObserver loop warnings (they are browser quirks, not real errors)
+        if (typeof e.data.message === 'string' && e.data.message.indexOf('ResizeObserver') !== -1) return;
+        showError(e.data.message);
+      }
+    });
+
+    // ── Listen for commands from React parent ────────────────────────────
+    window.addEventListener('message', function(e) {
+      var data = e.data;
+      if (!data || typeof data.type !== 'string') return;
+
+      if (data.type === 'render') {
+        pendingRender = { html: data.html, theme: data.theme };
+        renderHtml(data.html, data.theme);
+      } else if (data.type === 'theme-update') {
+        if (pendingRender) {
+          patchTheme(data.theme);
+        }
+      } else if (data.type === 'clear') {
+        frame.srcdoc = '';
+        pendingRender = null;
+        clearError();
+      } else if (data.type === 'chart-resize') {
+        // Direct from React parent — forward IMMEDIATELY without forwardChartResize's debounce.
+        // The parent already handles timing (immediate + RAF + 200ms). Going through forwardChartResize
+        // would cause the burst of signals to continuously reset the debounce timer so the inner frame
+        // never actually gets resized. Only the shell's own resize observer uses forwardChartResize.
+        try { frame.contentWindow.postMessage({ type: 'chart-resize' }, '*'); } catch(e) {}
+      } else if (data.type === 'inject-custom-css') {
+        // Tech-13 编辑模式: 注入自定义布局 CSS 到 iframe
+        try {
+          var innerDoc = frame.contentDocument;
+          if (innerDoc) {
+            var styleEl = innerDoc.getElementById('__custom-layout-style');
+            if (!styleEl) {
+              styleEl = innerDoc.createElement('style');
+              styleEl.id = '__custom-layout-style';
+              innerDoc.head.appendChild(styleEl);
+            }
+            styleEl.textContent = data.css || '';
+            // 触发图表重绘
+            frame.contentWindow.dispatchEvent(new Event('resize'));
+          }
+        } catch (e) { console.warn('[shell] inject-custom-css error:', e); }
+      }
+    });
+
+    // ── Signal parent that shell is ready ───────────────────────────────
+    function notifyReady() {
+      shellReady = true;
+      if (loadingEl) loadingEl.style.opacity = '0';
+      setTimeout(function() { if (loadingEl) loadingEl.style.display = 'none'; }, 300);
+      try { window.parent.postMessage({ type: 'shell-ready' }, '*'); } catch (e) { /* ignore */ }
+    }
+
+    // ── Forward resize events to inner frame (debounced) ────────────────
+    // When the panel is dragged or the window is resized, chart instances
+    // in the inner frame need an explicit .resize() call to fill the new space.
+    var _chartResizeTimer;
+    var _chartResizeTimer2;
+    function forwardChartResize() {
+      clearTimeout(_chartResizeTimer);
+      clearTimeout(_chartResizeTimer2);
+      _chartResizeTimer = setTimeout(function() {
+        try { frame.contentWindow.postMessage({ type: 'chart-resize' }, '*'); } catch(e) {}
+      }, 80);
+      // Second pass after CSS grid and ApexCharts async layout complete
+      _chartResizeTimer2 = setTimeout(function() {
+        try { frame.contentWindow.postMessage({ type: 'chart-resize' }, '*'); } catch(e) {}
+      }, 300);
+    }
+    window.addEventListener('resize', forwardChartResize);
+    if (typeof ResizeObserver !== 'undefined') {
+      // Use RAF to break synchronous layout phase so we never fire the
+      // "ResizeObserver loop completed with undelivered notifications" warning.
+      new ResizeObserver(function() {
+        if (typeof requestAnimationFrame !== 'undefined') {
+          requestAnimationFrame(forwardChartResize);
+        } else {
+          forwardChartResize();
+        }
+      }).observe(frame);
+    }
+
+    // Shell is ready once vendor scripts have been parsed (synchronous loads above).
+    // Use a microtask to ensure the DOM is fully parsed.
+    if (typeof echarts !== 'undefined' || typeof ApexCharts !== 'undefined' || typeof VTable !== 'undefined') {
+      notifyReady();
+    } else {
+      // Fallback: wait a tick
+      setTimeout(notifyReady, 50);
+    }
+  })();
+  </script>
+</body>
+</html>

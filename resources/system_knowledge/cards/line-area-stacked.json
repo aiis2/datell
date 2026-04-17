@@ -1,0 +1,13 @@
+{
+  "id": "line-area-stacked",
+  "type": "card",
+  "category": "B",
+  "name": "堆叠面积图",
+  "description": "ECharts 多系列堆叠面积图，展示各部分随时间变化的累计总量，适合收入拆分、流量来源演变",
+  "tags": ["line", "area", "stacked", "composition", "total", "time-series", "echarts"],
+  "cssClass": "chart-card",
+  "renderLib": "echarts",
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"area_stacked\"><div class=\"card-title\">各渠道访问量（堆叠）</div><div class=\"chart-container md\" id=\"chart_area_stacked\"></div><script>(function(){var el=document.getElementById('chart_area_stacked');if(!el)return;var c=echarts.init(el);var palette=window.__REPORT_PALETTE__||['#3b82f6','#10b981','#f59e0b'];c.setOption({color:palette,tooltip:{trigger:'axis'},legend:{bottom:0},grid:{left:'3%',right:'4%',bottom:'15%',containLabel:true},xAxis:{type:'category',boundaryGap:false,data:['Jan','Feb','Mar','Apr','May','Jun']},yAxis:{type:'value'},series:[{name:'自然流量',type:'line',stack:'total',smooth:true,areaStyle:{},data:[1200,1400,1300,1600,1800,2000]},{name:'付费广告',type:'line',stack:'total',smooth:true,areaStyle:{},data:[800,900,850,1000,1100,1200]},{name:'社交媒体',type:'line',stack:'total',smooth:true,areaStyle:{},data:[400,500,600,700,800,900]}]});})();</script></div>",
+  "variants": ["流量来源堆叠", "收入渠道演变", "用户来源分布"],
+  "relatedCards": ["line-area-gradient", "bar-chart-stacked"]
+}

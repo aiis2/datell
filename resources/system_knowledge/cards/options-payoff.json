@@ -1,0 +1,23 @@
+{
+  "id": "options-payoff",
+  "type": "card",
+  "name": "期权损益图（Payoff Diagram）",
+  "category": "chart",
+  "tags": ["期权", "损益图", "payoff", "金融衍生品", "到期价值", "风险收益"],
+  "description": "展示期权到期损益曲线，包含多种策略的损益线（如看涨/看跌/组合策略），X 轴为标的资产到期价格，Y 轴为损益金额。适用于衍生品分析、期权策略报表。",
+  "useCases": [
+    "单腿看涨期权损益曲线",
+    "买入跨式策略图",
+    "领口策略损益展示",
+    "期权组合策略对比"
+  ],
+  "dataSchema": {
+    "prices": "X轴标的价格数组（到期日价格区间）",
+    "payoffs": "各策略损益数组，每个含 name（策略名）和 data（对应价格的损益值）",
+    "breakeven": "盈亏平衡点价格（可选，在图中标注）"
+  },
+  "htmlClassName": "card chart-card",
+  "engineHint": "echarts",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card chart-card\" data-card-id=\"chart_payoff\">\n  <h2 class=\"card-title\">看涨期权损益图（到期单腿）</h2>\n  <div id=\"chart_payoff\" class=\"chart-container\" style=\"height:300px\"></div>\n  <script>\n  (function(){\n    var strike=100,premium=5;\n    var prices=[];\n    for(var p=80;p<=130;p+=2)prices.push(p);\n    var longCall=prices.map(function(p){return Math.max(p-strike,0)-premium;});\n    var shortPut=prices.map(function(p){return premium-Math.max(strike-p,0);});\n    var chart=echarts.init(document.getElementById('chart_payoff'));\n    chart.setOption({\n      legend:{},\n      xAxis:{type:'category',data:prices,name:'到期价格'},\n      yAxis:{type:'value',name:'损益（元）'},\n      series:[\n        {name:'买入看涨',type:'line',data:longCall,markLine:{data:[{yAxis:0,lineStyle:{type:'dashed',color:'#999'}}]}},\n        {name:'卖出看跌',type:'line',data:shortPut,lineStyle:{type:'dashed'}}\n      ]\n    });\n  })();\n  <\/script>\n</div>"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "table-status-board",
+  "type": "card",
+  "name": "状态看板表格（服务/系统状态）",
+  "category": "table",
+  "tags": ["状态板", "status board", "服务状态", "健康检查", "系统监控", "运维"],
+  "description": "展示多个服务/组件当前状态的状态看板表格，每行包含服务名称、状态指示器（绿/黄/红在线/降级/故障）、可用率、最近事件。异常行自动高亮，适合 SRE 报告、系统健康报告、监控周报。",
+  "useCases": [
+    "微服务系统健康状态板",
+    "API 可用率监控报表",
+    "基础设施巡检结果表",
+    "SLA 达标情况汇总"
+  ],
+  "dataSchema": {
+    "services": "服务数组：[{name, status:'ok'|'degraded'|'outage', uptime, lastIncident, sla}]"
+  },
+  "htmlClassName": "card table-card status-board",
+  "engineHint": "pure-html",
+  "interactionSupport": [],
+  "exampleHtml": "<div class=\"card table-card\" data-card-id=\"table_status\">\n  <h2 class=\"card-title\">系统服务状态</h2>\n  <div class=\"table-wrapper\">\n    <table class=\"data-table\">\n      <thead><tr><th>服务</th><th>状态</th><th>可用率</th><th>SLA目标</th><th>最近事件</th></tr></thead>\n      <tbody>\n        <tr><td>支付服务</td><td><span class=\"status-dot status-ok\">●</span> 正常</td><td>99.98%</td><td>99.95%</td><td>无</td></tr>\n        <tr class=\"row-warning\"><td>推荐引擎</td><td><span class=\"status-dot status-warn\">●</span> 降级</td><td>97.2%</td><td>99.5%</td><td>缓存穿透（昨日）</td></tr>\n        <tr><td>用户中心</td><td><span class=\"status-dot status-ok\">●</span> 正常</td><td>99.99%</td><td>99.9%</td><td>无</td></tr>\n        <tr class=\"row-error\"><td>消息推送</td><td><span class=\"status-dot status-error\">●</span> 故障</td><td>85.3%</td><td>99.5%</td><td>MQ 积压（本日 10:30）</td></tr>\n      </tbody>\n    </table>\n  </div>\n</div>"
+}

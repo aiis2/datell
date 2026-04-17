@@ -1,0 +1,28 @@
+{
+  "id": "progress-bar-multi",
+  "type": "card",
+  "name": "多维进度条",
+  "category": "kpi",
+  "tags": [
+    "进度条",
+    "完成度",
+    "多维",
+    "横向进度",
+    "对比"
+  ],
+  "description": "多行并行进度条，每行展示一个指标的完成进度百分比，附带数值标注。适合多目标完成情况横向对比。",
+  "useCases": [
+    "各部门季度目标进度",
+    "各项目完成率对比",
+    "多维KPI达成情况"
+  ],
+  "dataSchema": {
+    "items": "进度项数组（label/value/target/color）",
+    "title": "标题"
+  },
+  "htmlClassName": "card kpi-card",
+  "engineHint": "pure-html",
+  "interactionSupport": [
+    "highlight"
+  ]
+}

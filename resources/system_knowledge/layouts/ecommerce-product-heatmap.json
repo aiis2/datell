@@ -1,0 +1,21 @@
+{
+  "id": "ecommerce-product-heatmap",
+  "type": "layout",
+  "name": "商品热力矩阵",
+  "category": "ecommerce",
+  "tags": [
+    "电商",
+    "商品",
+    "热力图",
+    "SKU",
+    "销售矩阵"
+  ],
+  "description": "商品销售热力矩阵布局，主区商品×时间热力图，右侧 Top 商品排行，底部分类汇总条形图。",
+  "slots": {
+    "heatmap": "商品×时间热力矩阵",
+    "topProducts": "Top商品排行",
+    "categorySummary": "分类汇总图"
+  },
+  "cssPath": "ecommerce/product-heatmap.css",
+  "containerClass": "layout-ecommerce-heatmap"
+}
