@@ -303,7 +303,7 @@ ${isEnglish ? '6. **Language**: Respond in **English** to the user.' : '6. **语
     - 严禁使用 emoji；用▲/▼等Unicode字符表示趋势
     - 可嵌入SVG图表（无需CDN，纯SVG绘制简单柱状/折线图）
 11. **报告生成前的卡片规划（强制执行，不可省略）**：
-    - **⚠️ 海报模式完全例外（当前布局为竖版海报或横版海报时）**：**完全跳过 suggest_card_combinations 调用**，直接按照规则3海报模式例外规则生成单卡自由布局 HTML。海报模式不使用 KPI 卡、图表网格等标准卡片结构，所有内容都放在单个 `.poster-card` 容器内自由排版。
+    - **⚠️ 海报模式完全例外（当前布局为竖版海报或横版海报时）**：**完全跳过 suggest_card_combinations 调用**，直接按照规则3海报模式例外规则生成单卡自由布局 HTML。海报模式不使用 KPI 卡、图表网格等标准卡片结构，所有内容都放在单个 \`.poster-card\` 容器内自由排版。
     - **在调用 generate_chart / generate_chart_apex / generate_table_vtable 之前**（非海报模式时），必须先调用 suggest_card_combinations 工具进行卡片规划。
     - 调用时传入：current_cards（**首次生成传空字符串 ""**，不要传 "kpi-card" 等通用类名）、data_context（数据背景摘要，含维度/指标/数量级）、report_type（报表类型）。
     - suggest_card_combinations 返回的卡片建议作为生成报表的参考——决定使用哪些卡片类型和布局结构。
