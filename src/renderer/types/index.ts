@@ -176,6 +176,8 @@ export interface ReportLayout {
 export const REPORT_LAYOUTS: ReportLayout[] = [
   /* ── 通用 ── */
   { id: 'universal/single-col',           name: '单列布局',         category: '通用', description: '单列垂直堆叠，适合文档风格报告',            cssPath: 'universal/single-col.css' },
+  { id: 'universal/poster-single',        name: '竖版海报（单卡）', category: '通用', description: '全页单卡自由布局，适合数据海报、信息图表',   cssPath: 'universal/poster-single.css' },
+  { id: 'universal/poster-wide',          name: '横版海报（宽屏）', category: '通用', description: '横版16:9单卡海报，适合横版宣传海报、大屏截图', cssPath: 'universal/poster-wide.css' },
   { id: 'universal/dashboard-2col',       name: '双列仪表盘',       category: '通用', description: '通用双列仪表盘布局',                        cssPath: 'universal/dashboard-2col.css' },
   { id: 'universal/dashboard-3col',       name: '三列仪表盘',       category: '通用', description: '宽屏三列仪表盘',                            cssPath: 'universal/dashboard-3col.css' },
   { id: 'universal/bento-grid',           name: 'Bento 拼图网格',   category: '通用', description: '12列CSS Grid拼图，苹果Bento风格',           cssPath: 'universal/bento-grid.css' },
