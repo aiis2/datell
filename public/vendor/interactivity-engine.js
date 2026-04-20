@@ -292,9 +292,13 @@
   var _refreshInProgress = false;
   var _refreshPending = false;
 
+  var _initScanDone = false; // 独立于 _filterListenerAttached 的扫描标记
+
   function _listenFilterControls() {
-    if (_filterListenerAttached) return;
-    _filterListenerAttached = true;
+    // EAGER-FILTER-FIX: filterChange/filterApply 监听器已由 _eagerListenFilters() 在脚本加载时同步注册。
+    // _listenFilterControls() 只需执行 DOM 扫描（_scanInitialActiveFilters），跳过重复的 addEventListener。
+    if (_initScanDone) return;
+    _initScanDone = true;
 
     // BUG-INIT-ACTIVE FIX: 扫描 DOM 中已有 active 状态的按钮组，补充填充 _state.filters
     // 按钮组支持 data-init-active 属性来预设激活状态（仅添加 CSS），但 filter-controls.js
@@ -326,115 +330,10 @@
       }
     })();
 
-    // filter-controls.js 通过 document 派发 CustomEvent('filterChange')
-    document.addEventListener('filterChange', function (e) {
-      var detail = e.detail || {};
-      // LINK-FIX-1: 跳过由 IE 自身 _applyFilter 等联动动作重新派发的 filterChange
-      // 这些事件标记了 ieRefresh:true，目的是通知 AI 代码的 filterChange 监听器——IE 不需要再次处理
-      if (detail.ieRefresh) return;
-
-      var filterId = detail.filterId;
-      var value = detail.value;
-      var columnHint = detail.column || filterId;
-
-      console.log('[IE] filterChange received: filterId=%s col=%s value=%o', filterId, columnHint, value);
-
-      if (!columnHint) return;
-
-      if (_isEmptyValue(value)) {
-        delete _state.filters[columnHint];
-        delete _state.filterTypes[columnHint];
-        // BUG-G FIX: 同时清除以该列为 key 的 customFilter 条目
-        if (_state.customFilters) {
-          Object.keys(_state.customFilters).forEach(function (k) {
-            if (k === columnHint) delete _state.customFilters[k];
-          });
-        }
-      } else {
-        _state.filters[columnHint] = value;
-        // BUG-SEARCH-SQL FIX: 记录 widget 类型，_buildFilterWhere 中对 'search' 类型使用 ILIKE
-        var widgetType = detail.type || 'generic';
-        _state.filterTypes[columnHint] = widgetType;
-        // BUG-RESET-COL FIX: 记录 filterId→column 映射，供 filterReset scope=filterId 时查列名
-        if (filterId && filterId !== columnHint) {
-          _state.filterIdToColumn[filterId] = columnHint;
-        }
-      }
-
-      console.log('[IE] _state.filters after update:', JSON.stringify(_state.filters));
-      console.log('[IE] chartInstances:', Object.keys(_state.chartInstances), 'apexInstances:', Object.keys(_state.apexInstances || {}));
-
-      // 更新 __FILTER_STATE__（与 filter-controls.js 共享）
-      try { global.__FILTER_STATE__ = Object.assign({}, _state.filters); } catch (e2) { /* */ }
-
-      // BUG-DBLFIRE-1 FIX: 不再在此处转发到 _eventListeners['filterChange']。
-      // filter-controls.js emitChange() 已通过 __REPORT_EVENT_BUS__.dispatchEvent() 直接触发
-      // _eventListeners，若此处再次转发则 AI 代码注册的监听器会被调用两次（双重渲染）。
-      // FIL-06 FIX: 同理也不向 window 重复派发 filterChange。
-      console.log('[IE] filterChange processed. filterId=%s col=%s val=%o type=%s', filterId, columnHint, value, (detail.type || 'generic'));
-
-      _refreshAllBoundCards();
-      _updateFilterTagsUI();
-    });
-
-    // BUG-C FIX: 监听 filterApply 事件（"应用"按钮触发），重新执行全量刷新
-    document.addEventListener('filterApply', function (e) {
-      var detail = (e && e.detail) || {};
-      var state = detail.state || {};
-      // 将 apply 时的完整状态同步到引擎（逐条更新，保留未变更的列）
-      // BUG-FC-FLAT FIX 后：filter-controls.js emitChange() 现在已改为直接写平铺格式
-      // { col: rawValue }，与 IE 覆写格式完全一致，不再出现富对象格式。
-      // 仍保留两种格式的兼容解析，以防用户页面中仍有旧版 filter-controls.js 或手写代码
-      // 以富格式 { filterId: { value, type, column } } 写入 __FILTER_STATE__。
-      Object.keys(state).forEach(function (filterId) {
-        var entry = state[filterId];
-        var col, val, type;
-        if (entry !== null && entry !== undefined && typeof entry === 'object' && 'value' in entry) {
-          // FC 富格式：{ value, type, column }
-          col = entry.column || filterId;
-          val = entry.value;
-          type = entry.type || null;
-        } else {
-          // IE 平铺格式：key 已经是列名，entry 就是值
-          col = filterId;
-          val = entry;
-          type = null;
-        }
-        if (_isEmptyValue(val)) {
-          delete _state.filters[col];
-          delete _state.filterTypes[col];
-          // BUG-APPLYING-CUSTOMFILTER-NOCLEAR FIX: filterApply 空值路径漏掉清理 customFilters。
-          // filterChange 处理器有对应清理逻辑，但 filterApply 原来没有，导致 filterTemplate
-          // 生成的 WHERE 片段在 Apply 后清空该筛选列时残留在 customFilters 中，持续影响 SQL。
-          if (_state.customFilters) delete _state.customFilters[col];
-          // BUG-FILTERID-EMPTY-CLEAN FIX: filterId≠col 的筛选器被清空时，也要清除 filterIdToColumn
-          // 中的反向映射条目，避免残留映射影响后续精确重置逻辑。
-          if (filterId !== col && _state.filterIdToColumn) {
-            delete _state.filterIdToColumn[filterId];
-          }
-        } else {
-          _state.filters[col] = val;
-          // BUG-APPLY-TYPE-MISSING FIX: filterApply 处理 FC 富格式时同步 filterTypes。
-          // 之前只更新 _state.filters，filterTypes 未同步，导致 search 类型的搜索框
-          // 在 filterApply 后失去 ILIKE 路径（_buildFilterWhere 读不到 type='search'）。
-          if (type) {
-            _state.filterTypes[col] = type;
-          }
-          // 同步 filterId→column 反向映射（FC 富格式下 filterId 可能 ≠ col）
-          if (filterId !== col) {
-            _state.filterIdToColumn[filterId] = col;
-          }
-        }
-      });
-      try { global.__FILTER_STATE__ = Object.assign({}, _state.filters); } catch (e2) { /* */ }
-      console.log('[IE] filterApply received, refreshing all cards. filters:', JSON.stringify(_state.filters));
-      _refreshAllBoundCards();
-      _updateFilterTagsUI();
-    });
-    // BUG-DBLFIRE-2 FIX: 移除 __REPORT_EVENT_BUS__.addEventListener('filterApply') 的再转发。
-    // filter-controls.js 的 initApplyButtons() 已通过 document.dispatchEvent('filterApply') 直接触发
-    // 上方的 document listener。若同时在 bus 上也监听并再次 dispatch 到 document，会导致
-    // IE 处理 filterApply 两遍：_refreshAllBoundCards 被调用双次，CONCUR-01 防护触发额外刷新。
+    // EAGER-FILTER-FIX: filterChange / filterApply 监听器已由 _eagerListenFilters() 在脚本
+    // 加载时同步注册（早于所有 DOMContentLoaded 回调），无需在此重复注册。
+    // _filterListenerAttached 标志仅保留以供其他逻辑判断是否已初始化。
+    _filterListenerAttached = true;
   }
 
   // ──────────────────────────────────────────────────────────────
@@ -1401,6 +1300,98 @@
     var scope = e && e.detail && e.detail.scope;
     _deduplicatedReset(scope);
   });
+
+  // ──────────────────────────────────────────────────────────────
+  // EAGER-FILTER-FIX: 立即同步注册 filterChange / filterApply / filterReset 监听器
+  // ──────────────────────────────────────────────────────────────
+  // 根本原因：若 filterChange 监听器在 init()→DOMContentLoaded 内注册，则 AI 生成代码
+  // 的 DOMContentLoaded 监听器（更早排队）会先触发，读到 IE 尚未更新的 __FILTER_STATE__
+  // 导致筛选失效。通过在脚本解析时立即注册，确保 IE 始终比 AI 代码的监听器更早执行。
+  // _listenFilterControls() 中仍保留重复注册保护（_filterListenerAttached 标志），
+  // 但其 document.addEventListener 分支通过此处预注册后变为无操作。
+  (function _eagerListenFilters() {
+    // filterChange（核心路径）
+    document.addEventListener('filterChange', function (e) {
+      var detail = e.detail || {};
+      if (detail.ieRefresh) return;
+
+      var filterId = detail.filterId;
+      var value = detail.value;
+      var columnHint = detail.column || filterId;
+
+      console.log('[IE] filterChange received: filterId=%s col=%s value=%o', filterId, columnHint, value);
+
+      if (!columnHint) {
+        // 即使没有列名也更新 __FILTER_STATE__，确保 AI 代码后续读到的是最新状态
+        try { global.__FILTER_STATE__ = Object.assign({}, _state.filters); } catch(e2) {}
+        return;
+      }
+
+      if (_isEmptyValue(value)) {
+        delete _state.filters[columnHint];
+        delete _state.filterTypes[columnHint];
+        if (_state.customFilters) {
+          Object.keys(_state.customFilters).forEach(function (k) {
+            if (k === columnHint) delete _state.customFilters[k];
+          });
+        }
+      } else {
+        _state.filters[columnHint] = value;
+        var widgetType = detail.type || 'generic';
+        _state.filterTypes[columnHint] = widgetType;
+        if (filterId && filterId !== columnHint) {
+          _state.filterIdToColumn[filterId] = columnHint;
+        }
+      }
+
+      console.log('[IE] _state.filters after update:', JSON.stringify(_state.filters));
+      console.log('[IE] chartInstances:', Object.keys(_state.chartInstances), 'apexInstances:', Object.keys(_state.apexInstances || {}));
+
+      // 立即更新 __FILTER_STATE__，确保后续 AI 代码的同一事件监听器读到最新状态
+      try { global.__FILTER_STATE__ = Object.assign({}, _state.filters); } catch (e2) { /* */ }
+
+      console.log('[IE] filterChange processed. filterId=%s col=%s val=%o type=%s', filterId, columnHint, value, (detail.type || 'generic'));
+
+      _refreshAllBoundCards();
+      _updateFilterTagsUI();
+    });
+
+    // filterApply（应用按钮）
+    document.addEventListener('filterApply', function (e) {
+      var detail = (e && e.detail) || {};
+      var state = detail.state || {};
+      Object.keys(state).forEach(function (filterId) {
+        var entry = state[filterId];
+        var col, val, type;
+        if (entry !== null && entry !== undefined && typeof entry === 'object' && 'value' in entry) {
+          col = entry.column || filterId;
+          val = entry.value;
+          type = entry.type || null;
+        } else {
+          col = filterId;
+          val = entry;
+          type = null;
+        }
+        if (_isEmptyValue(val)) {
+          delete _state.filters[col];
+          delete _state.filterTypes[col];
+          if (_state.customFilters) delete _state.customFilters[col];
+          if (filterId !== col && _state.filterIdToColumn) delete _state.filterIdToColumn[filterId];
+        } else {
+          _state.filters[col] = val;
+          if (type) _state.filterTypes[col] = type;
+          if (filterId !== col) _state.filterIdToColumn[filterId] = col;
+        }
+      });
+      try { global.__FILTER_STATE__ = Object.assign({}, _state.filters); } catch (e2) { /* */ }
+      console.log('[IE] filterApply received, refreshing all cards. filters:', JSON.stringify(_state.filters));
+      _refreshAllBoundCards();
+      _updateFilterTagsUI();
+    });
+
+    // 标记：防止 _listenFilterControls() 在 init() 时重复注册
+    _filterListenerAttached = true;
+  })();
 
   // ──────────────────────────────────────────────────────────────
   // 自动初始化
