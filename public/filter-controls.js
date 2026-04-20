@@ -62,7 +62,14 @@
     // 旧版富格式 { value, type, column } 导致 AI 图表代码的 document.addEventListener('filterChange')
     // 在 IE 处理之前触发时读到对象而非字符串，object !== '全部' 始终为 true，过滤掉全部数据行，
     // 造成所有图表在任意筛选后变为空白。
-    if (value === null || value === undefined || value === '') {
+    // BUG-FC-ALL FIX: '全部'/'all' 表示"不过滤"，与 null/undefined/'' 语义等同，需从 __FILTER_STATE__
+    // 中删除而非存储。否则 AI 图表代码的朴素比较（row[col] !== '全部'）会把所有真实数据行过滤掉。
+    var _isEffectivelyEmpty = (value === null || value === undefined || value === '') ||
+      (typeof value === 'string' && (value === '全部' || value.toLowerCase() === 'all')) ||
+      (Array.isArray(value) && value.length === 0) ||
+      (Array.isArray(value) && value.length === 1 && typeof value[0] === 'string' &&
+        (value[0] === '全部' || value[0].toLowerCase() === 'all'));
+    if (_isEffectivelyEmpty) {
       delete global.__FILTER_STATE__[col];
     } else {
       global.__FILTER_STATE__[col] = value;

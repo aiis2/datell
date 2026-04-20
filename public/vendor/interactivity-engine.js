@@ -836,7 +836,16 @@
   // ──────────────────────────────────────────────────────────────
   function _isEmptyValue(value) {
     if (value === null || value === undefined || value === '') return true;
+    // '全部' / 'all' 在筛选控件中表示"不过滤"，与空值语义等同。
+    // 若不将其视为空值：IE 会把 '全部' 写入 _state.filters，_buildFilterWhere 生成
+    // WHERE col = '全部' 导致 DuckDB 返回 0 行；同时 __FILTER_STATE__ 中残留 '全部' 会
+    // 使 AI 图表代码的朴素比较（row[col] !== '全部'）误将所有真实数据行过滤掉。
+    if (typeof value === 'string' && (value === '全部' || value.toLowerCase() === 'all')) return true;
     if (Array.isArray(value) && value.length === 0) return true;
+    // 数组中若唯一元素为 '全部'/'all' 也视为空（如 checkbox-group 全选时返回 ['全部']）
+    if (Array.isArray(value) && value.length === 1 &&
+        typeof value[0] === 'string' &&
+        (value[0] === '全部' || value[0].toLowerCase() === 'all')) return true;
     if (value && typeof value === 'object' && !Array.isArray(value)) {
       return Object.values(value).every(function(v) {
         return v === null || v === undefined || v === '';

@@ -181,12 +181,13 @@ You MUST think and respond EXCLUSIVELY in English.
      document.addEventListener('filterChange', function(e) {
        if (!chartRef) return;
        // 统一从 __FILTER_STATE__ 读取当前所有筛选状态（支持多筛选联动）
-       // 格式：{ 列名: 原始字符串值 }，'全部'/'all'/undefined 均表示"不过滤"
+       // 格式：{ 列名: 原始字符串值 }，键不存在/undefined 表示"不过滤"
+       // ✅ 引擎已保证：选"全部"/"all"时该列键被删除，永远不会出现在 __FILTER_STATE__ 中
        var filters = window.__FILTER_STATE__ || {};
        var filtered = rawData.filter(function(row) {
-         // 示例：按门店、品牌等多个字段过滤（列名须与 data-filter-id / data-filter-column 一致）
-         if (filters.store && filters.store !== '全部' && row.store !== filters.store) return false;
-         if (filters.brand && filters.brand !== '全部' && row.brand !== filters.brand) return false;
+         // 朴素写法即可：filters[col] 为 undefined 时条件不触发，无需额外判断 !== '全部'
+         if (filters.store && row.store !== filters.store) return false;
+         if (filters.brand && row.brand !== filters.brand) return false;
          // ... 其他筛选列
          return true;
        });
@@ -809,16 +810,20 @@ document.addEventListener('DOMContentLoaded', function() {
   // 统一监听 filterChange——同时响应【筛选控件操作】和【图表联动点击】两种来源
   // detail.ieRefresh=true 时表示引擎（IE）联动触发，window.__FILTER_STATE__ 已包含最新状态
   // ⚠️ window.__FILTER_STATE__ 格式：{ 列名: 原始字符串值 }（如 { store: '上海店' }），
-  //    '全部' 表示不过滤；值缺失/undefined 也表示不过滤。切勿把值当对象解构。
+  //    键不存在(undefined) 或 值为 '全部'/'all' 均表示"不过滤"。切勿把值当对象解构。
+  //    ✅ 正确过滤写法：if (filters[col] && row[col] !== filters[col]) return false;
+  //    ✅ （引擎已保证：'全部'/'all' 永远不会出现在 __FILTER_STATE__ 中，选"全部"时该键被删除）
   document.addEventListener('filterChange', function(e) {
     // 统一从 __FILTER_STATE__ 读取所有筛选状态（单一来源，避免多次调用不一致）
     var filters = window.__FILTER_STATE__ || {};
     var inst = echarts.getInstanceByDom(document.getElementById('sales_trend'));
     if (!inst) return;
     // 用完整 filters 状态过滤数据（支持多筛选联动）
+    // 朴素写法即可：若 filters[col] 为 undefined（未筛选）条件自然不触发；
+    // '全部' 已由引擎规范化删除，无需额外判断 !== '全部'
     var filtered = rawData.filter(function(row) {
       if (filters.month && row.month !== filters.month) return false;
-      if (filters.store && filters.store !== '全部' && row.store !== filters.store) return false;
+      if (filters.store && row.store !== filters.store) return false;
       return true;
     });
     inst.setOption({ series: [{ data: filtered.map(function(row) { return row.sales; }) }] });
