@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Report Shell</title>
   <!--
-    Report Shell — loaded as app://localhost/report-shell.html (same-origin as main window)
+     Report Shell — loaded as app://localhost/report-shell.html (same-origin as main window)
     Responsibilities:
       1. Pre-loads local ECharts + ApexCharts vendor scripts
       2. Receives postMessage { type:'render', html, theme } from React parent
       3. Builds inner srcdoc that:
          - Inherits echarts/ApexCharts objects via parent reference (same-origin cross-frame)
+        - Installs a preview-only stable event bus adapter before AI HTML executes
          - Has theme CSS variables injected at the TOP of <head> (highest specificity)
          - Has AI's external CDN script tags stripped (local vendor used instead)
       4. Forwards errors + ready signals back via postMessage
@@ -69,7 +70,6 @@
   <script src="./vendor/echarts.min.js"></script>
   <script src="./vendor/apexcharts.min.js"></script>
   <script src="./vendor/vtable.min.js"></script>
-  <script src="./vendor/interactivity-engine.js"></script>
 
   <script>
   (function () {
@@ -473,17 +473,9 @@
       '  window.__ecInstances = [];\n' +
       '  window.__apexInstances = [];\n' +
       '  window.__vtableInstances = [];\n' +
-      '  // Initialize filter event bus: prefer InteractivityEngine from shell parent, fallback to EventTarget stub\n' +
+      '  // Preview runtime now uses a dedicated stable event-bus adapter injected in <head>.\n' +
+      '  // Keep only the shared filter state bootstrap here.\n' +
       '  try {\n' +
-      '    if (!window.__REPORT_EVENT_BUS__) {\n' +
-      '      // Try to inherit the full engine from shell\n' +
-      '      if (parent && parent.__REPORT_EVENT_BUS__ && parent.__REPORT_EVENT_BUS__.init) {\n' +
-      '        window.__REPORT_EVENT_BUS__ = parent.__REPORT_EVENT_BUS__;\n' +
-      '      } else {\n' +
-      '        // Lightweight stub — will be upgraded by interactivity-engine.js when loaded\n' +
-      '        window.__REPORT_EVENT_BUS__ = new EventTarget();\n' +
-      '      }\n' +
-      '    }\n' +
       '    if (!window.__FILTER_STATE__) window.__FILTER_STATE__ = {};\n' +
       '  } catch(e) {}\n' +
       '  // Monkey-patch echarts.init to track all chart instances for theme updates\n' +
@@ -890,6 +882,7 @@
       var colorScript = theme && theme.colors && theme.colors.length > 0 ? buildEchartsColorScript(theme.colors) : '';
       // Use shell's own origin for ALL resource URLs — works in both Electron (app://localhost) and browser dev (http://localhost:PORT)
       var _shellOrigin = (window.location.origin && window.location.origin !== 'null') ? window.location.origin : 'app://localhost';
+      var previewBusScript = '<script src="' + _shellOrigin + '/vendor/report-event-bus-preview.js"><\/script>';
       var cardLibLink = '<link rel="stylesheet" href="' + _shellOrigin + '/styles/card-library.css">';
       var filterControlsScript = '<script src="' + _shellOrigin + '/filter-controls.js"><\/script>';
       var interactivityScript = '<script src="' + _shellOrigin + '/vendor/interactivity-engine.js"><\/script>';
@@ -953,23 +946,23 @@
       if (/<head[^>]*>/i.test(stripped)) {
         // Insert immediately after <head>: BASE_TAG must come first so relative URLs in the rest of the doc resolve correctly
         srcdoc = stripped.replace(/(<head[^>]*>)/i, function(m) {
-          return m + '\n' + BASE_TAG + '\n' + BRIDGE_SCRIPT + '\n' + themeLinkCss + '\n' + cardLibLink + '\n' + themeCss + '\n' + colorScript + '\n' + vtableInitScript;
+          return m + '\n' + BASE_TAG + '\n' + previewBusScript + '\n' + BRIDGE_SCRIPT + '\n' + themeLinkCss + '\n' + cardLibLink + '\n' + themeCss + '\n' + colorScript + '\n' + vtableInitScript;
         });
         // Inject bottom scripts before </body> or </html>
         srcdoc = srcdoc.replace(/(<\/body>)/i, function(m) { return bottomScripts + '\n' + m; });
         if (srcdoc === stripped.replace(/(<head[^>]*>)/i, function(m) {
-          return m + '\n' + BASE_TAG + '\n' + BRIDGE_SCRIPT + '\n' + themeLinkCss + '\n' + cardLibLink + '\n' + themeCss + '\n' + colorScript + '\n' + vtableInitScript;
+          return m + '\n' + BASE_TAG + '\n' + previewBusScript + '\n' + BRIDGE_SCRIPT + '\n' + themeLinkCss + '\n' + cardLibLink + '\n' + themeCss + '\n' + colorScript + '\n' + vtableInitScript;
         })) {
           // No </body> found, append before </html>
           srcdoc = srcdoc.replace(/(<\/html>)/i, function(m) { return bottomScripts + '\n' + m; });
         }
       } else if (/<html[^>]*>/i.test(stripped)) {
         srcdoc = stripped.replace(/(<html[^>]*>)/i, function(m) {
-          return m + '\n<head>\n' + BASE_TAG + '\n' + BRIDGE_SCRIPT + '\n' + themeLinkCss + '\n' + cardLibLink + '\n' + themeCss + '\n' + colorScript + '\n' + vtableInitScript + '\n</head>';
+          return m + '\n<head>\n' + BASE_TAG + '\n' + previewBusScript + '\n' + BRIDGE_SCRIPT + '\n' + themeLinkCss + '\n' + cardLibLink + '\n' + themeCss + '\n' + colorScript + '\n' + vtableInitScript + '\n</head>';
         });
         srcdoc = srcdoc.replace(/(<\/body>)/i, function(m) { return bottomScripts + '\n' + m; });
       } else {
-        srcdoc = BASE_TAG + '\n' + BRIDGE_SCRIPT + '\n' + themeLinkCss + '\n' + cardLibLink + '\n' + themeCss + '\n' + colorScript + '\n' + vtableInitScript + '\n' + stripped + '\n' + bottomScripts;
+        srcdoc = BASE_TAG + '\n' + previewBusScript + '\n' + BRIDGE_SCRIPT + '\n' + themeLinkCss + '\n' + cardLibLink + '\n' + themeCss + '\n' + colorScript + '\n' + vtableInitScript + '\n' + stripped + '\n' + bottomScripts;
       }
 
       frame.srcdoc = srcdoc;

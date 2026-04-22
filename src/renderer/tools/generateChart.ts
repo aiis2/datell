@@ -7,6 +7,10 @@ import {
   injectInteractivityRuntime as _injectInteractivityRuntime,
   adaptVendorPathsForExport as _adaptVendorPathsForExport,
 } from '../utils/reportHtmlUtils';
+import {
+  formatReportInteractivityIssues,
+  validateReportInteractivity,
+} from '../utils/reportInteractivityValidation';
 
 /** CDN mirrors used as fallback for exported standalone HTML (shell-rendered view uses local vendor) */
 const ECHARTS_CDN_MIRRORS = [
@@ -239,6 +243,12 @@ export const generateChartTool: AgentToolDefinition = {
     const syntaxErr = validateJsSyntax(html);
     if (syntaxErr) {
       return `❌ 生成的 HTML 代码存在 JavaScript 语法错误，报表未创建。\n\n${syntaxErr}\n\n请修正以上错误后重新调用 generate_chart 生成正确的完整代码。常见问题：\n- 对象/数组缺少逗号或多了逗号\n- 括号/花括号 { } 未正确配对\n- 箭头函数语法错误\n- 字符串未正确闭合`;
+    }
+
+    const interactivityIssues = validateReportInteractivity(html)
+      .filter((issue) => issue.severity === 'error');
+    if (interactivityIssues.length > 0) {
+      return `❌ 生成的 HTML 缺少完整的筛选或联动实现，报表未创建。\n\n${formatReportInteractivityIssues(interactivityIssues)}\n\n请补齐筛选控件到图表更新的完整路径，或为图表补齐 data-interactions 规则后重新调用 generate_chart。`;
     }
 
     // NOTE: Do NOT inline vendor JS here. report-shell.html pre-loads ECharts locally and

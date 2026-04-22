@@ -3,17 +3,19 @@ import { contextBridge, ipcRenderer } from 'electron';
 contextBridge.exposeInMainWorld('electronAPI', {
   // EXP-01 FIX: Accept themeId/layoutId so PDF/screenshot exports use the user's selected theme
   // THEME-HDR FIX: palette passed so header background follows the active color palette
-  savePdf: (args: { html: string; title: string; themeId?: string; layoutId?: string; palette?: { primary: string; colors: string[]; bodyBg: string; cardBg: string; textColor: string; isDark: boolean } }): Promise<boolean> =>
+  savePdf: (args: { html: string; title: string; themeId?: string; layoutId?: string; palette?: { primary: string; colors: string[]; bodyBg: string; cardBg: string; textColor: string; subTextColor?: string; isDark: boolean } }): Promise<boolean> =>
     ipcRenderer.invoke('save-pdf', args),
 
-  captureReport: (args: { html: string; title: string; themeId?: string; layoutId?: string; palette?: { primary: string; colors: string[]; bodyBg: string; cardBg: string; textColor: string; isDark: boolean } }): Promise<boolean> =>
+  captureReport: (args: { html: string; title: string; themeId?: string; layoutId?: string; palette?: { primary: string; colors: string[]; bodyBg: string; cardBg: string; textColor: string; subTextColor?: string; isDark: boolean } }): Promise<boolean> =>
     ipcRenderer.invoke('capture-report', args),
 
   exportHtmlBundle: (args: {
     html: string;
     title: string;
     mode: 'interactive' | 'static';
-    palette?: { primary: string; colors: string[]; bodyBg: string; cardBg: string; textColor: string; isDark: boolean };
+    themeId?: string;
+    layoutId?: string;
+    palette?: { primary: string; colors: string[]; bodyBg: string; cardBg: string; textColor: string; subTextColor?: string; isDark: boolean };
   }): Promise<boolean> =>
     ipcRenderer.invoke('export-html-bundle', args),
 

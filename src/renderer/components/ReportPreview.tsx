@@ -344,7 +344,9 @@ const ReportPreview: React.FC = () => {
         html: activeReport.html,
         title: activeReport.title,
         mode: 'interactive',
-        palette: paletteObj ? { primary: paletteObj.primary, colors: paletteObj.colors, bodyBg: paletteObj.bodyBg, cardBg: paletteObj.cardBg, textColor: paletteObj.textColor, isDark: paletteObj.isDark } : undefined,
+        themeId: theme,
+        layoutId: reportLayoutId ?? undefined,
+        palette: paletteObj ? { primary: paletteObj.primary, colors: paletteObj.colors, bodyBg: paletteObj.bodyBg, cardBg: paletteObj.cardBg, textColor: paletteObj.textColor, subTextColor: paletteObj.subTextColor, isDark: paletteObj.isDark } : undefined,
       });
     } finally {
       setIsExporting(null);
@@ -363,7 +365,9 @@ const ReportPreview: React.FC = () => {
         html: activeReport.html,
         title: activeReport.title,
         mode: 'static',
-        palette: paletteObj ? { primary: paletteObj.primary, colors: paletteObj.colors, bodyBg: paletteObj.bodyBg, cardBg: paletteObj.cardBg, textColor: paletteObj.textColor, isDark: paletteObj.isDark } : undefined,
+        themeId: theme,
+        layoutId: reportLayoutId ?? undefined,
+        palette: paletteObj ? { primary: paletteObj.primary, colors: paletteObj.colors, bodyBg: paletteObj.bodyBg, cardBg: paletteObj.cardBg, textColor: paletteObj.textColor, subTextColor: paletteObj.subTextColor, isDark: paletteObj.isDark } : undefined,
       });
     } finally {
       setIsExporting(null);
@@ -384,7 +388,7 @@ const ReportPreview: React.FC = () => {
         title: activeReport.title,
         themeId: theme,
         layoutId: reportLayoutId ?? 'default',
-        palette: paletteObj ? { primary: paletteObj.primary, colors: paletteObj.colors, bodyBg: paletteObj.bodyBg, cardBg: paletteObj.cardBg, textColor: paletteObj.textColor, isDark: paletteObj.isDark } : undefined,
+        palette: paletteObj ? { primary: paletteObj.primary, colors: paletteObj.colors, bodyBg: paletteObj.bodyBg, cardBg: paletteObj.cardBg, textColor: paletteObj.textColor, subTextColor: paletteObj.subTextColor, isDark: paletteObj.isDark } : undefined,
       });
     } finally {
       setIsExporting(null);
@@ -405,7 +409,7 @@ const ReportPreview: React.FC = () => {
         title: activeReport.title,
         themeId: theme,
         layoutId: reportLayoutId ?? 'default',
-        palette: paletteObj ? { primary: paletteObj.primary, colors: paletteObj.colors, bodyBg: paletteObj.bodyBg, cardBg: paletteObj.cardBg, textColor: paletteObj.textColor, isDark: paletteObj.isDark } : undefined,
+        palette: paletteObj ? { primary: paletteObj.primary, colors: paletteObj.colors, bodyBg: paletteObj.bodyBg, cardBg: paletteObj.cardBg, textColor: paletteObj.textColor, subTextColor: paletteObj.subTextColor, isDark: paletteObj.isDark } : undefined,
       });
     } finally {
       setIsExporting(null);

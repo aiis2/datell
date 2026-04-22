@@ -26,6 +26,14 @@ import crypto from 'crypto';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import * as XLSX from 'xlsx';
+import {
+  buildExportPaletteCss,
+  buildStandaloneThemeLinks,
+  type ExportPalette,
+  findExistingProbePath,
+  injectFilterControlsRuntime,
+  needsInteractivityEngineRuntime,
+} from './exportHtmlBundleUtils';
 import { DatabaseService } from './database';
 import { getDataDir, ensureDataDirs, setDataDir } from './dataDir';
 import {
@@ -418,38 +426,6 @@ function readStyleCss(filename: string): string {
 /** CDN script patterns to strip when inlining vendor JS for standalone export */
 const CDN_SCRIPT_RE = /<script[^>]+src=["'][^"']*(?:cdn\.jsdelivr\.net|unpkg\.com|cdn\.bootcdn\.net|cdnjs\.cloudflare\.com|staticfile\.org|echarts\.apache\.org)[^"']*["'][^>]*><\/script>/gi;
 
-/** Palette data passed from the renderer for header color override in exports. */
-interface ExportPalette {
-  primary: string;
-  colors: string[];
-  bodyBg: string;
-  cardBg: string;
-  textColor: string;
-  isDark: boolean;
-}
-
-/**
- * Builds a CSS <style> block that overrides report header CSS variables with the
- * active palette's primary color — mirrors the logic in report-shell.html buildThemeCss().
- * Without this, theme-business.css always wins with its fixed blue gradient.
- */
-function buildPaletteHeaderCss(palette: ExportPalette): string {
-  const lines: string[] = [':root {'];
-  if (palette.isDark) {
-    const hdrBg = palette.cardBg || palette.bodyBg || palette.primary;
-    lines.push(`  --bg-header: ${hdrBg};`);
-    lines.push(`  --text-header: ${palette.textColor || '#e2e8f0'};`);
-    lines.push('  --border-header: 1px solid rgba(255,255,255,0.12);');
-  } else {
-    const hdrColor2 = palette.colors.length > 1 ? palette.colors[1] : palette.primary;
-    lines.push(`  --bg-header: linear-gradient(135deg, ${palette.primary} 0%, ${hdrColor2} 100%);`);
-    lines.push('  --text-header: #ffffff;');
-    lines.push('  --border-header: none;');
-  }
-  lines.push('}');
-  return `<style id="__export-palette-header">\n${lines.join('\n')}\n</style>`;
-}
-
 /**
  * Injects theme CSS + ECharts + ApexCharts as inline blocks into exported HTML so that
  * charts render correctly outside the app:// shell (file:// or blob: context).
@@ -468,20 +444,24 @@ function injectVendorLibs(html: string, themeId = 'business', layoutId = 'defaul
                    || readStyleCss(`theme-${themeId}.css`)
                    || readStyleCss('themes/theme-business.css')
                    || readStyleCss('theme-business.css');
+  const cardLibraryCss = readStyleCss('card-library.css');
+  const layoutBaseCss = readStyleCss('layouts/_layout-base.css');
   const layoutCss   = readStyleCss(`layouts/_layout-${layoutId}.css`)
                    || readStyleCss(`layouts/layout-${layoutId}.css`)
+                   || readStyleCss(`layouts/${layoutId}.css`)
                    || '';
 
   // Strip CDN script tags — vendor is now inlined so duplicate loading is avoided
   let result = html.replace(CDN_SCRIPT_RE, () => '<!-- [export] CDN script replaced by inline vendor -->');
 
-  const paletteHdrCss = palette ? buildPaletteHeaderCss(palette) : '';
   const cssBlock = [
     themeBaseCss ? `<style id="__export-theme-base">\n${themeBaseCss}\n</style>` : '',
     themeVarCss  ? `<style id="__export-theme-var">\n${themeVarCss}\n</style>`   : '',
+    cardLibraryCss ? `<style id="__export-card-library">\n${cardLibraryCss}\n</style>` : '',
+    layoutBaseCss ? `<style id="__export-layout-base">\n${layoutBaseCss}\n</style>` : '',
     layoutCss    ? `<style id="__export-layout">\n${layoutCss}\n</style>`         : '',
-    // Palette header override must come AFTER theme CSS to win the cascade
-    paletteHdrCss,
+    // Palette override must come AFTER theme CSS to win the cascade.
+    buildExportPaletteCss(palette),
   ].filter(Boolean).join('\n');
   const jsBlock = [
     echartsJs    ? `<script>${echartsJs}</script>`    : '',
@@ -896,8 +876,10 @@ ipcMain.handle('export-html-bundle', async (_event, args: {
   mode: 'interactive' | 'static';
   baseName?: string;
   palette?: ExportPalette;
+  themeId?: string;
+  layoutId?: string;
 }) => {
-  const { html, title, mode, palette } = args;
+  const { html, title, mode, palette, themeId, layoutId } = args;
 
   const result = await dialog.showSaveDialog({
     title: mode === 'interactive'
@@ -927,9 +909,7 @@ ipcMain.handle('export-html-bundle', async (_event, args: {
     path.join(__dirname, '../dist/vendor'),
     path.join(__dirname, '../../public/vendor'),
   ];
-  const vendorSrc = vendorCandidates.find(p => {
-    try { fs.accessSync(path.join(p, 'icons-list.json')); return true; } catch { return false; }
-  }) ?? vendorCandidates[0];
+  const vendorSrc = findExistingProbePath(vendorCandidates, 'icons-list.json') ?? vendorCandidates[0];
 
   // 1. Copy ECharts + ApexCharts + icons.svg (always)
   //    icons.svg is needed for SVG <use href="./vendor/icons.svg#..."> references in AI-generated HTML.
@@ -967,9 +947,7 @@ ipcMain.handle('export-html-bundle', async (_event, args: {
     path.join(app.getAppPath(), 'dist', 'styles'),
     path.join(__dirname, '../dist/styles'),
   ];
-  const styleSrc = styleCandidates.find(p => {
-    try { fs.accessSync(p); return true; } catch { return false; }
-  });
+  const styleSrc = findExistingProbePath(styleCandidates, path.join('themes', 'theme-base.css'));
   if (styleSrc) {
     const styleDest = path.join(assetsDir, 'styles');
     // Recursively copy entire styles directory (themes/, layouts/, root CSS files)
@@ -999,9 +977,7 @@ ipcMain.handle('export-html-bundle', async (_event, args: {
     path.join(app.getAppPath(), 'dist'),
     path.join(__dirname, '..'),
   ];
-  const publicRootSrc = publicRootCandidates.find(p => {
-    try { fs.accessSync(path.join(p, 'filter-controls.js')); return true; } catch { return false; }
-  });
+  const publicRootSrc = findExistingProbePath(publicRootCandidates, 'filter-controls.js');
   if (publicRootSrc) {
     try {
       const data = fs.readFileSync(path.join(publicRootSrc, 'filter-controls.js'));
@@ -1029,6 +1005,8 @@ ipcMain.handle('export-html-bundle', async (_event, args: {
     .replace(/src=(["'])\/styles\//g, (_m, q) => `src=${q}./${baseName}-assets/styles/`)
     // filter-controls.js from public root
     .replace(/app:\/\/localhost\/filter-controls\.js/g, `./${baseName}-assets/filter-controls.js`)
+    .replace(/src=(["'])\.\/filter-controls\.js(["'])/g, (_m, q1, q2) => `src=${q1}./${baseName}-assets/filter-controls.js${q2}`)
+    .replace(/src=(["'])filter-controls\.js(["'])/g, (_m, q1, q2) => `src=${q1}./${baseName}-assets/filter-controls.js${q2}`)
     .replace(/src=(["'])\/filter-controls\.js(["'])/g, (_m, q1, q2) => `src=${q1}./${baseName}-assets/filter-controls.js${q2}`);
 
   // 4b. Inline SVG symbols to fix file:// cross-origin block.
@@ -1075,18 +1053,14 @@ ipcMain.handle('export-html-bundle', async (_event, args: {
   //    "echarts.min.js" — CDN fails offline, echarts stays undefined.
   //    EXP-07 FIX: also strips CDN scripts so they don't shadow/override local vendor copies.
 
-  // 4b-extra. Inject theme CSS links + palette header override (THEME-HDR FIX).
+  // 4b-extra. Inject theme/layout/component CSS links + palette override.
   //   The shell normally injects these via buildThemeLink / buildThemeCss, but the standalone
-  //   exported HTML has no shell — inject them here so .report-header gets theme colors.
+  //   exported HTML has no shell — inject the same baseline resources here so filter controls,
+  //   cards, header and layout all preserve the active theme.
   {
-    const styleDir = `./${baseName}-assets/styles`;
-    const themeLinks = [
-      `<link rel="stylesheet" href="${styleDir}/themes/theme-base.css">`,
-      `<link rel="stylesheet" href="${styleDir}/themes/theme-business.css">`,
-      `<link rel="stylesheet" href="${styleDir}/layouts/_layout-base.css">`,
-    ].join('\n');
-    const paletteHdrBlock = palette ? buildPaletteHeaderCss(palette) : '';
-    const headInject = [themeLinks, paletteHdrBlock].filter(Boolean).join('\n');
+    const themeLinks = buildStandaloneThemeLinks(baseName, themeId, layoutId);
+    const paletteThemeBlock = buildExportPaletteCss(palette);
+    const headInject = [themeLinks, paletteThemeBlock].filter(Boolean).join('\n');
     if (headInject) {
       if (outputHtml.includes('</head>')) {
         outputHtml = outputHtml.replace('</head>', () => `${headInject}\n</head>`);
@@ -1124,11 +1098,10 @@ ipcMain.handle('export-html-bundle', async (_event, args: {
   }
 
   // 5b. Inject interactivity runtime scripts for interactive/static mode
-  const hasInteractivity = outputHtml.includes('data-interactions') ||
-    outputHtml.includes('__report_data_context__');
+  const hasInteractivity = needsInteractivityEngineRuntime(outputHtml);
   if (hasInteractivity) {
     const engineScript = `<script src="./${baseName}-assets/interactivity-engine.js"><\/script>`;
-    const duckdbScript = mode === 'interactive'
+    const duckdbScript = mode === 'interactive' && outputHtml.includes('__report_data_context__')
       ? `<script src="./${baseName}-assets/duckdb/duckdb.js"><\/script>\n`
       : '';
     const injection = duckdbScript + engineScript;
@@ -1138,6 +1111,11 @@ ipcMain.handle('export-html-bundle', async (_event, args: {
       outputHtml = injection + outputHtml;
     }
   }
+
+  // 5c. Inject filter-controls runtime for standalone exports that contain filter UI or
+  //     client-side filterChange / __FILTER_STATE__ logic. report-shell.html injects this
+  //     automatically for in-app preview, but exported HTML must carry it explicitly.
+  outputHtml = injectFilterControlsRuntime(outputHtml, baseName);
 
   // 6. Write the HTML file
   fs.writeFileSync(result.filePath, outputHtml, 'utf-8');

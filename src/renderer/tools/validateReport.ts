@@ -5,6 +5,7 @@
  */
 import type { AgentToolDefinition } from '../types';
 import { useReportStore } from '../stores/reportStore';
+import { validateReportInteractivity } from '../utils/reportInteractivityValidation';
 
 interface ValidationIssue {
   code: string;
@@ -78,6 +79,15 @@ function validateHtml(html: string): ValidationIssue[] {
       });
       break; // report once
     }
+  }
+
+  for (const issue of validateReportInteractivity(html)) {
+    issues.push({
+      code: issue.code,
+      severity: issue.severity,
+      message: issue.message,
+      suggestion: issue.suggestion,
+    });
   }
 
   return issues;

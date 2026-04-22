@@ -936,8 +936,8 @@ export interface DatasourceConfigPublic {
 }
 
 export interface ElectronAPI {
-  savePdf: (args: { html: string; title: string; themeId?: string; layoutId?: string; palette?: { primary: string; colors: string[]; bodyBg: string; cardBg: string; textColor: string; isDark: boolean } }) => Promise<boolean>;
-  captureReport: (args: { html: string; title: string; themeId?: string; layoutId?: string; palette?: { primary: string; colors: string[]; bodyBg: string; cardBg: string; textColor: string; isDark: boolean } }) => Promise<boolean>;
+  savePdf: (args: { html: string; title: string; themeId?: string; layoutId?: string; palette?: { primary: string; colors: string[]; bodyBg: string; cardBg: string; textColor: string; subTextColor?: string; isDark: boolean } }) => Promise<boolean>;
+  captureReport: (args: { html: string; title: string; themeId?: string; layoutId?: string; palette?: { primary: string; colors: string[]; bodyBg: string; cardBg: string; textColor: string; subTextColor?: string; isDark: boolean } }) => Promise<boolean>;
   saveFile: (data: Uint8Array, defaultName: string) => Promise<boolean>;
   getAppVersion: () => Promise<string>;
   setNativeTheme: (theme: 'light' | 'dark') => Promise<void>;
@@ -1019,7 +1019,7 @@ export interface ElectronAPI {
   readStyleFile: (filename: string) => Promise<string | null>;
 
   // Export HTML bundle (interactive with DuckDB or lightweight static)
-  exportHtmlBundle: (args: { html: string; title: string; mode: 'interactive' | 'static'; palette?: { primary: string; colors: string[]; bodyBg: string; cardBg: string; textColor: string; isDark: boolean } }) => Promise<boolean>;
+  exportHtmlBundle: (args: { html: string; title: string; mode: 'interactive' | 'static'; themeId?: string; layoutId?: string; palette?: { primary: string; colors: string[]; bodyBg: string; cardBg: string; textColor: string; subTextColor?: string; isDark: boolean } }) => Promise<boolean>;
 
   // Notify main process of current language for native dialog localisation
   appSetLanguage?: (lang: string) => void;
