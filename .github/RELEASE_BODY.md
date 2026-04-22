@@ -1,37 +1,37 @@
-### 首次公开发布 / First Public Release
+### First Public Release / 首次公开发布
 
-Datell 是一款本地优先的 AI 数据分析桌面应用，支持自然语言驱动数据分析与交互式报告生成。  
-Datell is a local-first AI-powered desktop app for data analysis and interactive report generation via natural language.
+Datell is a polished local-first desktop app for AI-assisted data analysis and interactive report generation.
+Datell 是一款打磨完善的本地优先桌面应用，专注于 AI 驱动的数据分析与交互式报表生成。
 
-### 下载 / Downloads
+It brings agentic analysis, interactive dashboards, and export-ready deliverables into one streamlined workflow.
+它把智能体分析、交互式仪表盘和可导出的成果整合进一条顺畅的工作流。
 
-| 平台 Platform | 文件 File | 说明 Notes |
+### Downloads / 下载
+
+| Platform | File | Notes |
 |---|---|---|
-| Windows x64 | `Datell-*-win-x64-portable.exe` | 免安装，双击直接运行 / No install needed |
-| macOS x64 | `Datell-*-mac-x64.dmg` | Intel Mac |
-| macOS arm64 | `Datell-*-mac-arm64.dmg` | Apple Silicon (M1/M2/M3) |
-| Linux x64 | `Datell-*-x86_64.AppImage` | 通用 Linux / Universal Linux |
-| Linux x64 | `Datell-*-amd64.deb` | Debian / Ubuntu |
+| Windows x64 | `Datell-1.0.0-win-x64-portable.exe` | Portable, no install needed / 免安装，双击可用 |
+| macOS x64 | `Datell-1.0.0-mac-x64.dmg` | Intel Mac |
+| macOS arm64 | `Datell-1.0.0-mac-arm64.dmg` | Apple Silicon (M1/M2/M3) |
+| Linux x64 | `Datell-1.0.0.AppImage` | Portable AppImage for most distros / 适用于大多数发行版 |
 
-> **macOS 首次打开说明**：如提示「无法打开」，请右键点击应用 → 选择「打开」即可。  
-> **macOS first launch**: If blocked by Gatekeeper, right-click the app → "Open".
-
----
-
-### 主要功能 / Features
-
-- **ReAct AI Agent** — 自主多步骤数据分析 / Autonomous multi-step data analysis
-- **自然语言图表** — 支持 ECharts、ApexCharts、VChart / NL-driven charts
-- **多模型支持** — OpenAI、Claude、DeepSeek、Ollama 等 / Multi-LLM support
-- **双语界面** — 中英文自动切换 / Auto-detect Chinese / English
-- **本地优先** — 数据与对话全部存储本地 / All data stored locally
-- **90+ 卡片组件库** — KPI 卡片与图表模板 / KPI & chart template library
-- **知识图谱 + RAG** — 业务上下文理解 / Business context via KGraph + RAG
-- **MCP 工具扩展** — 可扩展外部工具接口 / Extensible MCP tool interface
+> **macOS first launch**: If blocked by Gatekeeper, right-click the app and choose "Open".
+> **macOS 首次打开**：如果被系统拦截，请右键应用并选择“打开”。
 
 ---
 
-### 系统要求 / Requirements
+### Key Features / 主要功能
+
+- **ReAct AI Agent** — Transparent multi-step planning, tool use, and verification / 可见的多步骤规划、工具调用与验证
+- **Interactive Reports** — Filter-aware KPI cards, linked charts, and export-ready HTML dashboards / 支持筛选联动的 KPI 卡片、图表与可导出的 HTML 仪表盘
+- **Model Flexibility** — OpenAI, Claude, Gemini, DeepSeek, Ollama, and compatible APIs / 支持 OpenAI、Claude、Gemini、DeepSeek、Ollama 与兼容接口
+- **Local-first Runtime** — Data, chats, and knowledge stay on-device by default / 数据、对话与知识默认留在本地
+- **Rich Report Surface** — 170+ KPI cards, 40+ layouts, and multiple chart engines / 170+ KPI 卡片、40+ 布局与多图表引擎
+- **Knowledge Context** — Built-in RAG, knowledge graph, and MCP extensions / 内置 RAG、知识图谱与 MCP 扩展
+
+---
+
+### Requirements / 系统要求
 
 - **Windows**: Windows 10/11 x64
 - **macOS**: macOS 12+ (Monterey or later), Intel or Apple Silicon
@@ -39,11 +39,11 @@ Datell is a local-first AI-powered desktop app for data analysis and interactive
 
 ---
 
-### 首次启动 / First Launch
+### First Launch / 首次启动
 
-首次启动需初始化本地数据库，约需 10–20 秒，请耐心等待。  
 First launch may take 10–20 seconds to initialize the local database.
+首次启动需要 10–20 秒初始化本地数据库，请耐心等待。
 
 ---
 
-**源码 / Source Code**: https://github.com/aiis2/datell
+**Source Code / 源码**: https://github.com/aiis2/datell

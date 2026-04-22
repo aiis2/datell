@@ -4,9 +4,11 @@
 
 # Datell
 
-**Let your data tell the story.**
+**A polished local-first AI analyst for interactive reporting.**
 
-Upload data, describe what you need — Datell's AI agent generates professional interactive reports automatically.
+Upload files, connect databases, and describe the question in plain language. Datell turns that workflow into polished dashboards, export-ready reports, and presentations.
+
+上传文件、连接数据库、描述分析问题。Datell 会把这条工作流整理成交互式仪表盘、可导出的专业报表与演示文稿。
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/aiis2/datell)](https://github.com/aiis2/datell/releases/latest)
@@ -24,9 +26,16 @@ Upload data, describe what you need — Datell's AI agent generates professional
 
 ## English
 
-**Datell** is a local-first desktop data analytics platform built on the **ReAct agent architecture**. Not just a chatbot — a real AI data analyst that breaks down tasks, queries databases, and delivers professional interactive reports.
+**Datell** is a polished local-first desktop analytics workspace built around a capable **ReAct agent**. It does more than answer questions: it can break work into steps, query databases, apply business context, and turn the result into interactive reports that feel ready to share.
 
-All data is stored entirely on-device. No cloud sync, no privacy concerns.
+Everything stays on-device by default, which makes Datell especially compelling when you want serious analysis, reusable outputs, and privacy without adding a cloud dependency.
+
+### At a Glance
+
+- Agentic analysis with visible reasoning, planning, execution, and verification
+- Interactive HTML reports with filter-aware KPI linkage, multiple chart engines, and export-ready layouts
+- Rich presentation surface with 170+ KPI cards, 40+ layouts, and built-in report presets
+- Extensible stack with multi-LLM support, RAG, knowledge graph, MCP tools, and external databases
 
 ---
 
@@ -35,10 +44,9 @@ All data is stored entirely on-device. No cloud sync, no privacy concerns.
 | Platform | File | Notes |
 |----------|------|-------|
 | **Windows x64** | [`Datell-1.0.0-win-x64-portable.exe`](https://github.com/aiis2/datell/releases/download/v1.0/Datell-1.0.0-win-x64-portable.exe) | Portable, no install needed |
-| macOS x64 | `Datell-*-mac-x64.dmg` | Intel Mac |
-| macOS arm64 | `Datell-*-mac-arm64.dmg` | Apple Silicon (M1/M2/M3) |
-| Linux x64 | `Datell-*-x86_64.AppImage` | Universal Linux |
-| Linux x64 | `Datell-*-amd64.deb` | Debian / Ubuntu |
+| macOS x64 | [`Datell-1.0.0-mac-x64.dmg`](https://github.com/aiis2/datell/releases/download/v1.0/Datell-1.0.0-mac-x64.dmg) | Intel Mac |
+| macOS arm64 | [`Datell-1.0.0-mac-arm64.dmg`](https://github.com/aiis2/datell/releases/download/v1.0/Datell-1.0.0-mac-arm64.dmg) | Apple Silicon (M1/M2/M3) |
+| Linux x64 | [`Datell-1.0.0.AppImage`](https://github.com/aiis2/datell/releases/download/v1.0/Datell-1.0.0.AppImage) | Portable AppImage for most distros |
 
 > **[→ View all releases](https://github.com/aiis2/datell/releases/latest)**
 
@@ -276,9 +284,16 @@ You may obtain a copy of the License at
 
 ## 中文
 
-**Datell** 是一款基于 **ReAct 架构**的本地桌面数据分析平台。它不只是一个聊天机器人——它是一个真正的 AI 数据分析师：会主动拆解任务、查询数据库、理解业务背景，最终输出带交互图表的专业报表。
+**Datell** 是一款打磨得相当完整的本地优先桌面数据分析工作台，核心是一套可执行、多步骤的 **ReAct 智能体**。它不只是回答问题，而是会主动拆解任务、查询数据库、结合业务上下文，并把结果整理成真正可交互、可分享的专业报表。
 
-所有数据与对话**完全本地存储**，无需云端同步，隐私安全有保障。
+默认情况下，所有数据与对话都留在本机。这让 Datell 很适合既重视分析深度、结果复用，也重视隐私控制的团队和个人。
+
+### 快速概览
+
+- 可见的智能体分析流程：思考、规划、执行、验证完整展开
+- 可交互 HTML 报表：筛选联动 KPI、图表与导出布局协同工作
+- 很完整的展示层：170+ KPI 卡片、40+ 布局模板和多图表引擎
+- 可扩展能力栈：多模型、RAG、知识图谱、MCP 工具与外部数据库
 
 ---
 
@@ -287,10 +302,9 @@ You may obtain a copy of the License at
 | 平台 | 文件 | 说明 |
 |------|------|------|
 | **Windows x64** | [`Datell-1.0.0-win-x64-portable.exe`](https://github.com/aiis2/datell/releases/download/v1.0/Datell-1.0.0-win-x64-portable.exe) | 免安装，双击直接运行 |
-| macOS x64 | `Datell-*-mac-x64.dmg` | Intel Mac |
-| macOS arm64 | `Datell-*-mac-arm64.dmg` | Apple Silicon (M1/M2/M3) |
-| Linux x64 | `Datell-*-x86_64.AppImage` | 通用 Linux |
-| Linux x64 | `Datell-*-amd64.deb` | Debian / Ubuntu |
+| macOS x64 | [`Datell-1.0.0-mac-x64.dmg`](https://github.com/aiis2/datell/releases/download/v1.0/Datell-1.0.0-mac-x64.dmg) | Intel Mac |
+| macOS arm64 | [`Datell-1.0.0-mac-arm64.dmg`](https://github.com/aiis2/datell/releases/download/v1.0/Datell-1.0.0-mac-arm64.dmg) | Apple Silicon (M1/M2/M3) |
+| Linux x64 | [`Datell-1.0.0.AppImage`](https://github.com/aiis2/datell/releases/download/v1.0/Datell-1.0.0.AppImage) | 适用于大多数发行版的便携 AppImage |
 
 > **[→ 查看所有发行版](https://github.com/aiis2/datell/releases/latest)**
 
