@@ -6,9 +6,9 @@
 
 **A polished local-first AI analyst for interactive reporting.**
 
-Upload files, connect databases, and describe the question in plain language. Datell turns that workflow into polished dashboards, export-ready reports, and presentations.
+Upload files, connect databases, and describe the question in plain language. Datell turns that workflow into polished dashboards, export-ready reports, and presentations without forcing the model to reinvent the entire page every time.
 
-上传文件、连接数据库、描述分析问题。Datell 会把这条工作流整理成交互式仪表盘、可导出的专业报表与演示文稿。
+上传文件、连接数据库、描述分析问题。Datell 会把这条工作流整理成交互式仪表盘、可导出的专业报表与演示文稿，而不是让模型每次从零开始“抽盲盒式”拼页面。
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/aiis2/datell)](https://github.com/aiis2/datell/releases/latest)
@@ -36,6 +36,20 @@ Everything stays on-device by default, which makes Datell especially compelling 
 - Interactive HTML reports with filter-aware KPI linkage, multiple chart engines, and export-ready layouts
 - Rich presentation surface with 170+ KPI cards, 40+ layouts, and built-in report presets
 - Extensible stack with multi-LLM support, RAG, knowledge graph, MCP tools, and external databases
+
+### Why Datell avoids prompt roulette
+
+Many AI reporting products still rely on a fragile pattern: ask the model to improvise the page structure from scratch, hope the chart mix is reasonable, and hope filters, KPI summaries, and visual hierarchy happen to line up. That usually looks exciting in a demo and inconsistent in repeated use.
+
+Datell takes a more systemized approach. The model works with a built-in report surface instead of an empty canvas:
+
+- **20+ report presets** that bundle chart engine, layout direction, and styling defaults
+- **43+ layout templates** spanning dashboards, documents, bento grids, wide screens, and poster formats
+- **60+ palette presets** with runtime palette injection for ECharts, ApexCharts, and VTable rendering
+- **172 KPI and chart card patterns** that give the agent stable building blocks instead of one-off HTML improvisation
+- **Filter-aware interactivity runtime** that coordinates controls, chart updates, KPI refresh paths, and DuckDB-backed data rebinding
+
+That means the agent can still be creative where it matters, but the output is guided by reusable structure, visual consistency, and interaction contracts. In practice, Datell behaves much more like a report system with an AI operator than a prompt slot machine.
 
 ---
 
@@ -109,6 +123,16 @@ A complete monthly sales report auto-generated from sales data: 4 KPI cards, tre
 A 60-year dataset covering 200+ countries. Datell automatically explores the data, computes statistics, compares trends, and generates a multi-dimensional visualization report.
 
 ![Global Per Capita Energy Consumption](docs/screenshots/Global%20Per%20Capita%20Energy%20Consumption%20Analysis.png)
+
+---
+
+### Technical Architecture
+
+- **Desktop shell**: Electron 41 packages a TypeScript main process with a React 19 + Vite renderer, keeping the app portable across Windows, macOS, and Linux.
+- **Secure data plane**: database execution and credential handling stay in the main process, so the renderer works with sanitized results and orchestration APIs instead of raw secrets.
+- **Report runtime**: `public/report-shell.html` hosts preview and export rendering, applies layout and palette state, and keeps chart runtimes aligned across preview, export, and capture flows.
+- **Interactivity layer**: `interactivity-engine.js` and `filter-controls.js` coordinate filter changes, chart registration, KPI refresh paths, and DuckDB-backed rebinding for interactive reports.
+- **Knowledge layer**: SQLite persists app state locally, ONNX-based embeddings support local RAG, Kuzu provides the knowledge graph, and MCP endpoints extend the tool surface.
 
 ---
 
@@ -295,6 +319,20 @@ You may obtain a copy of the License at
 - 很完整的展示层：170+ KPI 卡片、40+ 布局模板和多图表引擎
 - 可扩展能力栈：多模型、RAG、知识图谱、MCP 工具与外部数据库
 
+### 为什么 Datell 不会变成“报表抽盲盒”
+
+很多 AI 报表产品仍然沿用一种很脆弱的方式：把整页结构交给模型临场发挥，期待它每次都能碰巧选对布局、图表组合、KPI 样式和筛选逻辑。演示时看起来很快，连续使用时往往就会暴露出不稳定和不一致。
+
+Datell 走的是更系统化的路线。模型面对的不是一块完全空白的画布，而是一套内置的报表表达系统：
+
+- **20+ 报告预设**：把图表引擎、布局方向和样式默认值打包成稳定组合
+- **43+ 布局模板**：覆盖仪表盘、文档、Bento Grid、宽屏大屏和海报等不同场景
+- **60+ 调色板预设**：运行时可同步注入到 ECharts、ApexCharts 和 VTable
+- **172 个 KPI / 图表卡片模式**：让 Agent 基于稳定组件拼装，而不是每次即兴写一套 HTML
+- **筛选联动运行时**：统一处理控件、图表更新、KPI 刷新路径和基于 DuckDB 的数据重绑
+
+这意味着 Agent 仍然可以在分析与表达上保持灵活，但输出结果会被可复用的结构、视觉一致性和交互契约约束住。实际体验上，Datell 更像是一套由 AI 驱动的专业报表系统，而不是一次次碰运气的提示词老虎机。
+
 ---
 
 ### 下载
@@ -367,6 +405,16 @@ You may obtain a copy of the License at
 跨越 60 年、覆盖 200+ 个国家的能源数据集，Agent 自动完成数据探索、统计汇总、趋势对比与分布分析，生成多维可视化报表。
 
 ![全球人均能源消费分析报表](docs/screenshots/Global%20Per%20Capita%20Energy%20Consumption%20Analysis.png)
+
+---
+
+### 技术架构
+
+- **桌面外壳**：基于 Electron 41，采用 TypeScript 主进程和 React 19 + Vite 渲染层，统一打包 Windows、macOS、Linux。
+- **安全数据面**：数据库连接与查询执行留在主进程，渲染层拿到的是经过整理的结果和编排 API，而不是原始凭据。
+- **报表运行时**：`public/report-shell.html` 负责承载预览与导出渲染，统一应用布局、调色板和运行时注入逻辑，保证预览、导出、截图链路尽量一致。
+- **交互层**：`interactivity-engine.js` 与 `filter-controls.js` 负责筛选变化、图表注册、KPI 刷新路径以及基于 DuckDB 的联动重查询。
+- **知识层**：本地 SQLite 持久化应用状态，ONNX Embedding 支撑本地 RAG，Kuzu 提供知识图谱，MCP 负责外部工具扩展。
 
 ---
 
