@@ -40,7 +40,7 @@ const AppSkeleton: React.FC = () => (
 );
 
 const App: React.FC = () => {
-  const { theme, language, setExternalSkills, loadCustomPalettes, setEnterprisePluginAvailable } = useConfigStore();
+  const { theme, language, setExternalSkills, setRegistrySkills, loadCustomPalettes, setEnterprisePluginAvailable } = useConfigStore();
   const initChats = useChatStore((s) => s.init);
   const { loadReports, loadTemplates } = useReportStore();
   const initSystem = useSystemStore((s) => s.init);
@@ -78,16 +78,23 @@ const App: React.FC = () => {
 
     const loadSkills = async () => {
       try {
-        const skills = await window.electronAPI?.skillsList?.();
-        if (skills && skills.length > 0) {
-          setExternalSkills(skills);
+        const [legacyResult, registryResult] = await Promise.allSettled([
+          window.electronAPI?.skillsList?.() ?? Promise.resolve([]),
+          window.electronAPI?.skillsRegistryList?.() ?? Promise.resolve([]),
+        ]);
+
+        if (legacyResult.status === 'fulfilled') {
+          setExternalSkills(legacyResult.value || []);
+        }
+        if (registryResult.status === 'fulfilled') {
+          setRegistrySkills(registryResult.value || []);
         }
       } catch { /* non-critical, ignore */ }
     };
     loadSkills();
 
     // Check enterprise plugin availability (non-blocking)
-    window.electronAPI?.getEnterprisePluginStatus?.().then((status) => {
+    window.electronAPI?.getEnterprisePluginStatus?.().then((status: { available: boolean }) => {
       setEnterprisePluginAvailable(status.available);
     }).catch(() => { /* non-critical — open-source mode, plugin absent */ });
   }, []);

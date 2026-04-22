@@ -100,7 +100,9 @@ export const skillCreatorTool: AgentToolDefinition = {
       `✅ 技能"${skillName}"已成功安装！\n\n` +
       `- 名称：${skillName}\n` +
       `- 描述：${skillDescription}\n` +
-      `- 参数数量：${parameters.length}\n\n` +
+      `- 参数数量：${parameters.length}\n` +
+      `- 保存位置：dynamicToolDefs（动态技能兼容层）\n` +
+      `- 注册表：当前阶段不会自动写入技能注册表\n\n` +
       `该技能已保存，可在后续对话中通过工具调用使用。`
     );
   },

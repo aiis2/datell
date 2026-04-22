@@ -1,3 +1,5 @@
+import type { ExternalSkill, RegistrySkillManifest } from '../../shared/skills';
+
 /* ========== Chat & Messages ========== */
 
 export type MessageRole = 'user' | 'assistant' | 'system';
@@ -940,6 +942,7 @@ export interface ElectronAPI {
   captureReport: (args: { html: string; title: string; themeId?: string; layoutId?: string; palette?: { primary: string; colors: string[]; bodyBg: string; cardBg: string; textColor: string; subTextColor?: string; isDark: boolean } }) => Promise<boolean>;
   saveFile: (data: Uint8Array, defaultName: string) => Promise<boolean>;
   getAppVersion: () => Promise<string>;
+  getEnterprisePluginStatus: () => Promise<{ available: boolean; meta: { name: string; version: string; description?: string } | null }>;
   setNativeTheme: (theme: 'light' | 'dark') => Promise<void>;
   testModelConnection: (config: { provider: ModelProvider; modelId: string; apiKey: string; baseUrl: string }) => Promise<{ ok: boolean; status?: number; latencyMs?: number; message: string }>;
   fetchStream: (requestId: string, url: string, options: { method: string; headers: Record<string, string>; body: string }) => Promise<void>;
@@ -980,9 +983,14 @@ export interface ElectronAPI {
   fsMigrateDataDir: (newDir: string) => Promise<{ ok: boolean; message: string }>;
 
   // Skills
-  skillsList: () => Promise<Array<{ id: string; name: string; description: string; version: string; source: string; tools: Array<{ name: string; description: string; parameters: Record<string, unknown>; code: string }> }>>;
+  skillsList: () => Promise<ExternalSkill[]>;
   skillsOpenDir: () => Promise<void>;
   skillsInstallFromUrl: (url: string) => Promise<{ ok: boolean; name?: string; toolCount?: number; error?: string }>;
+  skillsRegistryList: () => Promise<RegistrySkillManifest[]>;
+  skillsRegistrySave: (manifest: RegistrySkillManifest) => Promise<{ ok: boolean; id: string }>;
+  skillsRegistryDelete: (id: string) => Promise<{ ok: boolean }>;
+  skillsRegistryExport: (id: string, targetPath: string) => Promise<{ ok: boolean; path: string }>;
+  skillsRegistryImport: (sourcePath: string) => Promise<{ ok: boolean; id: string }>;
 
   // MCP HTTP Transport
   mcpHttpDiscover: (url: string, timeoutMs?: number) => Promise<{ ok: boolean; tools?: Array<{ name: string; description?: string; inputSchema?: Record<string, unknown> }>; error?: string }>;

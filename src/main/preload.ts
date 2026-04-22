@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import type { ExternalSkill, RegistrySkillManifest } from '../shared/skills';
 
 contextBridge.exposeInMainWorld('electronAPI', {
   // EXP-01 FIX: Accept themeId/layoutId so PDF/screenshot exports use the user's selected theme
@@ -138,13 +139,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('mcp:http:call', url, toolName, toolArgs, timeoutMs),
 
   // ===== External Skills =====
-  skillsList: (): Promise<Array<{
-    id: string; name: string; description: string; version: string; source: string;
-    tools: Array<{ name: string; description: string; parameters: Record<string, unknown>; code: string }>;
-  }>> => ipcRenderer.invoke('skills:list'),
+  skillsList: (): Promise<ExternalSkill[]> => ipcRenderer.invoke('skills:list'),
   skillsOpenDir: (): Promise<void> => ipcRenderer.invoke('skills:openDir'),
   skillsInstallFromUrl: (url: string): Promise<{ ok: boolean; name?: string; toolCount?: number; error?: string }> =>
     ipcRenderer.invoke('skills:installFromUrl', url),
+  skillsRegistryList: (): Promise<RegistrySkillManifest[]> => ipcRenderer.invoke('skills:registry:list'),
+  skillsRegistrySave: (manifest: RegistrySkillManifest): Promise<{ ok: boolean; id: string }> => ipcRenderer.invoke('skills:registry:save', manifest),
+  skillsRegistryDelete: (id: string): Promise<{ ok: boolean }> => ipcRenderer.invoke('skills:registry:delete', id),
+  skillsRegistryExport: (id: string, targetPath: string): Promise<{ ok: boolean; path: string }> => ipcRenderer.invoke('skills:registry:export', id, targetPath),
+  skillsRegistryImport: (sourcePath: string): Promise<{ ok: boolean; id: string }> => ipcRenderer.invoke('skills:registry:import', sourcePath),
 
   // ===== Data Directory Migration =====
   fsSelectDirectory: (): Promise<string | null> => ipcRenderer.invoke('fs:selectDirectory'),

@@ -6,7 +6,8 @@ import { useSystemStore } from '../stores/systemStore';
 import { useDatasourceStore } from '../stores/datasourceStore';
 import type { DatasourceConfig, DatasourceType, SchemaInfo } from '../stores/datasourceStore';
 import { v4 as uuidv4 } from 'uuid';
-import type { ModelProvider, McpServerConfig, UserSystemPrompt, ModelConfig, ActivationStatus, IllustrationAsset, ImageAsset, PalettePreset } from '../types';
+import type { ModelProvider, McpServerConfig, UserSystemPrompt, ModelConfig, ActivationStatus, IllustrationAsset, ImageAsset, PalettePreset, DynamicToolDef } from '../types';
+import type { ExternalSkill, RegistrySkillManifest } from '../../shared/skills';
 import { LAYOUT_MANIFEST, LAYOUT_CATEGORIES, CATEGORY_DISPLAY_NAMES } from '../utils/layoutManifest';
 import { PALETTE_PRESETS, PALETTE_CATEGORIES, PALETTE_CATEGORY_NAMES } from '../types';
 import { readMemory, clearMemory } from '../services/memoryService';
@@ -14,11 +15,20 @@ import { useRagStore } from '../stores/ragStore';
 import type { ChunkOptions } from '../stores/ragStore';
 import { SvgWireframe, LayoutPreviewModal } from './SvgLayoutPreview';
 import PaletteEditorModal from './PaletteEditorModal';
+import RegistrySkillEditorModal from './RegistrySkillEditorModal';
 import { BUILT_IN_PRESETS, PRESET_CATEGORIES } from '../types/reportPresets';
 import type { ReportPreset } from '../types/reportPresets';
 import { CARD_CATALOG, CARD_CATEGORIES, CARD_CATEGORY_LABELS, setPreviewLang } from '../data/CardCatalog';
 import type { CardCatalogEntry, CardCatalogCategory } from '../data/CardCatalog';
 import { CONTENT_EN_NAMES, CONTENT_EN_DESCS, TAG_EN, ICON_CATEGORY_EN } from '../i18n/contentEN';
+import { BUILT_IN_SKILL_MANIFESTS, localizeBuiltInSkillManifest } from '../skills/manifests';
+import {
+  createEmptyRegistrySkillManifest,
+  createRegistrySkillFromDynamicTool,
+  createRegistrySkillFromExternalSkill,
+  makeUniqueSkillId,
+  slugifySkillId,
+} from '../skills/registryHelpers';
 
 interface SettingsModalProps {
   activationStatus?: ActivationStatus | null;
@@ -38,7 +48,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ activationStatus, onReact
     setPaletteId, setReportLayoutId,
     addCustomPalette, updateCustomPalette, removeCustomPalette,
     settingsOpen, setSettingsOpen,
-    disabledBuiltInTools, setBuiltInToolDisabled, externalSkills,
+    disabledBuiltInTools, setBuiltInToolDisabled, externalSkills, registrySkills,
     enterprisePluginAvailable,
   } = useConfigStore();
   // Hide locked enterprise models when plugin is not loaded (open-source / community mode)
@@ -149,7 +159,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ activationStatus, onReact
           <div className="flex-1 overflow-y-auto p-6">
             {activeTab === 'models' && <ModelsTab models={models} updateModel={updateModel} addModel={addModel} removeModel={removeModel} />}
             {activeTab === 'mcp' && <McpTab servers={mcpServers} addServer={addMcpServer} removeServer={removeMcpServer} updateServer={updateMcpServer} updateDiscoveredTools={updateMcpDiscoveredTools} />}
-            {activeTab === 'skills' && <SkillsTab skills={installedSkills} dynamicTools={dynamicToolDefs} removeSkill={removeSkill} removeDynamicTool={removeDynamicTool} disabledBuiltInTools={disabledBuiltInTools} setBuiltInToolDisabled={setBuiltInToolDisabled} externalSkills={externalSkills} />}
+            {activeTab === 'skills' && <SkillsTab skills={installedSkills} dynamicTools={dynamicToolDefs} removeSkill={removeSkill} removeDynamicTool={removeDynamicTool} disabledBuiltInTools={disabledBuiltInTools} setBuiltInToolDisabled={setBuiltInToolDisabled} externalSkills={externalSkills} registrySkills={registrySkills} />}
             {activeTab === 'storage' && <StorageTab />}
             {activeTab === 'data-parsing' && <DataParsingTab />}
             {activeTab === 'palette-schemes' && <PaletteSchemesTab paletteId={paletteId} onSelectPalette={setPaletteId} customPalettes={customPalettes} addCustomPalette={addCustomPalette} updateCustomPalette={updateCustomPalette} removeCustomPalette={removeCustomPalette} />}
@@ -647,33 +657,14 @@ const McpTab: React.FC<McpTabProps> = ({ servers, addServer, removeServer, updat
 /* ---- Skills Tab ---- */
 interface SkillsTabProps {
   skills: Array<{ id: string; name: string; source: string; description: string; installedAt: number }>;
-  dynamicTools: Array<{ id: string; name: string; description: string; createdAt: number }>;
+  dynamicTools: DynamicToolDef[];
   removeSkill: (id: string) => void;
   removeDynamicTool: (id: string) => void;
   disabledBuiltInTools: string[];
   setBuiltInToolDisabled: (toolName: string, disabled: boolean) => void;
-  externalSkills: Array<{ id: string; name: string; description: string; version: string; source: string; tools: Array<{ name: string; description: string; parameters: Record<string, unknown>; code: string }> }>;
+  externalSkills: ExternalSkill[];
+  registrySkills: RegistrySkillManifest[];
 }
-
-const BUILT_IN_TOOL_META: Array<{ name: string; label: string; category: string; desc: string }> = [
-  { name: 'generate_chart',      label: '生成 ECharts 报表',    category: '报表工具', desc: '生成包含 ECharts 图表的完整 HTML 报表，适合通用商业/财务分析场景' },
-  { name: 'generate_chart_apex', label: '生成 ApexCharts 报表', category: '报表工具', desc: '生成包含 ApexCharts 的现代报表，视觉现代、动效流畅，适合数据可视化场景' },
-  { name: 'generate_excel',      label: '生成 Excel 表格',      category: '导出工具', desc: '将结构化数据导出为 .xlsx Excel 文件' },
-  { name: 'generate_pdf',        label: '生成 PDF 文档',        category: '导出工具', desc: '将 HTML 报表渲染并导出为 PDF 文件' },
-  { name: 'generate_slide',      label: '生成演示文稿',          category: '报表工具', desc: '生成多页 HTML 幻灯片，支持键盘/鼠标翻页' },
-  { name: 'generate_document',   label: '生成专业文档',          category: '报表工具', desc: '生成 HTML 专业文档，类 Word 布局，适合打印/导出' },
-  { name: 'show_mini_chart',     label: '迷你内联图表',          category: '报表工具', desc: '在对话消息中直接渲染小型 ECharts 图表，无需全屏报表' },
-  { name: 'show_widget',         label: '数据小组件',            category: '报表工具', desc: '渲染 KPI 卡片、进度条、计数器等轻量级数据组件' },
-  { name: 'data_analysis',       label: '数据统计分析',          category: '分析工具', desc: '执行基础统计分析：均值、中位数、求和、方差等' },
-  { name: 'query_database',      label: '查询数据库',            category: '数据工具', desc: '向已配置的外部数据源（MySQL/PostgreSQL/Presto）执行 SQL 查询并返回结果' },
-  { name: 'get_database_schema', label: '获取数据库结构',        category: '数据工具', desc: '获取外部数据源的表结构信息，帮助 Agent 了解可用的表与字段' },
-  { name: 'skill_creator',       label: '创建扩展技能',          category: '系统工具', desc: '由 AI 动态创建新工具/技能，自动安装到当前会话' },
-  { name: 'plan_tasks',          label: '规划任务步骤',          category: '系统工具', desc: '将复杂目标拆解为有序任务列表，并在侧边显示进度追踪' },
-  { name: 'complete_task',       label: '标记任务完成',          category: '系统工具', desc: '将已完成的任务从任务列表中标记为完成状态' },
-  { name: 'ask_user',            label: '向用户提问',            category: '系统工具', desc: '当数据存在关键歧义时向用户提出澄清问题' },
-  { name: 'run_subagent',        label: '派发子任务',            category: '系统工具', desc: '将任务派发给子Agent并行执行，支持同时运行多个独立子任务' },
-  { name: 'web_fetch',           label: '获取网页内容',          category: '网络工具', desc: '通过主进程代理抓取网页内容，可绕过 CORS 限制' },
-];
 
 /**
  * Parse a .md skill file — kept for backward compatibility reference only.
@@ -683,8 +674,8 @@ function parseMdSkill(_content: string) { return null; }
 
 const TOOLS_PER_PAGE = 8;
 
-const SkillsTab: React.FC<SkillsTabProps> = ({ skills: _skills, dynamicTools, removeSkill: _removeSkill, removeDynamicTool, disabledBuiltInTools, setBuiltInToolDisabled, externalSkills }) => {
-  const { t } = useI18n();
+const SkillsTab: React.FC<SkillsTabProps> = ({ skills: _skills, dynamicTools, removeSkill: _removeSkill, removeDynamicTool, disabledBuiltInTools, setBuiltInToolDisabled, externalSkills, registrySkills }) => {
+  const { t, lang } = useI18n();
   const [subTab, setSubTab] = useState<'builtin' | 'skills'>('builtin');
   const [hoveredTool, setHoveredTool] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -693,37 +684,161 @@ const SkillsTab: React.FC<SkillsTabProps> = ({ skills: _skills, dynamicTools, re
   const [urlInstallResult, setUrlInstallResult] = useState<string | null>(null);
   const [toolSearch, setToolSearch] = useState('');
   const [toolPage, setToolPage] = useState(0);
-  const { setExternalSkills } = useConfigStore();
+  const { setExternalSkills, setRegistrySkills } = useConfigStore();
+  const locale = lang === 'en-US' ? 'en-US' : 'zh-CN';
+  const [registryEditorOpen, setRegistryEditorOpen] = useState(false);
+  const [editingRegistrySkill, setEditingRegistrySkill] = useState<RegistrySkillManifest | null>(null);
+  const [registryStatus, setRegistryStatus] = useState<string | null>(null);
 
-  const localizedToolMeta = React.useMemo(() => [
-    { name: 'generate_chart',      label: t.settings.toolLabelGenerateChart,      category: t.settings.toolCatReport,   desc: t.settings.toolDescGenerateChart },
-    { name: 'generate_chart_apex', label: t.settings.toolLabelGenerateChartApex,  category: t.settings.toolCatReport,   desc: t.settings.toolDescGenerateChartApex },
-    { name: 'generate_excel',      label: t.settings.toolLabelGenerateExcel,      category: t.settings.toolCatExport,   desc: t.settings.toolDescGenerateExcel },
-    { name: 'generate_pdf',        label: t.settings.toolLabelGeneratePdf,        category: t.settings.toolCatExport,   desc: t.settings.toolDescGeneratePdf },
-    { name: 'generate_slide',      label: t.settings.toolLabelGenerateSlide,      category: t.settings.toolCatReport,   desc: t.settings.toolDescGenerateSlide },
-    { name: 'generate_document',   label: t.settings.toolLabelGenerateDocument,   category: t.settings.toolCatReport,   desc: t.settings.toolDescGenerateDocument },
-    { name: 'show_mini_chart',     label: t.settings.toolLabelMiniChart,          category: t.settings.toolCatReport,   desc: t.settings.toolDescMiniChart },
-    { name: 'show_widget',         label: t.settings.toolLabelWidget,             category: t.settings.toolCatReport,   desc: t.settings.toolDescWidget },
-    { name: 'data_analysis',       label: t.settings.toolLabelDataAnalysis,       category: t.settings.toolCatAnalysis, desc: t.settings.toolDescDataAnalysis },
-    { name: 'query_database',      label: t.settings.toolLabelQueryDb,            category: t.settings.toolCatData,     desc: t.settings.toolDescQueryDb },
-    { name: 'get_database_schema', label: t.settings.toolLabelGetSchema,          category: t.settings.toolCatData,     desc: t.settings.toolDescGetSchema },
-    { name: 'skill_creator',       label: t.settings.toolLabelSkillCreator,       category: t.settings.toolCatSystem,   desc: t.settings.toolDescSkillCreator },
-    { name: 'plan_tasks',          label: t.settings.toolLabelPlanTasks,          category: t.settings.toolCatSystem,   desc: t.settings.toolDescPlanTasks },
-    { name: 'complete_task',       label: t.settings.toolLabelCompleteTask,       category: t.settings.toolCatSystem,   desc: t.settings.toolDescCompleteTask },
-    { name: 'ask_user',            label: t.settings.toolLabelAskUser,            category: t.settings.toolCatSystem,   desc: t.settings.toolDescAskUser },
-    { name: 'run_subagent',        label: t.settings.toolLabelRunSubagent,        category: t.settings.toolCatSystem,   desc: t.settings.toolDescRunSubagent },
-    { name: 'web_fetch',           label: t.settings.toolLabelWebFetch,           category: t.settings.toolCatNetwork,  desc: t.settings.toolDescWebFetch },
-  ], [t]);
+  const text = React.useMemo(() => (
+    locale === 'en-US'
+      ? {
+          registryTitle: 'Registry Skills',
+          registryHint: 'Managed via datellData/skills/registry/user and merged into the runtime before legacy skills.',
+          registryEmpty: 'No registry skills yet. Create one here or promote an existing skill source.',
+          registryCreate: 'New Registry Skill',
+          registryImport: 'Import JSON',
+          registryImportDone: 'Registry skill imported.',
+          registrySaveDone: 'Registry skill saved.',
+          registryDeleteDone: 'Registry skill deleted.',
+          registryExportDone: 'Registry manifest exported.',
+          registryPromoteDone: 'Copied into registry as {name}.',
+          registryCopyDone: 'Registry skill id copied.',
+          registryDuplicateId: 'Registry skill id already exists: {id}',
+          registryDeleteConfirm: 'Delete registry skill',
+          registrySource: 'Source',
+          registryId: 'ID',
+          registryTools: 'tools',
+          registryPromote: 'Promote to Registry',
+          registryRefreshTitle: 'Refresh all skill sources',
+          noDescription: 'No description provided.',
+        }
+      : {
+          registryTitle: '注册表技能',
+          registryHint: '保存于 datellData/skills/registry/user，并会在 legacy 目录技能之前并入运行时。',
+          registryEmpty: '暂时还没有注册表技能。可以在这里新建，或把现有技能来源提升进注册表。',
+          registryCreate: '新建注册表技能',
+          registryImport: '导入 JSON',
+          registryImportDone: '已导入注册表技能。',
+          registrySaveDone: '已保存注册表技能。',
+          registryDeleteDone: '已删除注册表技能。',
+          registryExportDone: '已导出注册表清单。',
+          registryPromoteDone: '已复制到注册表：{name}。',
+          registryCopyDone: '已复制注册表技能 ID。',
+          registryDuplicateId: '注册表技能 ID 已存在：{id}',
+          registryDeleteConfirm: '确认删除注册表技能',
+          registrySource: '来源',
+          registryId: 'ID',
+          registryTools: '个工具',
+          registryPromote: '提升到注册表',
+          registryRefreshTitle: '刷新全部技能来源',
+          noDescription: '暂无描述。',
+        }
+  ), [locale]);
 
-  const handleRefreshExternalSkills = async () => {
-    if (!window.electronAPI?.skillsList) return;
+  const localizedToolMeta = React.useMemo(
+    () => BUILT_IN_SKILL_MANIFESTS.map((manifest) => localizeBuiltInSkillManifest(manifest, locale)),
+    [locale],
+  );
+
+  const refreshSkillSources = async () => {
     setRefreshing(true);
     try {
-      const loaded = await window.electronAPI.skillsList();
-      setExternalSkills(loaded);
+      const [legacyResult, registryResult] = await Promise.all([
+        window.electronAPI?.skillsList?.() ?? Promise.resolve([]),
+        window.electronAPI?.skillsRegistryList?.() ?? Promise.resolve([]),
+      ]);
+      setExternalSkills(legacyResult);
+      setRegistrySkills(registryResult);
     } finally {
       setRefreshing(false);
     }
+  };
+
+  const saveRegistrySkill = async (manifest: RegistrySkillManifest) => {
+    const duplicate = registrySkills.some((skill) => skill.id === manifest.id && skill.id !== editingRegistrySkill?.id);
+    if (duplicate) {
+      throw new Error(text.registryDuplicateId.replace('{id}', manifest.id));
+    }
+    const normalizedId = manifest.id.trim() || makeUniqueSkillId(manifest.name, registrySkills.map((skill) => skill.id));
+    const payload: RegistrySkillManifest = {
+      ...manifest,
+      id: normalizedId,
+      name: manifest.name.trim(),
+      description: manifest.description.trim(),
+      version: manifest.version.trim() || '1.0.0',
+    };
+    if (!window.electronAPI?.skillsRegistrySave) {
+      throw new Error('skillsRegistrySave API unavailable');
+    }
+    await window.electronAPI.skillsRegistrySave(payload);
+    await refreshSkillSources();
+    setRegistryEditorOpen(false);
+    setEditingRegistrySkill(null);
+    setRegistryStatus(text.registrySaveDone);
+  };
+
+  const exportRegistrySkill = async (manifest: RegistrySkillManifest) => {
+    if (!window.electronAPI?.saveFile) {
+      setRegistryStatus('saveFile API unavailable');
+      return;
+    }
+    const { source: _source, ...payload } = manifest;
+    const ok = await window.electronAPI.saveFile(
+      new TextEncoder().encode(`${JSON.stringify(payload, null, 2)}\n`),
+      `${manifest.id}.skill.json`,
+    );
+    if (ok) {
+      setRegistryStatus(text.registryExportDone);
+    }
+  };
+
+  const importRegistrySkill = async () => {
+    if (!window.electronAPI?.fsSelectFile || !window.electronAPI?.skillsRegistryImport) {
+      setRegistryStatus('Registry import APIs unavailable');
+      return;
+    }
+    const selectedPath = await window.electronAPI.fsSelectFile(['.json']);
+    if (!selectedPath) {
+      return;
+    }
+    await window.electronAPI.skillsRegistryImport(selectedPath);
+    await refreshSkillSources();
+    setRegistryStatus(text.registryImportDone);
+  };
+
+  const deleteRegistrySkill = async (manifest: RegistrySkillManifest) => {
+    if (!window.confirm(`${text.registryDeleteConfirm}: ${manifest.name || manifest.id}?`)) {
+      return;
+    }
+    if (!window.electronAPI?.skillsRegistryDelete) {
+      setRegistryStatus('skillsRegistryDelete API unavailable');
+      return;
+    }
+    await window.electronAPI.skillsRegistryDelete(manifest.id);
+    await refreshSkillSources();
+    setRegistryStatus(text.registryDeleteDone);
+  };
+
+  const copyRegistrySkillId = async (manifest: RegistrySkillManifest) => {
+    try {
+      await navigator.clipboard?.writeText(manifest.id);
+      setRegistryStatus(text.registryCopyDone);
+    } catch {
+      setRegistryStatus(manifest.id);
+    }
+  };
+
+  const promoteExternalSkill = async (skill: ExternalSkill) => {
+    const manifest = createRegistrySkillFromExternalSkill(skill, registrySkills.map((entry) => entry.id));
+    await saveRegistrySkill(manifest);
+    setRegistryStatus(text.registryPromoteDone.replace('{name}', manifest.name));
+  };
+
+  const promoteDynamicTool = async (tool: DynamicToolDef) => {
+    const manifest = createRegistrySkillFromDynamicTool(tool, registrySkills.map((entry) => entry.id));
+    await saveRegistrySkill(manifest);
+    setRegistryStatus(text.registryPromoteDone.replace('{name}', manifest.name));
   };
 
   const handleInstallFromUrl = async () => {
@@ -736,7 +851,7 @@ const SkillsTab: React.FC<SkillsTabProps> = ({ skills: _skills, dynamicTools, re
       if (res.ok) {
         setUrlInstallResult(`✅ ${t.settings.skillsInstallSuccess.replace('{name}', res.name ?? '').replace('{count}', String(res.toolCount ?? 0))}`);
         setUrlInstallInput('');
-        await handleRefreshExternalSkills();
+        await refreshSkillSources();
       } else {
         setUrlInstallResult(`❌ ${t.settings.skillsInstallFail.replace('{error}', res.error ?? '')}`);
       }
@@ -751,6 +866,11 @@ const SkillsTab: React.FC<SkillsTabProps> = ({ skills: _skills, dynamicTools, re
     { key: 'builtin' as const, label: t.settings.skillsBuiltinTitle, icon: <Wrench size={12}/> },
     { key: 'skills' as const, label: t.settings.skillsExtTitle, icon: <Code2 size={12}/> },
   ];
+
+  const openRegistryEditor = (manifest?: RegistrySkillManifest) => {
+    setEditingRegistrySkill(manifest ?? createEmptyRegistrySkillManifest());
+    setRegistryEditorOpen(true);
+  };
 
   return (
     <div className="space-y-4">
@@ -768,7 +888,7 @@ const SkillsTab: React.FC<SkillsTabProps> = ({ skills: _skills, dynamicTools, re
             }`}
           >
             {t.icon}{t.label}
-            {t.key === 'skills' && (dynamicTools.length + externalSkills.length) > 0 && <span className="ml-0.5 px-1.5 py-0.5 text-[10px] bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 rounded-full">{dynamicTools.length + externalSkills.length}</span>}
+            {t.key === 'skills' && (dynamicTools.length + externalSkills.length + registrySkills.length) > 0 && <span className="ml-0.5 px-1.5 py-0.5 text-[10px] bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 rounded-full">{dynamicTools.length + externalSkills.length + registrySkills.length}</span>}
           </button>
         ))}
       </div>
@@ -794,8 +914,8 @@ const SkillsTab: React.FC<SkillsTabProps> = ({ skills: _skills, dynamicTools, re
           {(() => {
             const q = toolSearch.trim().toLowerCase();
             const filtered = q ? localizedToolMeta.filter((tool) =>
-              tool.label.toLowerCase().includes(q) || tool.name.toLowerCase().includes(q) ||
-              tool.category.toLowerCase().includes(q) || tool.desc.toLowerCase().includes(q)
+              tool.label.toLowerCase().includes(q) || tool.toolName.toLowerCase().includes(q) ||
+              tool.category.toLowerCase().includes(q) || tool.description.toLowerCase().includes(q)
             ) : localizedToolMeta;
             const totalPages = Math.max(1, Math.ceil(filtered.length / TOOLS_PER_PAGE));
             const page = Math.min(toolPage, totalPages - 1);
@@ -805,14 +925,14 @@ const SkillsTab: React.FC<SkillsTabProps> = ({ skills: _skills, dynamicTools, re
                 <div className="space-y-2">
                   {paged.length === 0 && <p className="text-xs text-gray-400 py-2 text-center">{t.settings.skillsNoMatch}</p>}
                   {paged.map((tool) => {
-                    const isDisabled = disabledBuiltInTools.includes(tool.name);
+                    const isDisabled = disabledBuiltInTools.includes(tool.toolName);
                     return (
                       <div
-                        key={tool.name}
+                        key={tool.toolName}
                         className={`relative rounded-xl p-3 flex items-center justify-between gap-3 border transition-all ${
                           isDisabled ? 'bg-gray-50 dark:bg-gray-700/30 border-gray-200 dark:border-gray-700 opacity-70' : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
                         }`}
-                        onMouseEnter={() => setHoveredTool(tool.name)}
+                        onMouseEnter={() => setHoveredTool(tool.toolName)}
                         onMouseLeave={() => setHoveredTool(null)}
                       >
                         <div className="flex-1 min-w-0">
@@ -821,17 +941,17 @@ const SkillsTab: React.FC<SkillsTabProps> = ({ skills: _skills, dynamicTools, re
                             <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">{tool.category}</span>
                             {isDisabled && <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-500 dark:text-red-400">{t.settings.skillsDisabledBadge}</span>}
                           </div>
-                          <p className="text-xs text-gray-500 mt-0.5 truncate">{tool.desc}</p>
-                          {hoveredTool === tool.name && (
+                          <p className="text-xs text-gray-500 mt-0.5 truncate">{tool.description}</p>
+                          {hoveredTool === tool.toolName && (
                             <div className="absolute left-0 bottom-full mb-1.5 z-50 w-72 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-xl px-3 py-2.5 shadow-2xl pointer-events-none">
                               <div className="font-semibold mb-1">{tool.label}</div>
-                              <div className="text-gray-300 leading-relaxed">{tool.desc}</div>
-                              <div className="text-gray-400 mt-1.5 font-mono text-[10px]">{t.settings.skillsToolNamePrefix}: {tool.name}</div>
+                              <div className="text-gray-300 leading-relaxed">{tool.description}</div>
+                              <div className="text-gray-400 mt-1.5 font-mono text-[10px]">{t.settings.skillsToolNamePrefix}: {tool.toolName}</div>
                             </div>
                           )}
                         </div>
                         <button
-                          onClick={() => setBuiltInToolDisabled(tool.name, !isDisabled)}
+                          onClick={() => setBuiltInToolDisabled(tool.toolName, !isDisabled)}
                           title={isDisabled ? t.settings.skillsEnableTip : t.settings.skillsDisableTip}
                           className={`flex-shrink-0 transition-colors ${isDisabled ? 'text-gray-300 hover:text-gray-400 dark:text-gray-600 dark:hover:text-gray-500' : 'text-blue-500 hover:text-blue-600'}`}
                         >
@@ -866,14 +986,70 @@ const SkillsTab: React.FC<SkillsTabProps> = ({ skills: _skills, dynamicTools, re
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t.settings.skillsExtTitle}</span>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={handleRefreshExternalSkills} disabled={refreshing} title={t.settings.skillsRefreshTitle} className="p-1 text-gray-400 hover:text-blue-500 transition-colors disabled:opacity-50">
+              <button onClick={refreshSkillSources} disabled={refreshing} title={text.registryRefreshTitle} className="p-1 text-gray-400 hover:text-blue-500 transition-colors disabled:opacity-50">
                 <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
+              </button>
+              <button onClick={importRegistrySkill} title={text.registryImport}
+                className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-500 px-2 py-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                <Upload size={12} />{text.registryImport}
+              </button>
+              <button onClick={() => openRegistryEditor()} title={text.registryCreate}
+                className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-600 px-2 py-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                <Plus size={12} />{text.registryCreate}
               </button>
               <button onClick={() => window.electronAPI?.skillsOpenDir?.()} title={t.settings.skillsOpenDirTitle}
                 className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-600 px-2 py-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
                 <FolderOpen size={12} />{t.settings.skillsOpenDir}
               </button>
             </div>
+          </div>
+
+          {registryStatus && (
+            <p className="rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-600 dark:border-blue-900/50 dark:bg-blue-900/20 dark:text-blue-300">{registryStatus}</p>
+          )}
+
+          {/* Registry skills */}
+          <div className="space-y-2">
+            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{text.registryTitle} ({registrySkills.length})</span>
+            <p className="text-xs text-gray-400">{text.registryHint}</p>
+            {registrySkills.length === 0 ? (
+              <p className="text-xs text-gray-400 text-center py-3 bg-gray-50 dark:bg-gray-700/30 rounded-xl">{text.registryEmpty}</p>
+            ) : (
+              <div className="space-y-2">
+                {registrySkills.map((skill) => (
+                  <div key={skill.id} className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 border border-blue-200 dark:border-blue-800">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium text-sm">{skill.name}</span>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400">v{skill.version}</span>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-white/80 dark:bg-gray-900/40 text-gray-500 dark:text-gray-300">{skill.tools.length} {text.registryTools}</span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5">{skill.description || text.noDescription}</p>
+                        <div className="mt-1.5 space-y-0.5 text-[11px] text-gray-400">
+                          <p>{text.registryId}: {skill.id}</p>
+                          <p>{text.registrySource}: {skill.source || `registry/user/${skill.id}.skill.json`}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => openRegistryEditor(skill)} title={t.common.edit} className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-white/80 hover:text-blue-500 dark:hover:bg-gray-800">
+                          <Edit2 size={13} />
+                        </button>
+                        <button onClick={() => exportRegistrySkill(skill)} title={t.common.export} className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-white/80 hover:text-blue-500 dark:hover:bg-gray-800">
+                          <Download size={13} />
+                        </button>
+                        <button onClick={() => copyRegistrySkillId(skill)} title={t.common.copy} className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-white/80 hover:text-blue-500 dark:hover:bg-gray-800">
+                          <Copy size={13} />
+                        </button>
+                        <button onClick={() => void deleteRegistrySkill(skill)} title={t.common.delete} className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-white/80 hover:text-red-500 dark:hover:bg-gray-800">
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* URL install */}
@@ -911,12 +1087,28 @@ const SkillsTab: React.FC<SkillsTabProps> = ({ skills: _skills, dynamicTools, re
               <div className="space-y-2">
                 {externalSkills.map((s) => (
                   <div key={s.id} className="bg-green-50 dark:bg-green-900/20 rounded-xl p-3 border border-green-200 dark:border-green-800">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium text-sm">{s.name}</span>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400">v{s.version}</span>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium text-sm">{s.name}</span>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400">v{s.version}</span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5">{s.description || text.noDescription}</p>
+                        <div className="mt-1.5 space-y-0.5 text-[11px] text-gray-400">
+                          <p>{text.registryId}: {slugifySkillId(s.name)}</p>
+                          <p>{text.registrySource}: {s.source}</p>
+                          <p>{s.tools.length} {t.settings.skillsDirToolsCount}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => void promoteExternalSkill(s)}
+                        title={text.registryPromote}
+                        className="flex items-center gap-1 rounded-lg border border-green-200 px-2 py-1 text-xs text-green-600 transition-colors hover:bg-white/80 dark:border-green-800 dark:hover:bg-gray-800"
+                      >
+                        <ArrowRight size={12} />
+                        {text.registryPromote}
+                      </button>
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5">{s.description}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{s.tools.length} {t.settings.skillsDirToolsCount}</p>
                   </div>
                 ))}
               </div>
@@ -936,7 +1128,16 @@ const SkillsTab: React.FC<SkillsTabProps> = ({ skills: _skills, dynamicTools, re
                       <div className="text-xs text-gray-500 truncate">{tool.description}</div>
                       <div className="text-xs text-gray-400 mt-1">{t.settings.skillsAiCreatedAt} {new Date(tool.createdAt).toLocaleString('zh-CN')}</div>
                     </div>
-                    <button onClick={() => removeDynamicTool(tool.id)} title={t.settings.skillsAiDelete} className="text-gray-400 hover:text-red-500 flex-shrink-0 ml-2"><Trash2 size={14} /></button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => void promoteDynamicTool(tool)}
+                        title={text.registryPromote}
+                        className="rounded-lg border border-purple-200 px-2 py-1 text-xs text-purple-600 transition-colors hover:bg-white/80 dark:border-purple-800 dark:hover:bg-gray-800"
+                      >
+                        {text.registryPromote}
+                      </button>
+                      <button onClick={() => removeDynamicTool(tool.id)} title={t.settings.skillsAiDelete} className="text-gray-400 hover:text-red-500 flex-shrink-0 ml-2"><Trash2 size={14} /></button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -944,6 +1145,18 @@ const SkillsTab: React.FC<SkillsTabProps> = ({ skills: _skills, dynamicTools, re
               <p className="text-xs text-gray-400 text-center py-3 bg-gray-50 dark:bg-gray-700/30 rounded-xl">{t.settings.skillsAiEmpty}</p>
             )}
           </div>
+
+          {registryEditorOpen && editingRegistrySkill && (
+            <RegistrySkillEditorModal
+              initial={editingRegistrySkill}
+              locale={locale}
+              onCancel={() => {
+                setRegistryEditorOpen(false);
+                setEditingRegistrySkill(null);
+              }}
+              onSave={saveRegistrySkill}
+            />
+          )}
         </div>
       )}
     </div>

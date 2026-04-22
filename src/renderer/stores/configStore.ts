@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { ModelConfig, McpServerConfig, InstalledSkill, DynamicToolDef, UserSystemPrompt, IllustrationAsset, ImageAsset, PalettePreset } from '../types';
+import type { ExternalSkill, RegistrySkillManifest } from '../../shared/skills';
 import { DEFAULT_MODELS } from '../types';
 import { dbAPI, isElectron } from '../services/dbAPI';
 import type { CustomLayout } from '../types/layout';
@@ -148,7 +149,9 @@ interface ConfigState {
    * External skills loaded from the datellData/skills directory at startup.
    * Not persisted to storage — reloaded fresh each launch.
    */
-  externalSkills: Array<{ id: string; name: string; description: string; version: string; source: string; tools: Array<{ name: string; description: string; parameters: Record<string, unknown>; code: string }> }>;
+  externalSkills: ExternalSkill[];
+  /** Registry-backed skills loaded from datellData/skills/registry/user at startup. */
+  registrySkills: RegistrySkillManifest[];
   /**
    * Whether the enterprise model plugin is loaded at runtime.
    * Checked at startup via IPC; defaults to false until confirmed.
@@ -229,6 +232,8 @@ interface ConfigState {
   setBuiltInToolDisabled: (toolName: string, disabled: boolean) => void;
   /** Set the externalSkills list (called at startup from main process) */
   setExternalSkills: (skills: ConfigState['externalSkills']) => void;
+  /** Set the registrySkills list (called at startup from main process) */
+  setRegistrySkills: (skills: ConfigState['registrySkills']) => void;
 
   persist: () => void;
   hydrate: () => void;
@@ -406,6 +411,7 @@ export const useConfigStore = create<ConfigState>((set, get) => {
     illustrations: mergeWithBuiltInIllustrations((saved as any).illustrations as IllustrationAsset[] || []),
     imageAssets: (saved as any).imageAssets as ImageAsset[] || [],
     externalSkills: [],
+    registrySkills: [],
     enterprisePluginAvailable: false,
     setEnterprisePluginAvailable: (available) => {
       set((state) => {
@@ -549,6 +555,7 @@ export const useConfigStore = create<ConfigState>((set, get) => {
     },
 
     setExternalSkills: (skills) => { set({ externalSkills: skills }); },
+  setRegistrySkills: (skills) => { set({ registrySkills: skills }); },
     addIllustration: (ill) => { set((s) => ({ illustrations: [...s.illustrations, ill] })); get().persist(); },
     removeIllustration: (id) => { set((s) => ({ illustrations: s.illustrations.filter((i) => i.id !== id || i.builtIn) })); get().persist(); },
     updateIllustration: (id, patch) => { set((s) => ({ illustrations: s.illustrations.map((i) => i.id === id ? { ...i, ...patch } : i) })); get().persist(); },

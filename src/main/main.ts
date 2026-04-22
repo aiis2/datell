@@ -36,6 +36,7 @@ import {
 } from './exportHtmlBundleUtils';
 import { DatabaseService } from './database';
 import { getDataDir, ensureDataDirs, setDataDir } from './dataDir';
+import { createSkillsManager, listLegacyDirectorySkills } from './skillsManager';
 import {
   getAllDatasources,
   getMaskedDatasources,
@@ -61,6 +62,7 @@ import {
   type ActivationStatus,
 } from './license';
 import { searchSystemKnowledge, loadSystemKnowledgeIndex } from './systemRag';
+import type { ExternalSkill, RegistrySkillManifest } from '../shared/skills';
 
 const execFileAsync = promisify(execFile);
 
@@ -128,6 +130,7 @@ const DATA_DIR = getDataDir();
 ensureDataDirs(DATA_DIR);
 const DB_PATH = path.join(DATA_DIR, 'app.db');
 let db: DatabaseService = new DatabaseService(DB_PATH);
+const skillsManager = createSkillsManager(DATA_DIR);
 
 const isDev = !app.isPackaged;
 
@@ -1510,66 +1513,36 @@ ipcMain.handle('mcp:http:call', async (_e, url: string, toolName: string, toolAr
 
 /* ======== Skills IPC Handlers ======== */
 
-interface ExternalSkillTool {
-  name: string;
-  description: string;
-  parameters: Record<string, unknown>;
-  code: string;
-}
-
-interface ExternalSkill {
-  id: string;
-  name: string;
-  description: string;
-  version: string;
-  source: string;
-  tools: ExternalSkillTool[];
-}
-
-ipcMain.handle('skills:list', (): ExternalSkill[] => {
-  const skillsDir = path.join(DATA_DIR, 'skills');
-  if (!fs.existsSync(skillsDir)) {
-    fs.mkdirSync(skillsDir, { recursive: true });
-    return [];
-  }
-  const results: ExternalSkill[] = [];
-  try {
-    const files = fs.readdirSync(skillsDir).filter((f) => f.endsWith('.json'));
-    for (const file of files) {
-      try {
-        const raw = fs.readFileSync(path.join(skillsDir, file), 'utf-8');
-        const parsed = JSON.parse(raw);
-        // Basic validation
-        if (
-          typeof parsed.name === 'string' &&
-          Array.isArray(parsed.tools) &&
-          parsed.tools.every(
-            (t: unknown) =>
-              t !== null &&
-              typeof t === 'object' &&
-              typeof (t as Record<string, unknown>).name === 'string' &&
-              typeof (t as Record<string, unknown>).code === 'string'
-          )
-        ) {
-          results.push({
-            id: `ext-${file.replace('.json', '')}`,
-            name: parsed.name,
-            description: parsed.description || '',
-            version: parsed.version || '1.0.0',
-            source: file,
-            tools: parsed.tools,
-          });
-        }
-      } catch { /* skip malformed files */ }
-    }
-  } catch { /* skip on error */ }
-  return results;
-});
+ipcMain.handle('skills:list', (): ExternalSkill[] => listLegacyDirectorySkills(DATA_DIR));
 
 ipcMain.handle('skills:openDir', (): void => {
   const skillsDir = path.join(DATA_DIR, 'skills');
   if (!fs.existsSync(skillsDir)) fs.mkdirSync(skillsDir, { recursive: true });
   shell.openPath(skillsDir);
+});
+
+ipcMain.handle('skills:registry:list', (): RegistrySkillManifest[] => {
+  return skillsManager.listRegistrySkills();
+});
+
+ipcMain.handle('skills:registry:save', (_e, manifest: RegistrySkillManifest): { ok: boolean; id: string } => {
+  const saved = skillsManager.saveRegistrySkill(manifest);
+  return { ok: true, id: saved.id };
+});
+
+ipcMain.handle('skills:registry:delete', (_e, id: string): { ok: boolean } => {
+  skillsManager.deleteRegistrySkill(id);
+  return { ok: true };
+});
+
+ipcMain.handle('skills:registry:export', (_e, id: string, targetPath: string): { ok: boolean; path: string } => {
+  const exportedPath = skillsManager.exportRegistrySkill(id, targetPath);
+  return { ok: true, path: exportedPath };
+});
+
+ipcMain.handle('skills:registry:import', (_e, sourcePath: string): { ok: boolean; id: string } => {
+  const imported = skillsManager.importRegistrySkill(sourcePath);
+  return { ok: true, id: imported.id };
 });
 
 ipcMain.handle('skills:installFromUrl', async (_e, url: string): Promise<{ ok: boolean; name?: string; toolCount?: number; error?: string }> => {

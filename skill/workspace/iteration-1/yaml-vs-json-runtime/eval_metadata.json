@@ -1,0 +1,10 @@
+{
+  "eval_id": 1,
+  "eval_name": "yaml-vs-json-runtime",
+  "prompt": "Datell 现在的自定义技能到底是 YAML 还是 JSON？实际运行目录在哪里？请基于代码给我结论，并顺手指出文档最容易写错的地方。",
+  "assertions": [
+    "明确提到 datellData/skills/*.json",
+    "引用 getDataDir() 或 skills:list 相关代码路径",
+    "明确指出 YAML 目录技能说法与当前代码不符"
+  ]
+}
