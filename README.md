@@ -294,6 +294,8 @@ For file-backed custom skills with richer lifecycle management, use the registry
 - Registry skills are stored under `datellData/skills/registry/user/*.skill.json`
 - You can create, edit, import, export, and delete registry skills from the UI
 - Legacy directory skills and AI-created dynamic tools can be promoted into the registry without changing the legacy compatibility loaders
+- Script-backed registry skills and dynamic skills can reuse enabled built-in tools via `await callTool(name, args)`, which allows a custom skill to trigger `generate_chart`, `generate_document`, `generate_slide`, and other built-in report actions
+- A tracked example registry skill is available at `skill/examples/visual-report-smoke.skill.json`; it demonstrates composing HTML inside a custom skill and delegating the final preview render to `callTool("generate_chart", ...)`
 
 ---
 
@@ -582,6 +584,8 @@ npm run build:linux
 - registry 技能保存于 `datellData/skills/registry/user/*.skill.json`
 - 支持在 UI 中新建、编辑、导入、导出、删除 registry 技能
 - 也支持把 legacy 目录技能和 AI 动态技能提升到 registry，而不破坏现有兼容加载链路
+- 脚本型 registry 技能和动态技能现在可以通过 `await callTool(name, args)` 复用已启用的内置工具，因此可直接在技能内部触发 `generate_chart`、`generate_document`、`generate_slide` 等报表动作并把结果送入预览面板
+- 仓库已提供可追踪的真实示例技能 [skill/examples/visual-report-smoke.skill.json](skill/examples/visual-report-smoke.skill.json)，演示如何在技能内部组织 HTML，再通过 `callTool("generate_chart", ...)` 把可视化报表送入预览链路
 
 ---
 

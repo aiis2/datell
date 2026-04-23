@@ -1,26 +1,31 @@
 {
-  "skill_name": "datell-skill-runtime-auditor",
+  "skill_name": "datell-visual-report-preview-composer",
   "evals": [
     {
       "id": 1,
-      "prompt": "Datell 现在的自定义技能到底是 YAML 还是 JSON？实际运行目录在哪里？请基于代码给我结论，并顺手指出文档最容易写错的地方。",
-      "expected_output": "明确指出 datellData/skills/*.json 是当前目录技能格式和运行路径来源，并说明 README 或方案文档若写 YAML 或 autoReportData 会漂移。",
-      "files": [],
+      "prompt": "请把一个自定义技能写成可以在 Datell 里直接产出可视化报表预览的形式。输入是标题、月份数组和金额数组，输出必须通过 callTool('generate_chart', ...) 进入预览面板，而不是只返回 HTML 字符串。",
+      "expected_output": "明确给出完整 HTML 生成逻辑，并以 await callTool('generate_chart', { html, title }) 作为最后一步。",
+      "files": [
+        "skill/examples/visual-report-smoke.skill.json"
+      ],
       "expectations": [
-        "明确提到 datellData/skills/*.json",
-        "引用 getDataDir() 或 skills:list 相关代码路径",
-        "明确指出 YAML 目录技能说法与当前代码不符"
+        "明确出现 callTool('generate_chart'",
+        "HTML 为完整文档而不是片段",
+        "技能目标是打开预览面板而不是仅返回文本"
       ]
     },
     {
       "id": 2,
-      "prompt": "如果我给 Datell 一个 GitHub 上的技能仓库地址，它现在会怎么处理 skill.json、.claude-plugin/marketplace.json 和 SKILL.md？这和原生 skills.sh 支持之间还差什么？",
-      "expected_output": "说明 Datell 直接支持 skill.json，兼容读取 marketplace.json 并抓取 SKILL.md 包装成 instruction tool，同时指出这不等于原生运行 skills.sh prompt skills。",
-      "files": [],
+      "prompt": "请检查一个 Datell 自定义技能是否真的能像 Agent 一样输出报表结果。重点看它是不是自己拼好 HTML，然后把最终渲染交给 generate_chart，而不是绕开内置报表管线。",
+      "expected_output": "指出技能应通过 built-in generate_chart 进入 reportStore/preview pipeline，并警告不能只返回 raw HTML。",
+      "files": [
+        "skill/examples/visual-report-smoke.skill.json",
+        "src/renderer/tools/runtimeMerge.ts"
+      ],
       "expectations": [
-        "明确提到 skill.json 直装路径",
-        "明确提到 .claude-plugin/marketplace.json 兼容路径",
-        "明确提到 SKILL.md 被包装为 instruction tool 而非原生执行"
+        "明确提到 built-in generate_chart",
+        "明确提到 preview/report pipeline",
+        "明确指出 raw HTML 返回不足以打开预览"
       ]
     }
   ]

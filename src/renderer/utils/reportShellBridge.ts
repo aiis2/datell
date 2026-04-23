@@ -128,8 +128,15 @@ export function buildThemeUpdatePayload(
   return { type: 'theme-update', theme: serialized };
 }
 
-/** Shell URL — constant stable URL for the shell iframe */
-export const SHELL_URL = 'app://localhost/report-shell.html';
+function resolveShellUrl(): string {
+  if (typeof window !== 'undefined') {
+    const origin = window.location?.origin;
+    if (origin && origin !== 'null') {
+      return `${origin}/report-shell.html`;
+    }
+  }
+  return 'app://localhost/report-shell.html';
+}
 
-/** Dev shell URL when running Vite dev server */
-export const SHELL_URL_DEV = 'http://localhost:5173/report-shell.html';
+/** Shell URL — constant stable URL for the shell iframe */
+export const SHELL_URL = resolveShellUrl();

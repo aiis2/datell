@@ -24,6 +24,8 @@ The original Phase 1 registry slice described below has already been implemented
 - `SettingsModal.tsx` now exposes the first unified SkillsTab management surface for built-in manifests, registry skills, legacy directory skills, and dynamic tools.
 - Registry skills can now be created, edited, imported, exported, deleted, and populated by promoting legacy or dynamic skills from the UI.
 - Built-in tool metadata has been centralized under `src/renderer/skills/manifests/`, giving all 26 built-in tools a single bilingual manifest source for display and future description review.
+- Script-backed registry skills and dynamic skills can now call enabled built-in tools via `callTool(name, args)`, which lets custom skills trigger the same report preview pipeline used by direct agent tool calls.
+- A tracked example registry manifest now lives at `skill/examples/visual-report-smoke.skill.json`, showing how a custom skill can compose chart HTML and delegate final rendering to `callTool('generate_chart', ...)`.
 
 ## Verified Evidence
 
@@ -35,6 +37,10 @@ The original Phase 1 registry slice described below has already been implemented
 	Observed: `built in skill manifests ok`
 - Run: `node d:\python_project\auto_report\tests\skills-registry-helpers.test.cjs`
 	Observed: `skills registry helpers ok`
+- Run: `node d:\python_project\auto_report\tests\skills-script-calltool.test.cjs`
+	Observed: `skills script calltool ok`
+- Run: `node d:\python_project\auto_report\tests\skills-report-example-smoke.test.cjs`
+	Observed: `skills report example smoke ok`
 - Run: `node d:\python_project\auto_report\tests\export-html-bundle-utils.test.cjs`
 	Observed: `export html bundle utils ok`
 - Run: `node d:\python_project\auto_report\tests\report-event-bus-preview.test.cjs`

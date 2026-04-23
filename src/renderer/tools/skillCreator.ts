@@ -16,7 +16,8 @@ export const skillCreatorTool: AgentToolDefinition = {
   description:
     '创建一个新的自定义技能（工具）并将其安装到系统中。安装后，新技能将在后续的对话中作为可用工具使用。' +
     '参数 implementation_code 是一个 JavaScript 异步函数体，接收 `args` 对象作为参数，需要返回字符串结果。' +
-    '示例：const { value } = args; return `处理结果：${value}`;',
+    '技能代码还可以使用 `await callTool(name, args)` 复用已启用的内置工具，例如 generate_chart、generate_document、generate_slide。' +
+    '示例：return await callTool("generate_chart", { html: args.html, title: args.title });',
   parameters: [
     {
       name: 'skill_name',
@@ -102,7 +103,8 @@ export const skillCreatorTool: AgentToolDefinition = {
       `- 描述：${skillDescription}\n` +
       `- 参数数量：${parameters.length}\n` +
       `- 保存位置：dynamicToolDefs（动态技能兼容层）\n` +
-      `- 注册表：当前阶段不会自动写入技能注册表\n\n` +
+      `- 注册表：当前阶段不会自动写入技能注册表\n` +
+      `- 组合能力：可在技能代码中使用 callTool(name, args) 复用内置工具，例如 generate_chart / generate_document / generate_slide\n\n` +
       `该技能已保存，可在后续对话中通过工具调用使用。`
     );
   },

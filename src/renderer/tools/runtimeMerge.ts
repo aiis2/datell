@@ -57,19 +57,46 @@ function normalizeToolParameters(parameters: unknown): ToolParameter[] {
   return [];
 }
 
-function buildScriptBackedTool(toolName: string, description: string, parameters: unknown, code: string, label: string): AgentToolDefinition {
+function buildScriptBackedTool(
+  toolName: string,
+  description: string,
+  parameters: unknown,
+  code: string,
+  label: string,
+  callableBuiltIns: Map<string, AgentToolDefinition>,
+): AgentToolDefinition {
   return {
     name: toolName,
     description,
     parameters: normalizeToolParameters(parameters),
-    execute: async (args: Record<string, unknown>): Promise<string> => {
+    execute: async (args: Record<string, unknown>, signal?: AbortSignal): Promise<string> => {
       const forbidden = hasForbiddenPattern(code);
       if (forbidden) {
         return `安全拒绝: ${label} "${toolName}" 的代码包含禁止模式 "${forbidden}"，已预防性拦截。`;
       }
       try {
-        const fn = new AsyncFunction('args', code);
-        const result: unknown = await fn(args);
+        const callTool = async (nestedToolName: string, nestedArgs: Record<string, unknown> = {}): Promise<string> => {
+          if (!nestedToolName || typeof nestedToolName !== 'string') {
+            throw new Error('callTool 需要提供目标工具名');
+          }
+
+          const nestedTool = callableBuiltIns.get(nestedToolName);
+          if (!nestedTool) {
+            throw new Error(`技能内不允许调用非内置工具 "${nestedToolName}"；当前仅支持复用 built-in tools`);
+          }
+
+          if (nestedTool.validateInput) {
+            const validation = nestedTool.validateInput(nestedArgs);
+            if (!validation.valid) {
+              throw new Error(`内置工具 ${nestedToolName} 参数验证失败: ${validation.error ?? '参数无效'}`);
+            }
+          }
+
+          return nestedTool.execute(nestedArgs, signal);
+        };
+
+        const fn = new AsyncFunction('args', 'callTool', code);
+        const result: unknown = await fn(args, callTool);
         return String(result ?? '');
       } catch (err) {
         return `${label} ${toolName} 执行错误: ${err instanceof Error ? err.message : String(err)}`;
@@ -78,7 +105,15 @@ function buildScriptBackedTool(toolName: string, description: string, parameters
   };
 }
 
-function appendSkillTools(target: AgentToolDefinition[], seen: Set<string>, blocked: Set<string>, skills: Array<ExternalSkill | RegistrySkillManifest>, prefixBuilder: (skillName: string, tool: RuntimeSkillTool) => string, label: string): void {
+function appendSkillTools(
+  target: AgentToolDefinition[],
+  seen: Set<string>,
+  blocked: Set<string>,
+  skills: Array<ExternalSkill | RegistrySkillManifest>,
+  prefixBuilder: (skillName: string, tool: RuntimeSkillTool) => string,
+  label: string,
+  callableBuiltIns: Map<string, AgentToolDefinition>,
+): void {
   for (const skill of skills) {
     for (const tool of skill.tools) {
       if (seen.has(tool.name) || blocked.has(tool.name)) {
@@ -92,19 +127,26 @@ function appendSkillTools(target: AgentToolDefinition[], seen: Set<string>, bloc
           tool.parameters,
           tool.code,
           label,
+          callableBuiltIns,
         ),
       );
     }
   }
 }
 
-function appendDynamicTools(target: AgentToolDefinition[], seen: Set<string>, blocked: Set<string>, defs: DynamicToolDef[]): void {
+function appendDynamicTools(
+  target: AgentToolDefinition[],
+  seen: Set<string>,
+  blocked: Set<string>,
+  defs: DynamicToolDef[],
+  callableBuiltIns: Map<string, AgentToolDefinition>,
+): void {
   for (const tool of defs) {
     if (seen.has(tool.name) || blocked.has(tool.name)) {
       continue;
     }
     seen.add(tool.name);
-    target.push(buildScriptBackedTool(tool.name, tool.description, tool.parameters, tool.code, '工具'));
+    target.push(buildScriptBackedTool(tool.name, tool.description, tool.parameters, tool.code, '工具', callableBuiltIns));
   }
 }
 
@@ -149,6 +191,7 @@ export function mergeRuntimeToolSources({
   const blocked = new Set(disabledBuiltInTools);
   const seen = new Set<string>();
   const merged: AgentToolDefinition[] = [];
+  const callableBuiltIns = new Map<string, AgentToolDefinition>();
 
   for (const tool of builtIns) {
     if (blocked.has(tool.name) || seen.has(tool.name)) {
@@ -156,11 +199,12 @@ export function mergeRuntimeToolSources({
     }
     seen.add(tool.name);
     merged.push(tool);
+    callableBuiltIns.set(tool.name, tool);
   }
 
-  appendSkillTools(merged, seen, blocked, registrySkills, (skillName, tool) => `[Registry: ${skillName}] ${tool.description}`, '技能');
-  appendSkillTools(merged, seen, blocked, legacyDirectorySkills, (skillName, tool) => `[${skillName}] ${tool.description}`, '技能');
-  appendDynamicTools(merged, seen, blocked, dynamicToolDefs);
+  appendSkillTools(merged, seen, blocked, registrySkills, (skillName, tool) => `[Registry: ${skillName}] ${tool.description}`, '技能', callableBuiltIns);
+  appendSkillTools(merged, seen, blocked, legacyDirectorySkills, (skillName, tool) => `[${skillName}] ${tool.description}`, '技能', callableBuiltIns);
+  appendDynamicTools(merged, seen, blocked, dynamicToolDefs, callableBuiltIns);
   appendMcpTools(merged, seen, blocked, mcpServers);
 
   return merged;

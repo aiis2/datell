@@ -34,9 +34,9 @@ export default function RegistrySkillEditorModal({
           versionLabel: 'Version',
           descriptionLabel: 'Description',
           toolsLabel: 'Tools JSON',
-          toolsHint: 'Provide an array of runtime tools. Each tool must include name, description, parameters, and code.',
+          toolsHint: 'Provide an array of runtime tools. Each tool must include name, description, parameters, and code. Skill code can call enabled built-in tools via await callTool(name, args).',
           descriptionPlaceholder: 'Describe what this registry skill does and when it should be used.',
-          toolsPlaceholder: '[\n  {\n    "name": "tool_name",\n    "description": "What the tool does",\n    "parameters": [],\n    "code": "return \"ok\";"\n  }\n]',
+          toolsPlaceholder: '[\n  {\n    "name": "tool_name",\n    "description": "What the tool does",\n    "parameters": [],\n    "code": "return await callTool(\\"generate_chart\\", { html: args.html, title: args.title });"\n  }\n]',
           saving: 'Saving…',
         }
       : {
@@ -48,9 +48,9 @@ export default function RegistrySkillEditorModal({
           versionLabel: '版本号',
           descriptionLabel: '技能描述',
           toolsLabel: '工具 JSON',
-          toolsHint: '填写运行时工具数组。每个工具都必须包含 name、description、parameters 和 code。',
+          toolsHint: '填写运行时工具数组。每个工具都必须包含 name、description、parameters 和 code。技能代码可通过 await callTool(name, args) 复用已启用的内置工具。',
           descriptionPlaceholder: '说明该注册表技能做什么，以及何时应该使用。',
-          toolsPlaceholder: '[\n  {\n    "name": "tool_name",\n    "description": "工具用途",\n    "parameters": [],\n    "code": "return \"ok\";"\n  }\n]',
+          toolsPlaceholder: '[\n  {\n    "name": "tool_name",\n    "description": "工具用途",\n    "parameters": [],\n    "code": "return await callTool(\\"generate_chart\\", { html: args.html, title: args.title });"\n  }\n]',
           saving: '保存中…',
         }
   ), [initial.id, locale]);
