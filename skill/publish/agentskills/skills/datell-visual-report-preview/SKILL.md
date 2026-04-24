@@ -57,6 +57,49 @@ When Datell MCP is not available:
 - return or save a complete standalone HTML report
 - use CDN ECharts or an offline-safe fallback depending on the environment
 
+## Datell Fallback Design System
+
+When MCP is unavailable, do not drop to a generic HTML dashboard. Mirror Datell's real report shell and card system in the standalone output.
+
+- Use the shell structure `report-container`, `report-header`, `report-title`, `report-timestamp`, and `report-content`.
+- For standard dashboards, use `grid-kpi` for the KPI row and `grid-charts` for the main content area.
+- For denser reports or reports with controls, use the zone structure `report-zones`, `zone-kpi`, `zone-filter`, and `zone-content`.
+- Use `card` as the base wrapper, then layer specialized classes such as `chart-card`, `kpi-card`, and `data-table` patterns on top.
+- Make tables span full width when they are the main evidence block.
+
+## Card Library Guidance
+
+Prefer concrete Datell card variants over anonymous div blocks.
+
+- KPI cards: `kpi-card`, `kpi-bullet-card`, `kpi-ranked-list`, `kpi-traffic-light`, `kpi-risk-flag`, `kpi-two-period`, `kpi-multi`.
+- Chart cards: `chart-card` with `card-subtitle`, `chart-footer`, and a sized `chart-container` such as `md`, `lg`, or `full`.
+- Table cards: `ranked-table`, `scorecard-table`, `heatmap-table`, `comparison-table`, `pivot-table`.
+- Narrative and structure cards: `insight-callout`, `text-summary-card`, `metric-narrative`, `timeline-horizontal`, `timeline-dual-track`, `process-steps`, `comparison-twoCol`.
+- Filter controls: only use `zone-filter`, `filter-btn-group`, `filter-select`, or `filter-checkbox-group` when the host can execute basic browser JavaScript or when the user explicitly wants a control strip.
+
+## Layout Selection Guidance
+
+Choose a Datell-style layout family before composing cards.
+
+- `dashboard-2col`: the default for balanced KPI plus chart dashboards.
+- `dashboard-3col`: use for wide screens and high-density monitoring.
+- `bento-grid`: use when card importance is uneven and one or two hero cards should span more columns.
+- `compact-dashboard`: use for operational monitoring, realtime boards, and dense KPI plus small chart collections.
+- `magazine-wide`: use when the report needs a dominant main story with a supporting side rail.
+- `print-a4`: use for document-style exports and PDF-oriented reports.
+- `mobile-first`: use when the request explicitly targets narrow screens.
+- If the domain is obvious, mirror Datell's domain layouts such as `finance/kpi-3col`, `ecommerce/gmv-overview`, `sales/daily-report`, or `operations/server-monitor` in structure and card choice.
+
+## Theme And Palette Guidance
+
+Inline Datell's theme variables so the fallback report keeps the same visual grammar as the app shell.
+
+- Define CSS variables such as `--bg-body`, `--bg-card`, `--bg-card-alt`, `--text-main`, `--text-sub`, `--text-accent`, `--color-primary`, `--color-success`, `--color-warning`, `--color-danger`, `--border-table`, `--radius-card`, `--shadow-card`, and `--palette-color-1` through `--palette-color-6`.
+- For light palettes, build the header as a gradient from the primary color to the second palette color.
+- For dark palettes, use a solid header based on `--bg-card` or `--bg-body`, then keep `--text-header` high-contrast.
+- Default palette families should stay close to Datell presets such as `palette-classic`, `palette-slate-dark`, `palette-editorial`, and `palette-cyberpunk`.
+- Use palette accents for chart series, KPI emphasis, table heat states, and insight severity colors instead of inventing a disconnected theme.
+
 ## Chart Guidance
 
 - Prefer bar charts for ranked category comparison.
@@ -70,6 +113,7 @@ When Datell MCP is not available:
 - If external scripts are acceptable, use ECharts from a CDN for the main chart.
 - If the user asks for an offline-safe deliverable, avoid CDN dependencies and fall back to static SVG or simple semantic HTML blocks.
 - Do not assume Datell-only helpers such as `callTool(...)` exist unless they are actually exposed by the current host.
+- When MCP is unavailable, still inline the Datell shell classes and theme variables instead of switching to a different design language.
 
 ## Guardrails
 
@@ -79,7 +123,10 @@ When Datell MCP is not available:
 - Do not hide missing data assumptions. State them briefly in the subtitle or a note.
 - Do not ignore an available `datell_generate_chart` runtime and silently downgrade to prompt-only output.
 - Do not claim MCP is available unless you checked and found the tool.
+- Do not mix arbitrary card class names when Datell already has a closer card-library variant.
 
 ## Reference
 
 See [the visual report pattern guide](references/visual-report-pattern.md) for the recommended page structure, CSS skeleton, and chart bootstrapping pattern.
+
+See [the Datell design system playbook](references/datell-design-system-playbook.md) for reusable card families, layout families, palette presets, and domain-to-layout guidance.

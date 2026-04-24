@@ -3,30 +3,64 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "A Datell MCP runtime exposing datell_generate_chart is available. Create a monthly revenue dashboard and prefer the runtime path instead of stopping at a prompt-only HTML draft.",
-      "expected_output": "The workflow first checks for datell_generate_chart, builds complete HTML, and then calls the MCP tool.",
+      "prompt": "A Datell MCP runtime exposing datell_generate_chart is available. Create a monthly revenue dashboard with a dashboard-2col structure, Datell KPI cards, and a real palette-driven shell instead of stopping at a prompt-only HTML draft.",
+      "expected_output": "The workflow first checks for datell_generate_chart, builds complete HTML using Datell shell classes and theme variables, and then calls the MCP tool.",
       "files": [
         "SKILL.md",
-        "references/visual-report-pattern.md"
+        "references/visual-report-pattern.md",
+        "references/datell-design-system-playbook.md"
       ],
       "expectations": [
         "Mentions datell_generate_chart as the preferred path when available",
         "Builds a complete HTML document before the MCP call",
-        "Keeps KPI cards above the chart section"
+        "Keeps KPI cards above the chart section",
+        "Uses Datell shell classes or palette variables instead of a generic dashboard shell"
       ]
     },
     {
       "id": 2,
-      "prompt": "No Datell MCP runtime is available. Generate a complete visual report for category sales and fall back to a standalone HTML deliverable.",
-      "expected_output": "The workflow falls back cleanly to standalone HTML output instead of failing because MCP is missing.",
+      "prompt": "No Datell MCP runtime is available. Generate a compact-dashboard style visual report for category sales with a kpi-traffic-light card, an insight-callout, and a palette-slate-dark theme.",
+      "expected_output": "The workflow falls back cleanly to standalone HTML output while still using Datell card classes, compact layout guidance, and a real dark palette.",
       "files": [
         "SKILL.md",
-        "references/visual-report-pattern.md"
+        "references/visual-report-pattern.md",
+        "references/datell-design-system-playbook.md"
       ],
       "expectations": [
         "Explicitly describes the fallback or fall back path",
         "Keeps the output as a ready-to-open HTML deliverable",
-        "Does not require datell_generate_chart when the tool is unavailable"
+        "Does not require datell_generate_chart when the tool is unavailable",
+        "Uses Datell fallback cards such as kpi-traffic-light or insight-callout"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "No Datell MCP runtime is available. Produce a bento-grid executive dashboard that uses kpi-bullet-card, kpi-ranked-list, a scorecard-table, and palette-editorial while keeping the report printable.",
+      "expected_output": "A standalone HTML report that mirrors Datell's richer card library, layout families, and palette system without relying on MCP.",
+      "files": [
+        "SKILL.md",
+        "references/visual-report-pattern.md",
+        "references/datell-design-system-playbook.md"
+      ],
+      "expectations": [
+        "Mentions a Datell layout family such as bento-grid or print-a4",
+        "Uses concrete card-library variants instead of anonymous cards",
+        "Mentions palette guidance such as palette-editorial or CSS palette variables"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "No Datell MCP runtime is available. Produce a finance/kpi-3col style quarterly finance review with a cashflow emphasis, using kpi-two-period, kpi-bullet-card, a scorecard-table, an insight-callout, and palette-royal-blue.",
+      "expected_output": "A standalone finance HTML report that uses Datell's finance layout grammar, concrete card-library variants, and a real enterprise palette instead of a generic dashboard template.",
+      "files": [
+        "SKILL.md",
+        "references/visual-report-pattern.md",
+        "references/datell-design-system-playbook.md"
+      ],
+      "expectations": [
+        "Mentions a finance-specific layout such as finance/kpi-3col or finance/pnl-report",
+        "Uses finance-appropriate Datell cards such as kpi-two-period, kpi-bullet-card, scorecard-table, or insight-callout",
+        "Uses a named palette preset such as palette-royal-blue or palette-classic"
       ]
     }
   ]

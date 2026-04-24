@@ -5,7 +5,7 @@ This subtree is the first publish-ready Agent Skills working tree extracted from
 Current scope:
 
 - a single installable skill: `datell-visual-report-preview`
-- the merged skill prefers MCP runtime when `datell_generate_chart` is available and falls back to standalone HTML when it is not
+- the merged skill prefers MCP runtime when `datell_generate_chart` is available and otherwise falls back to standalone HTML that still mirrors Datell card-library, layout, and palette capabilities
 - `mcp/`: a Track B runtime skeleton limited to local visual report runtime
 
 Install with the Agent Skills CLI after splitting this subtree into its own public repository:
@@ -23,6 +23,7 @@ skills/
   datell-visual-report-preview/
     SKILL.md
     evals/evals.json
+    references/datell-design-system-playbook.md
     references/visual-report-pattern.md
 mcp/
   package.json
