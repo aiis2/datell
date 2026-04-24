@@ -296,6 +296,7 @@ For file-backed custom skills with richer lifecycle management, use the registry
 - Legacy directory skills and AI-created dynamic tools can be promoted into the registry without changing the legacy compatibility loaders
 - Script-backed registry skills and dynamic skills can reuse enabled built-in tools via `await callTool(name, args)`, which allows a custom skill to trigger `generate_chart`, `generate_document`, `generate_slide`, and other built-in report actions
 - A tracked example registry skill is available at `skill/examples/visual-report-smoke.skill.json`; it demonstrates composing HTML inside a custom skill and delegating the final preview render to `callTool("generate_chart", ...)`
+- A publish-ready Agent Skills working tree now lives under `skill/publish/agentskills/`; it currently exposes a single installable skill at `skills/datell-visual-report-preview/` with an MCP-first, standalone-HTML fallback workflow, while `mcp/` remains the Track B visual-report runtime skeleton
 
 ---
 

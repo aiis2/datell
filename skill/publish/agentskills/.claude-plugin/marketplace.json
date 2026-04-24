@@ -1,0 +1,13 @@
+{
+  "name": "datell-skills",
+  "version": "0.1.0",
+  "plugins": [
+    {
+      "name": "datell-visual-report-preview",
+      "description": "Create Datell visual reports through a hybrid workflow: prefer datell_generate_chart when MCP is available, otherwise fall back to standalone HTML.",
+      "skills": [
+        "./skills/datell-visual-report-preview"
+      ]
+    }
+  ]
+}

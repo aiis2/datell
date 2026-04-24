@@ -1,0 +1,33 @@
+{
+  "skill_name": "datell-visual-report-preview",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "A Datell MCP runtime exposing datell_generate_chart is available. Create a monthly revenue dashboard and prefer the runtime path instead of stopping at a prompt-only HTML draft.",
+      "expected_output": "The workflow first checks for datell_generate_chart, builds complete HTML, and then calls the MCP tool.",
+      "files": [
+        "SKILL.md",
+        "references/visual-report-pattern.md"
+      ],
+      "expectations": [
+        "Mentions datell_generate_chart as the preferred path when available",
+        "Builds a complete HTML document before the MCP call",
+        "Keeps KPI cards above the chart section"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "No Datell MCP runtime is available. Generate a complete visual report for category sales and fall back to a standalone HTML deliverable.",
+      "expected_output": "The workflow falls back cleanly to standalone HTML output instead of failing because MCP is missing.",
+      "files": [
+        "SKILL.md",
+        "references/visual-report-pattern.md"
+      ],
+      "expectations": [
+        "Explicitly describes the fallback or fall back path",
+        "Keeps the output as a ready-to-open HTML deliverable",
+        "Does not require datell_generate_chart when the tool is unavailable"
+      ]
+    }
+  ]
+}
