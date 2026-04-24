@@ -3,29 +3,30 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "请把一个自定义技能写成可以在 Datell 里直接产出可视化报表预览的形式。输入是标题、月份数组和金额数组，输出必须通过 callTool('generate_chart', ...) 进入预览面板，而不是只返回 HTML 字符串。",
-      "expected_output": "明确给出完整 HTML 生成逻辑，并以 await callTool('generate_chart', { html, title }) 作为最后一步。",
+      "prompt": "Rewrite a custom skill so it produces a visible report preview inside Datell. The inputs are a title, a month array, and a value array. The output must go through callTool('generate_chart', ...) instead of returning a raw HTML string.",
+      "expected_output": "Shows complete HTML generation logic and uses await callTool('generate_chart', { html, title }) as the final step.",
       "files": [
+        "skill/SKILL.md",
         "skill/examples/visual-report-smoke.skill.json"
       ],
       "expectations": [
-        "明确出现 callTool('generate_chart'",
-        "HTML 为完整文档而不是片段",
-        "技能目标是打开预览面板而不是仅返回文本"
+        "Explicitly includes callTool('generate_chart'",
+        "Keeps the HTML as a complete document instead of a fragment",
+        "States that the goal is to open the preview instead of only returning text"
       ]
     },
     {
       "id": 2,
-      "prompt": "请检查一个 Datell 自定义技能是否真的能像 Agent 一样输出报表结果。重点看它是不是自己拼好 HTML，然后把最终渲染交给 generate_chart，而不是绕开内置报表管线。",
-      "expected_output": "指出技能应通过 built-in generate_chart 进入 reportStore/preview pipeline，并警告不能只返回 raw HTML。",
+      "prompt": "Review a Datell custom skill and verify that it behaves like an Agent-produced report result. Focus on whether it builds the HTML itself and delegates the final rendering to generate_chart instead of bypassing the built-in report flow.",
+      "expected_output": "Explains that the skill should route the final render through the built-in generate_chart tool and warns that returning raw HTML alone is not enough.",
       "files": [
-        "skill/examples/visual-report-smoke.skill.json",
-        "src/renderer/tools/runtimeMerge.ts"
+        "skill/SKILL.md",
+        "skill/examples/visual-report-smoke.skill.json"
       ],
       "expectations": [
-        "明确提到 built-in generate_chart",
-        "明确提到 preview/report pipeline",
-        "明确指出 raw HTML 返回不足以打开预览"
+        "Explicitly mentions the built-in generate_chart tool",
+        "Explains that the built-in report flow is the intended delivery path",
+        "Explicitly states that raw HTML alone is insufficient for preview delivery"
       ]
     }
   ]

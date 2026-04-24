@@ -101,5 +101,8 @@ Minimum CSS variables to inline in standalone HTML:
 
 - Start with a Datell shell class before inventing custom wrappers.
 - Pick one layout family first, then choose cards that fit that layout.
+- Choose the chart engine only after layout family and card combination are already decided.
 - Keep all accent colors tied to palette variables.
 - For no-MCP fallback, prefer a credible static report over fake interactivity.
+
+For engine-specific guidance, see `datell-chart-engine-playbook.md`.

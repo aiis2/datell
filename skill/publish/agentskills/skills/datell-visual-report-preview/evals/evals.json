@@ -62,6 +62,22 @@
         "Uses finance-appropriate Datell cards such as kpi-two-period, kpi-bullet-card, scorecard-table, or insight-callout",
         "Uses a named palette preset such as palette-royal-blue or palette-classic"
       ]
+    },
+    {
+      "id": 5,
+      "prompt": "No Datell MCP runtime is available. Produce a compact-dashboard dark monitoring report that keeps the same Datell chart-card shell but chooses ApexCharts for the main visualization, uses a kpi-traffic-light row, an insight-callout, and palette-slate-dark.",
+      "expected_output": "A standalone HTML report that first chooses layout and card combination, then chooses ApexCharts without changing the Datell shell or card integration model.",
+      "files": [
+        "SKILL.md",
+        "references/visual-report-pattern.md",
+        "references/datell-design-system-playbook.md",
+        "references/datell-chart-engine-playbook.md"
+      ],
+      "expectations": [
+        "Mentions ApexCharts as the selected engine for the scenario",
+        "Keeps the same chart-card and chart-container shell instead of inventing a separate Apex layout",
+        "Mentions a shared Datell shell and card system with engine-specific initialization only"
+      ]
     }
   ]
 }

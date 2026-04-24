@@ -265,6 +265,37 @@ Use palette families close to real Datell presets.
 </html>
 ```
 
+## Chart Engine Variants
+
+Use the same `chart-card` and `chart-container` shell for both engines.
+
+- ECharts variant: use `echarts.init(...)` and the Datell shell classes already shown above.
+- ApexCharts variant: keep the same outer HTML, but initialize with `new ApexCharts(...)`.
+- Do not fork the card structure by engine. Engine choice changes chart bootstrapping, not card integration.
+- If the host preloads ECharts or ApexCharts, skip CDN tags. If the host does not preload them and standalone HTML is acceptable, include the CDN tag for the chosen engine.
+
+### ApexCharts Variant Example
+
+```html
+<article class="card chart-card">
+  <div class="card-title">Service latency</div>
+  <div class="card-subtitle">ApexCharts dark dashboard variant</div>
+  <div id="latency-apex" class="chart-container"></div>
+</article>
+<script>
+  var el = document.getElementById('latency-apex');
+  if (!el) throw new Error('Missing chart container: latency-apex');
+  var apexFg = getComputedStyle(document.documentElement).getPropertyValue('--text-main').trim() || '#1a1a2e';
+  var chart = new ApexCharts(el, {
+    chart: { type: 'bar', background: 'transparent', foreColor: apexFg },
+    colors: window.__APEX_PALETTE__ || ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'],
+    series: [{ name: 'Latency', data: [180, 160, 210, 190] }],
+    xaxis: { categories: ['North', 'South', 'West', 'East'] }
+  });
+  chart.render();
+</script>
+```
+
 ## No-CDN Fallback
 
 If the environment cannot use CDN assets, keep the same shell structure and card classes, but replace the main chart block with one of the following:

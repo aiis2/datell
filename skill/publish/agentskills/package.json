@@ -1,0 +1,20 @@
+{
+  "name": "datell-skills",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Standalone repository workspace for Datell Agent Skills and the Datell visual report MCP runtime.",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "mcp"
+  ],
+  "scripts": {
+    "validate": "npm run validate:json && npm run validate:layout && npm run validate:evals && npm run validate:mcp",
+    "validate:json": "node ./scripts/validate-json.mjs",
+    "validate:layout": "node ./scripts/validate-layout.mjs",
+    "validate:evals": "node ./scripts/validate-evals.mjs",
+    "validate:mcp": "npm --workspace @datell/mcp run smoke"
+  }
+}

@@ -41,6 +41,18 @@ Produce a complete HTML document, not a fragment.
 5. If `datell_generate_chart` is not available, save the result as a named `.html` artifact when possible.
 6. If the environment only allows text output, return one fenced `html` block containing the full document.
 
+## Datell Report Composition Flow
+
+When generating a Datell-style report, follow this order:
+
+1. Choose layout family.
+2. Choose card combination.
+3. Choose chart engine.
+4. Fill the shared Datell shell and card system.
+5. Add engine-specific initialization code inside the selected chart cards.
+
+Do not start from chart code first. The report should be shaped by layout and cards before the engine is chosen.
+
 ## Track B Preferred Path
 
 When a Datell MCP runtime is available:
@@ -90,6 +102,15 @@ Choose a Datell-style layout family before composing cards.
 - `mobile-first`: use when the request explicitly targets narrow screens.
 - If the domain is obvious, mirror Datell's domain layouts such as `finance/kpi-3col`, `ecommerce/gmv-overview`, `sales/daily-report`, or `operations/server-monitor` in structure and card choice.
 
+## Chart Engine Decision Guidance
+
+ECharts and ApexCharts use the same Datell shell and card system. They should both live inside the same `chart-card` and `chart-container` structure.
+
+- Choose ECharts for finance, business, comparison-heavy, mixed analytical dashboards, or when you need the safest default.
+- Choose ApexCharts for modern dark dashboards, technology monitoring boards, compact dashboard walls, or when the user explicitly wants ApexCharts.
+- Do not rewrite the page structure when switching engines. Only the initialization API, color binding details, and optional interactivity hooks should change.
+- If the host already preloads the chosen engine, do not add a CDN script tag. If it does not and standalone HTML is acceptable, load the chosen engine from a CDN.
+
 ## Theme And Palette Guidance
 
 Inline Datell's theme variables so the fallback report keeps the same visual grammar as the app shell.
@@ -110,10 +131,12 @@ Inline Datell's theme variables so the fallback report keeps the same visual gra
 ## Runtime Guidance
 
 - If `datell_generate_chart` is available, prefer MCP runtime execution over a prompt-only draft.
-- If external scripts are acceptable, use ECharts from a CDN for the main chart.
+- If external scripts are acceptable, use ECharts or ApexCharts from a CDN only when the host does not already preload the chosen engine.
 - If the user asks for an offline-safe deliverable, avoid CDN dependencies and fall back to static SVG or simple semantic HTML blocks.
 - Do not assume Datell-only helpers such as `callTool(...)` exist unless they are actually exposed by the current host.
 - When MCP is unavailable, still inline the Datell shell classes and theme variables instead of switching to a different design language.
+- When using ApexCharts, keep the same Datell card shell, use `new ApexCharts(...)` inside the chosen `chart-card`, and prefer `window.__APEX_PALETTE__` when the host exposes it.
+- When using ECharts, keep the same Datell card shell, guard the chart container before `echarts.init(...)`, and keep an explicit chart height.
 
 ## Guardrails
 
@@ -130,3 +153,5 @@ Inline Datell's theme variables so the fallback report keeps the same visual gra
 See [the visual report pattern guide](references/visual-report-pattern.md) for the recommended page structure, CSS skeleton, and chart bootstrapping pattern.
 
 See [the Datell design system playbook](references/datell-design-system-playbook.md) for reusable card families, layout families, palette presets, and domain-to-layout guidance.
+
+See [the Datell chart engine playbook](references/datell-chart-engine-playbook.md) for ECharts versus ApexCharts decision rules, shared card integration rules, and engine-specific initialization patterns.
