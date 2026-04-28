@@ -19,6 +19,9 @@ const usExamplePreviewFile = path.join(repoRoot, 'skills', 'datell-visual-report
 const europeExampleDataFile = path.join(repoRoot, 'skills', 'datell-visual-report-preview', 'assets', 'europe-gdp-top8-2014.json');
 const europeExampleHtmlFile = path.join(repoRoot, 'skills', 'datell-visual-report-preview', 'assets', 'europe-gdp-top8-2014-magazine-report.html');
 const europeExamplePreviewFile = path.join(repoRoot, 'skills', 'datell-visual-report-preview', 'assets', 'europe-gdp-top8-2014-preview.png');
+const saasExampleDataFile = path.join(repoRoot, 'skills', 'datell-visual-report-preview', 'assets', 'saas-subscription-health-ibm-telco.json');
+const saasExampleHtmlFile = path.join(repoRoot, 'skills', 'datell-visual-report-preview', 'assets', 'saas-subscription-health-ibm-telco-bento-report.html');
+const saasExamplePreviewFile = path.join(repoRoot, 'skills', 'datell-visual-report-preview', 'assets', 'saas-subscription-health-ibm-telco-preview.png');
 
 async function collectTextFiles(dirPath, bucket = []) {
   const entries = await readdir(dirPath, { withFileTypes: true });
@@ -56,6 +59,20 @@ function formatUsdBillions(value) {
   })}B`;
 }
 
+function formatUsd(value) {
+  return `USD ${Number(value || 0).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+function formatPercent(value) {
+  return `${Number(value || 0).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}%`;
+}
+
 function escapeRegExp(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -71,6 +88,9 @@ assert.match(readme, /2011_us_ag_exports\.csv/i, 'README should cite the public 
 assert.match(readme, /europe-gdp-top8-2014-preview\.png/i, 'README should show the European GDP preview image');
 assert.match(readme, /europe-gdp-top8-2014\.json/i, 'README should link the European GDP data file');
 assert.match(readme, /2014_world_gdp_with_codes\.csv/i, 'README should cite the public world GDP dataset source');
+assert.match(readme, /saas-subscription-health-ibm-telco-preview\.png/i, 'README should show the SaaS subscription preview image');
+assert.match(readme, /saas-subscription-health-ibm-telco\.json/i, 'README should link the SaaS subscription data file');
+assert.match(readme, /telco-customer-churn-by-IBM\.csv/i, 'README should cite the public IBM telco churn dataset source');
 assert.match(readme, /datell-no-mcp-capability-matrix\.md/i, 'README should link the no-MCP capability matrix');
 
 const licenseText = await readFile(licenseFile, 'utf8');
@@ -86,6 +106,8 @@ assert.equal(rootLock.packages[''].license, 'MIT', 'root package-lock.json licen
 assert.equal(rootLock.packages.mcp.license, 'MIT', 'mcp package-lock.json license should be MIT');
 assert.equal(mcpPackage.license, 'MIT', 'mcp package.json license should be MIT');
 assert.match(skillMarkdown, /^license: MIT$/m, 'SKILL.md frontmatter should declare MIT');
+assert.match(skillMarkdown, /Public Example Assets/i, 'SKILL.md should surface public example links for the skills.sh detail page');
+assert.match(skillMarkdown, /us-ag-exports-top8-2011|europe-gdp-top8-2014|saas-subscription-health-ibm-telco/i, 'SKILL.md should mention the public example asset set');
 assert.match(noMcpMatrix, /full catalog knowledge coverage|direct static support|partial or static-equivalent support|out of scope without MCP/i, 'no-MCP matrix should define support tiers');
 assert.match(noMcpMatrix, /filter-\*|event bus|linkage/i, 'no-MCP matrix should define the out-of-scope interactive set');
 
@@ -142,6 +164,21 @@ assert.match(europeExampleHtml, new RegExp(escapeRegExp(formatUsdBillions(europe
 assert.match(europeExampleHtml, new RegExp(escapeRegExp(europeLeader.country)), 'European GDP example should show the leading country computed from the input data');
 assert.doesNotMatch(europeExampleHtml, /__REPORT_EVENT_BUS__|filterChange|zone-filter|filter-btn-group|filter-select|filter-checkbox-group/i, 'European GDP example should stay static and non-interactive');
 
+const saasExampleData = JSON.parse(await readFile(saasExampleDataFile, 'utf8'));
+assert.equal(saasExampleData.source.url, 'https://raw.githubusercontent.com/plotly/datasets/master/telco-customer-churn-by-IBM.csv', 'SaaS example should cite the public IBM telco churn dataset source');
+assert.equal(saasExampleData.summary.customerCount, 7043, 'SaaS example should preserve the full customer count from the source aggregation');
+assert.equal(saasExampleData.contractRows.length, 3, 'SaaS example should expose the three contract summary rows');
+assert.equal(saasExampleData.tenureRows.length, 4, 'SaaS example should expose four tenure bands');
+assert.equal(saasExampleData.tenureMatrix.length, 12, 'SaaS example should expose a 4x3 tenure-contract risk matrix');
+
+const saasExampleHtml = await readFile(saasExampleHtmlFile, 'utf8');
+assert.match(saasExampleHtml, /report-container|report-header|bento-grid|heatmap-table|comparison-twoCol|scorecard-table/i, 'SaaS example should use a bento grid plus richer static evidence cards');
+assert.match(saasExampleHtml, /palette-dark-tech|dark-tech|bento-grid/i, 'SaaS example should reflect the dark business layout direction');
+assert.match(saasExampleHtml, new RegExp(escapeRegExp(formatUsd(saasExampleData.summary.monthlyRevenueProxy))), 'SaaS example should show the monthly revenue proxy computed from the input data');
+assert.match(saasExampleHtml, new RegExp(escapeRegExp(formatPercent(saasExampleData.summary.overallChurnRatePct))), 'SaaS example should show the overall churn rate computed from the input data');
+assert.match(saasExampleHtml, new RegExp(escapeRegExp(saasExampleData.summary.highRiskContract.name)), 'SaaS example should show the highest-risk contract name from the input data');
+assert.doesNotMatch(saasExampleHtml, /__REPORT_EVENT_BUS__|filterChange|zone-filter|filter-btn-group|filter-select|filter-checkbox-group/i, 'SaaS example should stay static and non-interactive');
+
 for (const filePath of await collectTextFiles(repoRoot)) {
   const source = await readFile(filePath, 'utf8');
   assert.doesNotMatch(source, /[\u4e00-\u9fff]/, `public repository files should stay English-only: ${path.relative(repoRoot, filePath)}`);
@@ -156,5 +193,8 @@ await stat(noMcpMatrixFile);
 await stat(europeExampleDataFile);
 await stat(europeExampleHtmlFile);
 await stat(europeExamplePreviewFile);
+await stat(saasExampleDataFile);
+await stat(saasExampleHtmlFile);
+await stat(saasExamplePreviewFile);
 
 console.log('public validation ok');

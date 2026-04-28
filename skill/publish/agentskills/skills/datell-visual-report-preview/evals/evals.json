@@ -123,6 +123,24 @@
         "Keeps the result static and non-interactive",
         "Does not require filter controls or event-bus behavior"
       ]
+    },
+    {
+      "id": 8,
+      "prompt": "No Datell MCP runtime is available. Produce a static SaaS subscription health overview with universal/bento-grid, palette-dark-tech, a KPI risk row, a contract concentration board, a tenure-by-contract heat matrix, and side-by-side service versus payment comparisons. Keep the result fully standalone and non-interactive with no filter controls, event bus hooks, or cross-card linkage.",
+      "expected_output": "A standalone dark business report that uses a third layout family, static-equivalent heatmap evidence, and concrete Datell comparison and scorecard patterns while staying within the no-MCP fallback contract.",
+      "files": [
+        "SKILL.md",
+        "references/datell-knowledge-index.md",
+        "references/visual-report-pattern.md",
+        "references/datell-design-system-playbook.md",
+        "references/datell-no-mcp-capability-matrix.md"
+      ],
+      "expectations": [
+        "Mentions a canonical layout id such as universal/bento-grid",
+        "Uses heatmap-table, comparison-twoCol, scorecard-table, or metric-narrative instead of only basic KPI cards",
+        "Keeps the result static and non-interactive",
+        "Does not require filter controls, event-bus logic, or linked behavior"
+      ]
     }
   ]
 }

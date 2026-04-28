@@ -174,6 +174,14 @@ Inline Datell's theme variables so the fallback report keeps the same visual gra
 - Do not claim MCP is available unless you checked and found the tool.
 - Do not mix arbitrary card class names when Datell already has a closer card-library variant.
 
+## Public Example Assets
+
+Use these public examples when you need a concrete no-MCP reference for layout choice, card combination, or README-facing showcase work.
+
+- [U.S. agriculture export example](assets/us-ag-exports-top8-2011-basic-report.html) with [data](assets/us-ag-exports-top8-2011.json) and [preview image](assets/us-ag-exports-top8-2011-preview.png) for `universal/dashboard-2col`.
+- [European GDP magazine example](assets/europe-gdp-top8-2014-magazine-report.html) with [data](assets/europe-gdp-top8-2014.json) and [preview image](assets/europe-gdp-top8-2014-preview.png) for `universal/magazine-wide`.
+- [SaaS subscription health example](assets/saas-subscription-health-ibm-telco-bento-report.html) with [data](assets/saas-subscription-health-ibm-telco.json) and [preview image](assets/saas-subscription-health-ibm-telco-preview.png) for `universal/bento-grid`.
+
 ## Reference
 
 See [the visual report pattern guide](references/visual-report-pattern.md) for the recommended page structure, CSS skeleton, and chart bootstrapping pattern.

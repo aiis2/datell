@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SaaS Subscription Health Overview</title>
+    <style>
+      :root {
+        --bg-body: #08111f;
+        --bg-card: rgba(11, 24, 45, 0.92);
+        --bg-card-alt: rgba(18, 36, 66, 0.96);
+        --bg-card-soft: rgba(16, 30, 54, 0.72);
+        --text-main: #edf5ff;
+        --text-sub: #99aac8;
+        --text-header: #f4f8ff;
+        --color-primary: #61a8ff;
+        --color-secondary: #2dd4bf;
+        --color-accent: #8b7dff;
+        --color-success: #4ade80;
+        --color-warning: #fbbf24;
+        --color-danger: #fb7185;
+        --border-table: rgba(153, 170, 200, 0.2);
+        --radius-card: 22px;
+        --shadow-card: 0 24px 64px rgba(0, 0, 0, 0.34);
+        --palette-color-1: #61a8ff;
+        --palette-color-2: #2dd4bf;
+        --palette-color-3: #8b7dff;
+        --palette-color-4: #fb7185;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        color: var(--text-main);
+        font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(97, 168, 255, 0.16), transparent 24%),
+          radial-gradient(circle at top right, rgba(139, 125, 255, 0.14), transparent 26%),
+          linear-gradient(180deg, rgba(45, 212, 191, 0.08), transparent 22%),
+          var(--bg-body);
+      }
+
+      .report-container {
+        width: min(1320px, calc(100vw - 40px));
+        margin: 28px auto 48px;
+      }
+
+      .report-header {
+        position: relative;
+        overflow: hidden;
+        padding: 34px;
+        border-radius: 28px;
+        background:
+          linear-gradient(135deg, rgba(9, 30, 58, 0.98) 0%, rgba(16, 51, 86, 0.98) 46%, rgba(34, 95, 141, 0.98) 100%);
+        box-shadow: var(--shadow-card);
+      }
+
+      .report-header::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+        background-size: 34px 34px;
+        -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.65), transparent 86%);
+        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.65), transparent 86%);
+        pointer-events: none;
+      }
+
+      .eyebrow,
+      .report-timestamp,
+      .kpi-label,
+      .card-subtitle,
+      .summary-label,
+      .comparison-label,
+      .table-note,
+      .heatmap-note {
+        position: relative;
+        z-index: 1;
+        color: var(--text-sub);
+        font-size: 13px;
+        line-height: 1.5;
+        letter-spacing: 0.02em;
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: rgba(244, 248, 255, 0.72);
+      }
+
+      .report-title,
+      .card-title {
+        position: relative;
+        z-index: 1;
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+      }
+
+      .report-title {
+        font-size: 40px;
+        line-height: 1.02;
+      }
+
+      .report-subtitle {
+        position: relative;
+        z-index: 1;
+        margin: 14px 0 0;
+        max-width: 860px;
+        font-size: 16px;
+        line-height: 1.68;
+        color: rgba(244, 248, 255, 0.9);
+      }
+
+      .report-timestamp {
+        margin-top: 16px;
+        color: rgba(244, 248, 255, 0.78);
+      }
+
+      .report-content {
+        display: grid;
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .grid-kpi {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 16px;
+        align-items: start;
+      }
+
+      .span-7 { grid-column: span 7; }
+      .span-5 { grid-column: span 5; }
+      .span-6 { grid-column: span 6; }
+      .span-12 { grid-column: span 12; }
+
+      .card {
+        border-radius: 24px;
+        background: var(--bg-card);
+        border: 1px solid rgba(97, 168, 255, 0.12);
+        box-shadow: var(--shadow-card);
+        -webkit-backdrop-filter: blur(14px);
+        backdrop-filter: blur(14px);
+        align-self: start;
+      }
+
+      .kpi-card,
+      .chart-card,
+      .metric-narrative,
+      .comparison-twoCol,
+      .scorecard-card,
+      .heatmap-card {
+        padding: 22px;
+      }
+
+      .kpi-value,
+      .narrative-value {
+        margin-top: 10px;
+        font-size: 31px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+
+      .kpi-sub,
+      .narrative-copy,
+      .chart-footer,
+      .comparison-copy,
+      .insight-copy {
+        margin-top: 8px;
+        color: var(--text-sub);
+        font-size: 13px;
+        line-height: 1.65;
+      }
+
+      .kpi-value.primary,
+      .narrative-value {
+        color: var(--color-primary);
+      }
+
+      .kpi-value.warn {
+        color: var(--color-warning);
+      }
+
+      .kpi-value.danger {
+        color: var(--color-danger);
+      }
+
+      .signal-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+        padding: 7px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .signal-chip.critical {
+        background: rgba(251, 113, 133, 0.14);
+        color: #ffb7c2;
+      }
+
+      .signal-chip.watch {
+        background: rgba(251, 191, 36, 0.14);
+        color: #ffd98a;
+      }
+
+      .signal-chip.stable {
+        background: rgba(74, 222, 128, 0.14);
+        color: #a5f3c3;
+      }
+
+      .ranking-table {
+        display: grid;
+        gap: 16px;
+        margin-top: 18px;
+      }
+
+      .ranking-row {
+        display: grid;
+        grid-template-columns: 150px minmax(0, 1fr) 128px 88px;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .ranking-label,
+      .ranking-value,
+      .ranking-risk {
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .ranking-track {
+        position: relative;
+        height: 15px;
+        border-radius: 999px;
+        background: rgba(153, 170, 200, 0.12);
+        overflow: hidden;
+      }
+
+      .ranking-bar {
+        position: absolute;
+        inset: 0 auto 0 0;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--palette-color-1) 0%, var(--palette-color-2) 100%);
+      }
+
+      .ranking-bar.alt {
+        background: linear-gradient(90deg, var(--palette-color-3) 0%, var(--palette-color-1) 100%);
+      }
+
+      .pct-100 { width: 100%; }
+      .pct-40-0 { width: 40%; }
+      .pct-37-2 { width: 37.2%; }
+
+      .insight-panel {
+        margin-top: 18px;
+        padding: 16px 18px;
+        border-radius: 18px;
+        background: rgba(97, 168, 255, 0.08);
+        border: 1px solid rgba(97, 168, 255, 0.14);
+      }
+
+      .insight-title {
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .highlight-list,
+      .contract-notes,
+      .comparison-grid,
+      .tenure-list {
+        display: grid;
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .highlight-item,
+      .contract-note,
+      .comparison-panel,
+      .tenure-item {
+        padding: 14px 16px;
+        border-radius: 18px;
+        background: var(--bg-card-alt);
+        border: 1px solid rgba(97, 168, 255, 0.1);
+      }
+
+      .highlight-item strong,
+      .contract-note strong,
+      .comparison-panel strong,
+      .tenure-item strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 14px;
+      }
+
+      .contract-notes {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .comparison-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .comparison-stack {
+        display: grid;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .comparison-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: center;
+        padding: 11px 12px;
+        border-radius: 14px;
+        background: rgba(8, 17, 31, 0.38);
+      }
+
+      .comparison-row span:last-child {
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .heatmap-table,
+      .scorecard-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 18px;
+      }
+
+      .heatmap-table th,
+      .heatmap-table td,
+      .scorecard-table th,
+      .scorecard-table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border-table);
+        text-align: left;
+        font-size: 13px;
+      }
+
+      .heatmap-table th,
+      .scorecard-table th {
+        color: var(--text-sub);
+        font-size: 12px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .heat {
+        text-align: center;
+        font-weight: 700;
+      }
+
+      .heat.critical { background: rgba(251, 113, 133, 0.18); color: #ffd5dc; }
+      .heat.elevated { background: rgba(251, 191, 36, 0.16); color: #ffe2a2; }
+      .heat.watch { background: rgba(139, 125, 255, 0.16); color: #ddd8ff; }
+      .heat.stable { background: rgba(74, 222, 128, 0.15); color: #c5f7d7; }
+
+      .scorecard-table td strong {
+        color: var(--text-main);
+      }
+
+      .band-badge {
+        display: inline-flex;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .band-badge.critical { background: rgba(251, 113, 133, 0.14); color: #ffbdc8; }
+      .band-badge.elevated { background: rgba(251, 191, 36, 0.14); color: #ffe29c; }
+      .band-badge.watch { background: rgba(139, 125, 255, 0.14); color: #d8d1ff; }
+      .band-badge.stable { background: rgba(74, 222, 128, 0.14); color: #b9f2cc; }
+
+      @media (max-width: 1080px) {
+        .grid-kpi,
+        .contract-notes,
+        .comparison-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .span-7,
+        .span-5,
+        .span-6,
+        .span-12 {
+          grid-column: span 12;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .report-container {
+          width: min(100vw - 20px, 1320px);
+          margin: 12px auto 28px;
+        }
+
+        .report-header,
+        .kpi-card,
+        .chart-card,
+        .metric-narrative,
+        .comparison-twoCol,
+        .scorecard-card,
+        .heatmap-card {
+          padding: 18px;
+        }
+
+        .grid-kpi,
+        .contract-notes,
+        .comparison-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .ranking-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="report-container">
+      <header class="report-header">
+        <p class="eyebrow">Public SaaS-style business example</p>
+        <h1 class="report-title">SaaS Subscription Health Overview</h1>
+        <p class="report-subtitle">Static no-MCP showcase built from the IBM telco churn dataset. The report treats recurring monthly charges as a subscription revenue proxy and uses a `universal/bento-grid` shell to combine contract concentration, tenure risk, and operating signals without filters, event bus hooks, or linked interactions.</p>
+        <p class="report-timestamp">Updated 2026-04-28 · layout: universal/bento-grid · palette: palette-dark-tech · input: saas-subscription-health-ibm-telco.json · ARR proxy: USD 5,473,399.20</p>
+      </header>
+
+      <main class="report-content">
+        <section class="grid-kpi">
+          <article class="card kpi-card">
+            <div class="kpi-label">MRR proxy</div>
+            <div class="kpi-value primary">USD 456,116.60</div>
+            <div class="kpi-sub">7043 customers aggregated from the full public churn dataset.</div>
+          </article>
+          <article class="card kpi-card">
+            <div class="kpi-label">Average revenue per account</div>
+            <div class="kpi-value primary">USD 64.76</div>
+            <div class="kpi-sub">A simple subscription-style ARPU proxy derived from monthly charges.</div>
+          </article>
+          <article class="card kpi-card">
+            <div class="kpi-label">Overall churn rate</div>
+            <div class="kpi-value danger">26.54%</div>
+            <div class="kpi-sub">1869 churned accounts captured in the public source file.</div>
+          </article>
+          <article class="card kpi-card">
+            <div class="kpi-label">Highest-risk contract lane</div>
+            <div class="kpi-value warn">42.71%</div>
+            <div class="kpi-sub">Month-to-month churn on a USD 257,294.15 MRR base.</div>
+            <div class="signal-chip critical">Critical lane · Month-to-month</div>
+          </article>
+        </section>
+
+        <section class="bento-grid">
+          <article class="card chart-card span-7">
+            <div class="summary-label">Contract concentration board</div>
+            <h2 class="card-title">Recurring revenue still leans on the riskiest contract</h2>
+            <div class="card-subtitle">Static ranking bars replace an interactive chart while preserving the Datell shell and evidence hierarchy.</div>
+            <div class="ranking-table">
+              <div class="ranking-row">
+                <div class="ranking-label">Month-to-month</div>
+                <div class="ranking-track"><div class="ranking-bar pct-100"></div></div>
+                <div class="ranking-value">USD 257,294.15</div>
+                <div class="ranking-risk">42.71%</div>
+              </div>
+              <div class="ranking-row">
+                <div class="ranking-label">Two year</div>
+                <div class="ranking-track"><div class="ranking-bar alt pct-40-0"></div></div>
+                <div class="ranking-value">USD 103,005.85</div>
+                <div class="ranking-risk">2.83%</div>
+              </div>
+              <div class="ranking-row">
+                <div class="ranking-label">One year</div>
+                <div class="ranking-track"><div class="ranking-bar pct-37-2"></div></div>
+                <div class="ranking-value">USD 95,816.60</div>
+                <div class="ranking-risk">11.27%</div>
+              </div>
+            </div>
+            <div class="chart-footer">The ranking is static on purpose: no filter state, no hover-linked drilldown, and no runtime dependencies are required in the fallback path.</div>
+            <div class="contract-notes">
+              <div class="contract-note"><strong>Revenue concentration</strong>Month-to-month represents the largest revenue block in the file, so churn work there has outsized impact.</div>
+              <div class="contract-note"><strong>Retention floor</strong>Two-year contracts hold more than USD 103,005.85 in MRR proxy while keeping churn near 2.83%.</div>
+              <div class="contract-note"><strong>Middle lane</strong>One-year customers stay materially healthier than month-to-month, but they are not yet in the long-tenure stability zone.</div>
+            </div>
+          </article>
+
+          <article class="card metric-narrative span-5">
+            <div class="summary-label">Risk narrative</div>
+            <h2 class="card-title">The exposure is concentrated, but the recovery path is visible</h2>
+            <div class="narrative-value">17.19 pts</div>
+            <div class="narrative-copy">The churn gap between the shortest-tenure band and the longest-tenure band is 17.19 percentage points. That makes onboarding and early-contract retention the cleanest static story to surface in a no-MCP business report.</div>
+            <div class="insight-panel">
+              <div class="insight-title">No-MCP signal</div>
+              <div class="insight-copy">This example deliberately pushes beyond a basic KPI row by using a bento composition, a static heat matrix, and side-by-side operational comparisons without turning into a mini app.</div>
+            </div>
+            <div class="highlight-list">
+              <div class="highlight-item"><strong>Payment friction</strong>Electronic check customers churn at 45.29%, the highest payment-method risk in the file.</div>
+              <div class="highlight-item"><strong>Service mix risk</strong>Fiber optic accounts hold USD 283,284.40 in MRR proxy and churn at 41.89%.</div>
+              <div class="highlight-item"><strong>Retention payoff</strong>The 49-72 month cohort holds the largest MRR block at USD 165,563.70 while staying at 9.51% churn.</div>
+            </div>
+          </article>
+
+          <article class="card heatmap-card span-6">
+            <div class="summary-label">Tenure by contract heat matrix</div>
+            <h2 class="card-title">Short-tenure month-to-month is the red zone</h2>
+            <div class="heatmap-note">Static heatmap-table evidence for a capability that would normally tempt a richer runtime widget.</div>
+            <table class="heatmap-table">
+              <thead>
+                <tr>
+                  <th>Tenure band</th>
+                  <th>Month-to-month</th>
+                  <th>One year</th>
+                  <th>Two year</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>0-12</td>
+                  <td class="heat critical">51.35%</td>
+                  <td class="heat watch">10.48%</td>
+                  <td class="heat stable">0.00%</td>
+                </tr>
+                <tr>
+                  <td>13-24</td>
+                  <td class="heat elevated">37.72%</td>
+                  <td class="heat stable">8.12%</td>
+                  <td class="heat stable">0.00%</td>
+                </tr>
+                <tr>
+                  <td>25-48</td>
+                  <td class="heat elevated">32.92%</td>
+                  <td class="heat watch">10.62%</td>
+                  <td class="heat stable">2.19%</td>
+                </tr>
+                <tr>
+                  <td>49-72</td>
+                  <td class="heat elevated">26.02%</td>
+                  <td class="heat watch">12.93%</td>
+                  <td class="heat stable">3.33%</td>
+                </tr>
+              </tbody>
+            </table>
+          </article>
+
+          <article class="card comparison-twoCol span-6">
+            <div class="comparison-label">Comparison block</div>
+            <h2 class="card-title">Service risk versus payment risk</h2>
+            <div class="comparison-grid">
+              <div class="comparison-panel">
+                <strong>Internet service mix</strong>
+                <div class="comparison-copy">Fiber optic is both the largest service-revenue block and the highest churn line, which makes it the clearest retention intervention target.</div>
+                <div class="comparison-stack">
+                  <div class="comparison-row"><span>Fiber optic</span><span>41.89% churn</span></div>
+                  <div class="comparison-row"><span>DSL</span><span>18.96% churn</span></div>
+                  <div class="comparison-row"><span>No service</span><span>7.40% churn</span></div>
+                </div>
+              </div>
+              <div class="comparison-panel">
+                <strong>Payment method pressure</strong>
+                <div class="comparison-copy">Electronic check materially underperforms the automatic payment methods, so payment migration is a plausible static action line for the narrative.</div>
+                <div class="comparison-stack">
+                  <div class="comparison-row"><span>Electronic check</span><span>45.29% churn</span></div>
+                  <div class="comparison-row"><span>Mailed check</span><span>19.11% churn</span></div>
+                  <div class="comparison-row"><span>Bank transfer (automatic)</span><span>16.71% churn</span></div>
+                  <div class="comparison-row"><span>Credit card (automatic)</span><span>15.24% churn</span></div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="card scorecard-card span-12">
+            <div class="summary-label">Retention ladder by tenure band</div>
+            <h2 class="card-title">Older cohorts keep more revenue and churn less</h2>
+            <div class="table-note">This static scorecard-table shows how no-MCP fallback can still carry a multi-row business evidence block without any linked controls.</div>
+            <table class="scorecard-table">
+              <thead>
+                <tr>
+                  <th>Tenure band</th>
+                  <th>Customers</th>
+                  <th>MRR proxy</th>
+                  <th>Churn rate</th>
+                  <th>Posture</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>0-12</strong></td>
+                  <td>2186</td>
+                  <td>USD 122,629.75</td>
+                  <td>47.44%</td>
+                  <td><span class="band-badge critical">Critical</span></td>
+                </tr>
+                <tr>
+                  <td><strong>13-24</strong></td>
+                  <td>1024</td>
+                  <td>USD 62,829.85</td>
+                  <td>28.71%</td>
+                  <td><span class="band-badge elevated">Elevated</span></td>
+                </tr>
+                <tr>
+                  <td><strong>25-48</strong></td>
+                  <td>1594</td>
+                  <td>USD 105,093.30</td>
+                  <td>20.39%</td>
+                  <td><span class="band-badge watch">Watch</span></td>
+                </tr>
+                <tr>
+                  <td><strong>49-72</strong></td>
+                  <td>2239</td>
+                  <td>USD 165,563.70</td>
+                  <td>9.51%</td>
+                  <td><span class="band-badge stable">Stable</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </article>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

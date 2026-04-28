@@ -81,9 +81,22 @@ This second public-facing example uses a different layout family and a richer st
 
 Layout style: `universal/magazine-wide`
 
+### SaaS Subscription Health Example
+
+![SaaS subscription health preview](skills/datell-visual-report-preview/assets/saas-subscription-health-ibm-telco-preview.png)
+
+This third public-facing example shifts from macro and export data into a business-style subscription health view. It uses the IBM telco churn dataset as a recurring-revenue proxy and demonstrates a static no-MCP `universal/bento-grid` composition with risk-led KPI cards, a contract concentration board, a tenure-by-contract heat matrix, and side-by-side service and payment comparisons.
+
+- Preview image: `skills/datell-visual-report-preview/assets/saas-subscription-health-ibm-telco-preview.png`
+- Standalone HTML: `skills/datell-visual-report-preview/assets/saas-subscription-health-ibm-telco-bento-report.html`
+- Example data: `skills/datell-visual-report-preview/assets/saas-subscription-health-ibm-telco.json`
+- Public source: `https://raw.githubusercontent.com/plotly/datasets/master/telco-customer-churn-by-IBM.csv`
+
+Layout style: `universal/bento-grid`
+
 ## Real-Data Validation Pack
 
-The public repository now includes two validation packs: one normalized internal-origin export example and one public foreign dataset example.
+The public repository now includes four validation packs: one normalized internal-origin export example and three public open-dataset examples.
 
 ### Normalized sales export example
 
@@ -92,14 +105,16 @@ The public repository now includes two validation packs: one normalized internal
 
 The input pack preserves 20 real December 2024 sales rows from an exported Datell report while translating labels to English for public publication. The HTML example shows the expected static basic-report result: KPI row, one primary chart area, one narrative block, and one scorecard table with no filter controls or linkage hooks.
 
-### Public foreign dataset example
+### Public open-dataset examples
 
 - `skills/datell-visual-report-preview/assets/us-ag-exports-top8-2011.json`
 - `skills/datell-visual-report-preview/assets/us-ag-exports-top8-2011-basic-report.html`
 - `skills/datell-visual-report-preview/assets/europe-gdp-top8-2014.json`
 - `skills/datell-visual-report-preview/assets/europe-gdp-top8-2014-magazine-report.html`
+- `skills/datell-visual-report-preview/assets/saas-subscription-health-ibm-telco.json`
+- `skills/datell-visual-report-preview/assets/saas-subscription-health-ibm-telco-bento-report.html`
 
-These examples use public foreign datasets and keep the output English-only. The U.S. agriculture sample demonstrates a balanced dashboard-2col fallback, while the European GDP sample demonstrates a magazine-wide fallback with richer structure cards, mini image tiles, and a more editorial card rhythm.
+These examples use public datasets and keep the output English-only. The U.S. agriculture sample demonstrates a balanced dashboard-2col fallback, the European GDP sample demonstrates a magazine-wide fallback with richer structure cards and mini image tiles, and the SaaS subscription sample demonstrates a dark bento-grid fallback with a static churn matrix and business-risk scorecards.
 
 ## Card Coverage And No-MCP Scope
 
@@ -145,6 +160,9 @@ skills/
     assets/europe-gdp-top8-2014.json
     assets/europe-gdp-top8-2014-magazine-report.html
     assets/europe-gdp-top8-2014-preview.png
+    assets/saas-subscription-health-ibm-telco.json
+    assets/saas-subscription-health-ibm-telco-bento-report.html
+    assets/saas-subscription-health-ibm-telco-preview.png
     evals/evals.json
     references/datell-chart-engine-playbook.md
     references/datell-card-catalog.md

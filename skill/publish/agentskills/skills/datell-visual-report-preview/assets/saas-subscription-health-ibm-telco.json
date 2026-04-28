@@ -1,0 +1,165 @@
+{
+  "source": {
+    "kind": "public-open-dataset-aggregation",
+    "name": "IBM Telco Customer Churn",
+    "provider": "plotly/datasets",
+    "url": "https://raw.githubusercontent.com/plotly/datasets/master/telco-customer-churn-by-IBM.csv",
+    "selection": "Full dataset aggregated into contract, internet, payment, and tenure risk summaries",
+    "unit": "USD monthly charges proxy and customer counts",
+    "note": "This sample uses recurring monthly charges as a SaaS-style subscription revenue proxy for a static no-MCP showcase."
+  },
+  "summary": {
+    "customerCount": 7043,
+    "churnedCustomers": 1869,
+    "monthlyRevenueProxy": 456116.6,
+    "annualizedRevenueProxy": 5473399.2,
+    "arpu": 64.76,
+    "overallChurnRatePct": 26.54,
+    "highRiskContract": {
+      "name": "Month-to-month",
+      "customers": 3875,
+      "churnRatePct": 42.71,
+      "mrr": 257294.15
+    },
+    "highRiskInternet": {
+      "name": "Fiber optic",
+      "churnRatePct": 41.89,
+      "mrr": 283284.4
+    },
+    "highRiskPayment": {
+      "name": "Electronic check",
+      "churnRatePct": 45.29,
+      "mrr": 180345
+    }
+  },
+  "contractRows": [
+    {
+      "contract": "Month-to-month",
+      "customers": 3875,
+      "churned": 1655,
+      "mrr": 257294.15,
+      "churnRatePct": 42.71,
+      "riskLevel": "critical"
+    },
+    {
+      "contract": "Two year",
+      "customers": 1695,
+      "churned": 48,
+      "mrr": 103005.85,
+      "churnRatePct": 2.83,
+      "riskLevel": "stable"
+    },
+    {
+      "contract": "One year",
+      "customers": 1473,
+      "churned": 166,
+      "mrr": 95816.6,
+      "churnRatePct": 11.27,
+      "riskLevel": "watch"
+    }
+  ],
+  "internetRows": [
+    {
+      "service": "Fiber optic",
+      "customers": 3096,
+      "churned": 1297,
+      "mrr": 283284.4,
+      "churnRatePct": 41.89,
+      "riskLevel": "critical"
+    },
+    {
+      "service": "DSL",
+      "customers": 2421,
+      "churned": 459,
+      "mrr": 140665.35,
+      "churnRatePct": 18.96,
+      "riskLevel": "watch"
+    },
+    {
+      "service": "No",
+      "customers": 1526,
+      "churned": 113,
+      "mrr": 32166.85,
+      "churnRatePct": 7.4,
+      "riskLevel": "stable"
+    }
+  ],
+  "paymentRows": [
+    {
+      "payment": "Electronic check",
+      "customers": 2365,
+      "churned": 1071,
+      "mrr": 180345,
+      "churnRatePct": 45.29,
+      "riskLevel": "critical"
+    },
+    {
+      "payment": "Mailed check",
+      "customers": 1612,
+      "churned": 308,
+      "mrr": 70794.3,
+      "churnRatePct": 19.11,
+      "riskLevel": "watch"
+    },
+    {
+      "payment": "Bank transfer (automatic)",
+      "customers": 1544,
+      "churned": 258,
+      "mrr": 103745.45,
+      "churnRatePct": 16.71,
+      "riskLevel": "watch"
+    },
+    {
+      "payment": "Credit card (automatic)",
+      "customers": 1522,
+      "churned": 232,
+      "mrr": 101231.85,
+      "churnRatePct": 15.24,
+      "riskLevel": "stable"
+    }
+  ],
+  "tenureRows": [
+    {
+      "band": "0-12",
+      "customers": 2186,
+      "mrr": 122629.75,
+      "churnRatePct": 47.44,
+      "riskLevel": "critical"
+    },
+    {
+      "band": "13-24",
+      "customers": 1024,
+      "mrr": 62829.85,
+      "churnRatePct": 28.71,
+      "riskLevel": "elevated"
+    },
+    {
+      "band": "25-48",
+      "customers": 1594,
+      "mrr": 105093.3,
+      "churnRatePct": 20.39,
+      "riskLevel": "watch"
+    },
+    {
+      "band": "49-72",
+      "customers": 2239,
+      "mrr": 165563.7,
+      "churnRatePct": 9.51,
+      "riskLevel": "stable"
+    }
+  ],
+  "tenureMatrix": [
+    { "band": "0-12", "contract": "Month-to-month", "customers": 1994, "churnRatePct": 51.35, "riskLevel": "critical" },
+    { "band": "0-12", "contract": "One year", "customers": 124, "churnRatePct": 10.48, "riskLevel": "watch" },
+    { "band": "0-12", "contract": "Two year", "customers": 68, "churnRatePct": 0, "riskLevel": "stable" },
+    { "band": "13-24", "contract": "Month-to-month", "customers": 737, "churnRatePct": 37.72, "riskLevel": "elevated" },
+    { "band": "13-24", "contract": "One year", "customers": 197, "churnRatePct": 8.12, "riskLevel": "stable" },
+    { "band": "13-24", "contract": "Two year", "customers": 90, "churnRatePct": 0, "riskLevel": "stable" },
+    { "band": "25-48", "contract": "Month-to-month", "customers": 802, "churnRatePct": 32.92, "riskLevel": "elevated" },
+    { "band": "25-48", "contract": "One year", "customers": 518, "churnRatePct": 10.62, "riskLevel": "watch" },
+    { "band": "25-48", "contract": "Two year", "customers": 274, "churnRatePct": 2.19, "riskLevel": "stable" },
+    { "band": "49-72", "contract": "Month-to-month", "customers": 342, "churnRatePct": 26.02, "riskLevel": "elevated" },
+    { "band": "49-72", "contract": "One year", "customers": 634, "churnRatePct": 12.93, "riskLevel": "watch" },
+    { "band": "49-72", "contract": "Two year", "customers": 1263, "churnRatePct": 3.33, "riskLevel": "stable" }
+  ]
+}
