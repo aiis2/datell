@@ -17,6 +17,7 @@ The format is based on Keep a Changelog and this repository uses Semantic Versio
 - switched the published repository license surface from Apache-2.0 to MIT across the repository package metadata, MCP package metadata, and skill frontmatter
 - documented the live skills.sh listing and the real-data validation pack in the public README
 - updated the public README to show a foreign example image, direct data links, and the current skills.sh publication model
+- refreshed the README preview image as a full-page capture and added skills.sh badges plus direct install and discovery links
 
 ## [0.1.0] - 2026-04-24
 

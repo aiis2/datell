@@ -2,6 +2,11 @@
 
 Datell Agent Skills publishes a report-focused Agent Skills repository with one installable skill and an optional visual-report MCP runtime.
 
+[![skills.sh repository](https://img.shields.io/badge/skills.sh-repository-111827?logo=vercel&logoColor=white)](https://skills.sh/aiis2/frontend-design-report)
+[![skills.sh skill](https://img.shields.io/badge/skills.sh-datell--visual--report--preview-1d4ed8?logo=vercel&logoColor=white)](https://skills.sh/aiis2/frontend-design-report/datell-visual-report-preview)
+[![install with skills CLI](https://img.shields.io/badge/install-npx%20skills%20add%20aiis2%2Ffrontend--design--report%20--skill%20datell--visual--report--preview-0f766e)](https://skills.sh/aiis2/frontend-design-report/datell-visual-report-preview)
+[![GitHub repository](https://img.shields.io/badge/GitHub-aiis2%2Ffrontend--design--report-181717?logo=github&logoColor=white)](https://github.com/aiis2/frontend-design-report)
+
 ## Install
 
 Install the published skill from GitHub with the Agent Skills CLI:
@@ -16,6 +21,12 @@ The public listing is already live on skills.sh:
 
 - `https://skills.sh/aiis2/frontend-design-report`
 - `https://skills.sh/aiis2/frontend-design-report/datell-visual-report-preview`
+
+Quick links:
+
+- Open the repository page on skills.sh: `https://skills.sh/aiis2/frontend-design-report`
+- Open the skill detail page on skills.sh: `https://skills.sh/aiis2/frontend-design-report/datell-visual-report-preview`
+- Open the GitHub repository: `https://github.com/aiis2/frontend-design-report`
 
 skills.sh does not require a separate manual submission flow for this repository at the moment. Once the GitHub repository is public, installable, and indexed, the listing page becomes the publish surface.
 

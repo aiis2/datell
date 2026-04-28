@@ -51,6 +51,9 @@ function escapeRegExp(value) {
 
 const readme = await readFile(readmeFile, 'utf8');
 assert.match(readme, /npx skills add aiis2\/frontend-design-report --skill datell-visual-report-preview/i, 'README should show the real install command for the public repository');
+assert.match(readme, /img\.shields\.io\/badge\/skills\.sh-repository/i, 'README should include a skills.sh repository badge');
+assert.match(readme, /img\.shields\.io\/badge\/skills\.sh-datell--visual--report--preview/i, 'README should include a skills.sh skill badge');
+assert.match(readme, /img\.shields\.io\/badge\/install-npx%20skills%20add/i, 'README should include a one-click install badge');
 assert.match(readme, /us-ag-exports-top8-2011-preview\.png/i, 'README should show the public foreign example preview image');
 assert.match(readme, /us-ag-exports-top8-2011\.json/i, 'README should link the public foreign example data file');
 assert.match(readme, /2011_us_ag_exports\.csv/i, 'README should cite the public U.S. agriculture dataset source');
