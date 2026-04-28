@@ -1,6 +1,8 @@
-# Datell Agent Skills
+# frontend-design-report
 
-Datell Agent Skills publishes a report-focused Agent Skills repository with one installable skill and an optional visual-report MCP runtime.
+## Overview
+
+frontend-design-report is the public release repository for Datell-style visual report generation. It provides one installable Agent Skill, `datell-visual-report-preview`, together with a companion visual-report MCP workspace, reference catalogs, and validated example assets.
 
 [![skills.sh repository](https://img.shields.io/badge/skills.sh-repository-111827?logo=vercel&logoColor=white)](https://skills.sh/aiis2/frontend-design-report)
 [![skills.sh skill](https://img.shields.io/badge/skills.sh-datell--visual--report--preview-1d4ed8?logo=vercel&logoColor=white)](https://skills.sh/aiis2/frontend-design-report/datell-visual-report-preview)
@@ -15,32 +17,24 @@ Install the published skill from GitHub with the Agent Skills CLI:
 npx skills add aiis2/frontend-design-report --skill datell-visual-report-preview
 ```
 
-The repository also ships `.claude-plugin/marketplace.json` for hosts that support Claude-style marketplace imports.
-
-The public listing is already live on skills.sh:
-
-- `https://skills.sh/aiis2/frontend-design-report`
-- `https://skills.sh/aiis2/frontend-design-report/datell-visual-report-preview`
-
-Quick links:
+## Project Links
 
 - Open the repository page on skills.sh: `https://skills.sh/aiis2/frontend-design-report`
 - Open the skill detail page on skills.sh: `https://skills.sh/aiis2/frontend-design-report/datell-visual-report-preview`
 - Open the GitHub repository: `https://github.com/aiis2/frontend-design-report`
 
-skills.sh does not require a separate manual submission flow for this repository at the moment. Once the GitHub repository is public, installable, and indexed, the listing page becomes the publish surface.
-
-## What You Get
+## Included Capabilities
 
 - One installable skill: `datell-visual-report-preview`
 - Preferred runtime path: call `datell_generate_chart` when a compatible MCP host is available
 - Standalone fallback path: generate self-contained HTML that preserves the Datell layout, card, and palette system
 - No-MCP basic-report mode: generate a static, non-interactive HTML report without filter controls, event-bus hooks, or cross-card linkage
-- Optional MCP package scope: visual-report runtime only
+- Optional MCP workspace: visual-report runtime only
+- Public example assets and validation materials for installation, review, and smoke verification
 
-## Skill Layout
+## Repository Contents
 
-The skill follows the Agent Skills directory model: a `SKILL.md` entry point with focused reference files loaded on demand.
+The repository is organized around a single published skill with focused reference files loaded on demand.
 
 - `skills/datell-visual-report-preview/SKILL.md`
 - `skills/datell-visual-report-preview/references/datell-knowledge-index.md`
@@ -59,7 +53,7 @@ For no-MCP delivery planning, also use `references/datell-no-mcp-capability-matr
 
 ![U.S. agriculture exports preview](skills/datell-visual-report-preview/assets/us-ag-exports-top8-2011-preview.png)
 
-This public-facing example uses a foreign open dataset instead of an internal export. It demonstrates the exact no-MCP fallback contract with a static Datell-style report built from the top eight U.S. states by 2011 agriculture export value.
+This example uses an open U.S. agriculture dataset and demonstrates the no-MCP fallback contract with a static Datell-style report built from the top eight U.S. states by 2011 agriculture export value.
 
 - Preview image: `skills/datell-visual-report-preview/assets/us-ag-exports-top8-2011-preview.png`
 - Standalone HTML: `skills/datell-visual-report-preview/assets/us-ag-exports-top8-2011-basic-report.html`
@@ -72,7 +66,7 @@ Layout style: `universal/dashboard-2col`
 
 ![European GDP magazine preview](skills/datell-visual-report-preview/assets/europe-gdp-top8-2014-preview.png)
 
-This second public-facing example uses a different layout family and a richer static card mix. It demonstrates a no-MCP `universal/magazine-wide` composition with mini image cards, a ranked analytical chart, a metric narrative hero, and a compact comparison block built from the top eight European economies in the 2014 public GDP dataset.
+This example uses a second layout family and a richer static card mix. It demonstrates a no-MCP `universal/magazine-wide` composition with mini image cards, a ranked analytical chart, a metric narrative hero, and a compact comparison block built from the top eight European economies in the 2014 public GDP dataset.
 
 - Preview image: `skills/datell-visual-report-preview/assets/europe-gdp-top8-2014-preview.png`
 - Standalone HTML: `skills/datell-visual-report-preview/assets/europe-gdp-top8-2014-magazine-report.html`
@@ -85,7 +79,7 @@ Layout style: `universal/magazine-wide`
 
 ![SaaS subscription health preview](skills/datell-visual-report-preview/assets/saas-subscription-health-ibm-telco-preview.png)
 
-This third public-facing example shifts from macro and export data into a business-style subscription health view. It uses the IBM telco churn dataset as a recurring-revenue proxy and demonstrates a static no-MCP `universal/bento-grid` composition with risk-led KPI cards, a contract concentration board, a tenure-by-contract heat matrix, and side-by-side service and payment comparisons.
+This example moves the gallery into a business-style subscription health view. It uses the IBM telco churn dataset as a recurring-revenue proxy and demonstrates a static no-MCP `universal/bento-grid` composition with risk-led KPI cards, a contract concentration board, a tenure-by-contract heat matrix, and side-by-side service and payment comparisons.
 
 - Preview image: `skills/datell-visual-report-preview/assets/saas-subscription-health-ibm-telco-preview.png`
 - Standalone HTML: `skills/datell-visual-report-preview/assets/saas-subscription-health-ibm-telco-bento-report.html`
@@ -94,9 +88,9 @@ This third public-facing example shifts from macro and export data into a busine
 
 Layout style: `universal/bento-grid`
 
-## Real-Data Validation Pack
+## Validation Assets
 
-The public repository now includes four validation packs: one normalized internal-origin export example and three public open-dataset examples.
+The repository includes four validation packs: one normalized sales export example from the Datell application and three public open-dataset examples.
 
 ### Normalized sales export example
 
@@ -140,9 +134,11 @@ This validates JSON files, repository layout, eval integrity, and the runnable M
 
 ## Support Policy
 
-This repository currently ships only the report-preview skill and the matching visual-report MCP runtime.
+This repository is intentionally scoped to report generation.
 
-Requests outside that surface, such as memory, RAG, or unrelated application runtime features, should be handled in a separate repository or design pass.
+- It publishes one report-focused skill and one matching visual-report MCP workspace.
+- It keeps the public surface centered on Datell-style report generation, no-MCP fallback guidance, and curated example assets.
+- It does not package unrelated application features in this repository.
 
 ## Repository Layout
 
