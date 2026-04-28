@@ -1,7 +1,7 @@
 ---
 name: datell-visual-report-preview
 description: Create Datell visual reports with a hybrid workflow. Prefer the local Datell MCP runtime via datell_generate_chart when available, otherwise fall back to a polished standalone HTML report.
-license: Apache-2.0
+license: MIT
 compatibility: Designed for Agent Skills compatible coding agents. If a Datell MCP runtime exposing datell_generate_chart is available, use it; otherwise generate standalone HTML directly.
 metadata:
   author: aiis2
@@ -177,3 +177,5 @@ See [the Datell knowledge index](references/datell-knowledge-index.md) for the f
 See [the Datell design system playbook](references/datell-design-system-playbook.md) for reusable card families, layout families, palette presets, and domain-to-layout guidance.
 
 See [the Datell chart engine playbook](references/datell-chart-engine-playbook.md) for ECharts versus ApexCharts decision rules, shared card integration rules, and engine-specific initialization patterns.
+
+See [the real-sales example input](assets/real-sales-december-2024.json) and [the matching standalone report example](assets/real-sales-december-2024-basic-report.html) for a real-data no-MCP validation pack.

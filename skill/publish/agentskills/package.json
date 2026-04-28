@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Standalone repository workspace for Datell Agent Skills and the Datell visual report MCP runtime.",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "engines": {
     "node": ">=20"
   },
@@ -11,9 +11,10 @@
     "mcp"
   ],
   "scripts": {
-    "validate": "npm run validate:json && npm run validate:layout && npm run validate:evals && npm run validate:mcp",
+    "validate": "npm run validate:json && npm run validate:layout && npm run validate:public && npm run validate:evals && npm run validate:mcp",
     "validate:json": "node ./scripts/validate-json.mjs",
     "validate:layout": "node ./scripts/validate-layout.mjs",
+    "validate:public": "node ./scripts/validate-public.mjs",
     "validate:evals": "node ./scripts/validate-evals.mjs",
     "validate:mcp": "npm --workspace @datell/mcp run smoke"
   }

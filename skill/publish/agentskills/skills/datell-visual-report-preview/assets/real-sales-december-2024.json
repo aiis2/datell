@@ -1,0 +1,30 @@
+{
+  "source": {
+    "kind": "normalized-real-export",
+    "period": "2024-12",
+    "currency": "CNY",
+    "note": "Normalized from a real Datell sales export. Numeric values are preserved while labels are translated to English for public publication."
+  },
+  "rows": [
+    { "row": 1, "store": "Beijing", "operator": "Yuanzhang", "brand": "B", "product": "Top", "amount": 329, "date": "2024-12-01" },
+    { "row": 2, "store": "Shanghai", "operator": "Keji", "brand": "C", "product": "Shoes", "amount": 418, "date": "2024-12-03" },
+    { "row": 3, "store": "Guangzhou", "operator": "Xuetu", "brand": "C", "product": "Top", "amount": 812, "date": "2024-12-03" },
+    { "row": 4, "store": "Shanghai", "operator": "Assistant", "brand": "B", "product": "Top", "amount": 273, "date": "2024-12-05" },
+    { "row": 5, "store": "Guangzhou", "operator": "Xuetu", "brand": "A", "product": "Shoes", "amount": 167, "date": "2024-12-06" },
+    { "row": 6, "store": "Guangzhou", "operator": "Xiangxiang", "brand": "C", "product": "Pants", "amount": 926, "date": "2024-12-09" },
+    { "row": 7, "store": "Beijing", "operator": "Yuanzhang", "brand": "C", "product": "Top", "amount": 163, "date": "2024-12-10" },
+    { "row": 8, "store": "Shanghai", "operator": "Keji", "brand": "A", "product": "Shoes", "amount": 251, "date": "2024-12-12" },
+    { "row": 9, "store": "Guangzhou", "operator": "Xiangxiang", "brand": "B", "product": "Pants", "amount": 301, "date": "2024-12-12" },
+    { "row": 10, "store": "Beijing", "operator": "Professor", "brand": "C", "product": "Top", "amount": 593, "date": "2024-12-14" },
+    { "row": 11, "store": "Guangzhou", "operator": "Xuetu", "brand": "C", "product": "Pants", "amount": 721, "date": "2024-12-15" },
+    { "row": 12, "store": "Beijing", "operator": "Yuanzhang", "brand": "A", "product": "Shoes", "amount": 812, "date": "2024-12-18" },
+    { "row": 13, "store": "Guangzhou", "operator": "Xiangxiang", "brand": "C", "product": "Top", "amount": 318, "date": "2024-12-18" },
+    { "row": 14, "store": "Shanghai", "operator": "Keji", "brand": "A", "product": "Pants", "amount": 471, "date": "2024-12-20" },
+    { "row": 15, "store": "Beijing", "operator": "Professor", "brand": "B", "product": "Top", "amount": 713, "date": "2024-12-21" },
+    { "row": 16, "store": "Beijing", "operator": "Professor", "brand": "A", "product": "Shoes", "amount": 467, "date": "2024-12-22" },
+    { "row": 17, "store": "Shanghai", "operator": "Assistant", "brand": "A", "product": "Top", "amount": 926, "date": "2024-12-25" },
+    { "row": 18, "store": "Beijing", "operator": "Yuanzhang", "brand": "B", "product": "Shoes", "amount": 636, "date": "2024-12-25" },
+    { "row": 19, "store": "Guangzhou", "operator": "Xiangxiang", "brand": "C", "product": "Pants", "amount": 831, "date": "2024-12-28" },
+    { "row": 20, "store": "Shanghai", "operator": "Assistant", "brand": "B", "product": "Pants", "amount": 318, "date": "2024-12-28" }
+  ]
+}

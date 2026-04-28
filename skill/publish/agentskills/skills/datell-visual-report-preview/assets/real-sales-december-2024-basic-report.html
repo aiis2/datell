@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>December 2024 Store Sales Snapshot</title>
+    <style>
+      :root {
+        --bg-body: #eef3fb;
+        --bg-card: #ffffff;
+        --bg-card-alt: #f8fbff;
+        --text-main: #0f172a;
+        --text-sub: #475569;
+        --text-accent: #0b4ad1;
+        --text-header: #ffffff;
+        --color-primary: #2563eb;
+        --color-success: #16a34a;
+        --color-warning: #d97706;
+        --color-danger: #dc2626;
+        --border-table: rgba(148, 163, 184, 0.26);
+        --radius-card: 22px;
+        --shadow-card: 0 20px 48px rgba(15, 23, 42, 0.08);
+        --palette-color-1: #2563eb;
+        --palette-color-2: #0ea5e9;
+        --palette-color-3: #38bdf8;
+        --palette-color-4: #1d4ed8;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        color: var(--text-main);
+        background:
+          radial-gradient(circle at top left, rgba(37, 99, 235, 0.14), transparent 30%),
+          radial-gradient(circle at right 20%, rgba(14, 165, 233, 0.12), transparent 24%),
+          var(--bg-body);
+      }
+
+      .report-container {
+        width: min(1240px, calc(100vw - 40px));
+        margin: 28px auto 48px;
+      }
+
+      .report-header {
+        padding: 30px 32px;
+        border-radius: var(--radius-card);
+        background: linear-gradient(135deg, var(--palette-color-1) 0%, var(--palette-color-2) 100%);
+        color: var(--text-header);
+        box-shadow: var(--shadow-card);
+      }
+
+      .report-title {
+        margin: 0;
+        font-size: 34px;
+        line-height: 1.05;
+      }
+
+      .report-subtitle {
+        margin: 12px 0 0;
+        max-width: 760px;
+        font-size: 15px;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .report-timestamp {
+        margin: 14px 0 0;
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.82);
+      }
+
+      .report-content {
+        display: grid;
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .grid-kpi {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .grid-charts {
+        display: grid;
+        grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.95fr);
+        gap: 16px;
+      }
+
+      .card {
+        border-radius: var(--radius-card);
+        background: var(--bg-card);
+        box-shadow: var(--shadow-card);
+        border: 1px solid rgba(37, 99, 235, 0.08);
+      }
+
+      .kpi-card,
+      .chart-card,
+      .text-summary-card,
+      .scorecard-card {
+        padding: 22px;
+      }
+
+      .kpi-label,
+      .card-subtitle,
+      .summary-label,
+      .scorecard-note {
+        color: var(--text-sub);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .kpi-value {
+        margin-top: 8px;
+        font-size: 30px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+      }
+
+      .kpi-sub {
+        margin-top: 8px;
+        color: var(--text-sub);
+        font-size: 13px;
+      }
+
+      .card-title {
+        margin: 0;
+        font-size: 20px;
+      }
+
+      .chart-footer {
+        margin-top: 16px;
+        color: var(--text-sub);
+        font-size: 13px;
+      }
+
+      .ranking-table {
+        display: grid;
+        gap: 14px;
+        margin-top: 18px;
+      }
+
+      .ranking-row {
+        display: grid;
+        grid-template-columns: 120px minmax(0, 1fr) 96px;
+        gap: 14px;
+        align-items: center;
+      }
+
+      .ranking-label,
+      .ranking-value {
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .ranking-track {
+        position: relative;
+        height: 14px;
+        border-radius: 999px;
+        background: rgba(37, 99, 235, 0.08);
+        overflow: hidden;
+      }
+
+      .ranking-bar {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: var(--pct);
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--palette-color-1) 0%, var(--palette-color-2) 100%);
+      }
+
+      .ranking-bar.alt {
+        background: linear-gradient(90deg, #1d4ed8 0%, #60a5fa 100%);
+      }
+
+      .pct-100 { width: 100%; }
+      .pct-81-6 { width: 81.6%; }
+      .pct-74-6 { width: 74.6%; }
+      .pct-71-5 { width: 71.5%; }
+      .pct-63-8 { width: 63.8%; }
+      .pct-48-0 { width: 48%; }
+
+      .summary-list {
+        display: grid;
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .summary-item {
+        padding: 14px 16px;
+        border-radius: 16px;
+        background: var(--bg-card-alt);
+        border: 1px solid rgba(37, 99, 235, 0.08);
+      }
+
+      .summary-item strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 14px;
+      }
+
+      .scorecard-card {
+        grid-column: 1 / -1;
+      }
+
+      .scorecard-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 18px;
+      }
+
+      .scorecard-table th,
+      .scorecard-table td {
+        padding: 12px 14px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-table);
+        font-size: 14px;
+      }
+
+      .scorecard-table th {
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--text-sub);
+        background: rgba(37, 99, 235, 0.05);
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .status-pill.strong {
+        color: var(--color-success);
+        background: rgba(22, 163, 74, 0.12);
+      }
+
+      .status-pill.watch {
+        color: var(--color-warning);
+        background: rgba(217, 119, 6, 0.12);
+      }
+
+      @media (max-width: 980px) {
+        .grid-kpi,
+        .grid-charts {
+          grid-template-columns: 1fr;
+        }
+
+        .ranking-row {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="report-container">
+      <header class="report-header">
+        <h1 class="report-title">December 2024 Store Sales Snapshot</h1>
+        <p class="report-subtitle">Static no-MCP validation example built from 20 normalized real sales rows. The deliverable keeps the Datell shell, KPI row, one primary chart area, one narrative block, and one scorecard table without filter controls or linkage hooks.</p>
+        <p class="report-timestamp">Updated 2026-04-28 · layout: universal/dashboard-2col · palette: palette-classic · input: real-sales-december-2024.json</p>
+      </header>
+
+      <main class="report-content">
+        <section class="grid-kpi">
+          <article class="card kpi-card">
+            <div class="kpi-label">Total sales</div>
+            <div class="kpi-value">CNY 10,446</div>
+            <div class="kpi-sub">20 orders across 3 stores during December 2024.</div>
+          </article>
+          <article class="card kpi-card">
+            <div class="kpi-label">Top operator</div>
+            <div class="kpi-value">Xiangxiang</div>
+            <div class="kpi-sub">CNY 2,376 from 4 orders, leading the month.</div>
+          </article>
+          <article class="card kpi-card">
+            <div class="kpi-label">Leading brand</div>
+            <div class="kpi-value">Brand C</div>
+            <div class="kpi-sub">CNY 4,782, or 45.8% of total sales.</div>
+          </article>
+          <article class="card kpi-card">
+            <div class="kpi-label">Highest-grossing store</div>
+            <div class="kpi-value">Guangzhou</div>
+            <div class="kpi-sub">CNY 4,076 from 7 orders, ahead of Beijing by CNY 363.</div>
+          </article>
+        </section>
+
+        <section class="grid-charts">
+          <article class="card chart-card">
+            <h2 class="card-title">Operator sales ranking</h2>
+            <div class="card-subtitle">Primary chart area using a static Datell card shell and a CSS-based ranked bar visualization.</div>
+            <div class="ranking-table">
+              <div class="ranking-row">
+                <div class="ranking-label">Xiangxiang</div>
+                <div class="ranking-track"><div class="ranking-bar pct-100"></div></div>
+                <div class="ranking-value">CNY 2,376</div>
+              </div>
+              <div class="ranking-row">
+                <div class="ranking-label">Yuanzhang</div>
+                <div class="ranking-track"><div class="ranking-bar alt pct-81-6"></div></div>
+                <div class="ranking-value">CNY 1,940</div>
+              </div>
+              <div class="ranking-row">
+                <div class="ranking-label">Professor</div>
+                <div class="ranking-track"><div class="ranking-bar pct-74-6"></div></div>
+                <div class="ranking-value">CNY 1,773</div>
+              </div>
+              <div class="ranking-row">
+                <div class="ranking-label">Xuetu</div>
+                <div class="ranking-track"><div class="ranking-bar alt pct-71-5"></div></div>
+                <div class="ranking-value">CNY 1,700</div>
+              </div>
+              <div class="ranking-row">
+                <div class="ranking-label">Assistant</div>
+                <div class="ranking-track"><div class="ranking-bar pct-63-8"></div></div>
+                <div class="ranking-value">CNY 1,517</div>
+              </div>
+              <div class="ranking-row">
+                <div class="ranking-label">Keji</div>
+                <div class="ranking-track"><div class="ranking-bar alt pct-48-0"></div></div>
+                <div class="ranking-value">CNY 1,140</div>
+              </div>
+            </div>
+            <div class="chart-footer">No client-side filters, event bus hooks, or linked brushing are used in this no-MCP basic-report example.</div>
+          </article>
+
+          <article class="card text-summary-card">
+            <div class="summary-label">Narrative summary</div>
+            <h2 class="card-title">What the input data says</h2>
+            <div class="summary-list">
+              <div class="summary-item">
+                <strong>Peak sales day</strong>
+                2024-12-25 delivered CNY 1,562, the single highest daily total in the input pack.
+              </div>
+              <div class="summary-item">
+                <strong>Brand concentration</strong>
+                Brand C led the month and finished CNY 1,688 ahead of Brand A.
+              </div>
+              <div class="summary-item">
+                <strong>Static fallback quality bar</strong>
+                The example keeps the Datell layout grammar while staying fully standalone and non-interactive.
+              </div>
+            </div>
+          </article>
+
+          <article class="card scorecard-card">
+            <div class="summary-label">Regional scorecard</div>
+            <h2 class="card-title">Store sales distribution</h2>
+            <div class="scorecard-note">Each store total, order count, and share is derived directly from the JSON input pack.</div>
+            <table class="scorecard-table">
+              <thead>
+                <tr>
+                  <th>Store</th>
+                  <th>Orders</th>
+                  <th>Sales</th>
+                  <th>Share</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Guangzhou</td>
+                  <td>7</td>
+                  <td>CNY 4,076</td>
+                  <td>39.0%</td>
+                  <td><span class="status-pill strong">Leading</span></td>
+                </tr>
+                <tr>
+                  <td>Beijing</td>
+                  <td>7</td>
+                  <td>CNY 3,713</td>
+                  <td>35.5%</td>
+                  <td><span class="status-pill strong">Close follow</span></td>
+                </tr>
+                <tr>
+                  <td>Shanghai</td>
+                  <td>6</td>
+                  <td>CNY 2,657</td>
+                  <td>25.4%</td>
+                  <td><span class="status-pill watch">Watchlist</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </article>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

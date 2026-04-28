@@ -12,6 +12,11 @@ npx skills add aiis2/frontend-design-report --skill datell-visual-report-preview
 
 The repository also ships `.claude-plugin/marketplace.json` for hosts that support Claude-style marketplace imports.
 
+The public listing is already live on skills.sh:
+
+- `https://skills.sh/aiis2/frontend-design-report`
+- `https://skills.sh/aiis2/frontend-design-report/datell-visual-report-preview`
+
 ## What You Get
 
 - One installable skill: `datell-visual-report-preview`
@@ -32,6 +37,15 @@ The skill follows the Agent Skills directory model: a `SKILL.md` entry point wit
 - `skills/datell-visual-report-preview/references/visual-report-pattern.md`
 
 Use these references when you need the full Datell layout, palette, and card inventory instead of a reduced example subset.
+
+## Real-Data Validation Pack
+
+The public repository now includes one normalized real-data input pack and a matching no-MCP standalone report example:
+
+- `skills/datell-visual-report-preview/assets/real-sales-december-2024.json`
+- `skills/datell-visual-report-preview/assets/real-sales-december-2024-basic-report.html`
+
+The input pack preserves 20 real December 2024 sales rows from an exported Datell report while translating labels to English for public publication. The HTML example shows the expected static basic-report result: KPI row, one primary chart area, one narrative block, and one scorecard table with no filter controls or linkage hooks.
 
 ## Local Validation
 
@@ -58,6 +72,8 @@ Requests outside that surface, such as memory, RAG, or unrelated application run
 skills/
   datell-visual-report-preview/
     SKILL.md
+    assets/real-sales-december-2024.json
+    assets/real-sales-december-2024-basic-report.html
     evals/evals.json
     references/datell-chart-engine-playbook.md
     references/datell-card-catalog.md
