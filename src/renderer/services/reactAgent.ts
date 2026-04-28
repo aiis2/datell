@@ -106,13 +106,27 @@ export async function* runReactAgent(
   // Build datasource context if user has selected one
   const dsState = useDatasourceStore.getState();
   const activeDsId = dsState.activeDatasourceId;
-  const activeDatasource = activeDsId ? dsState.datasources.find((d) => d.id === activeDsId) : undefined;
+  const activeDatasource = activeDsId ? dsState.allDatasources().find((d) => d.id === activeDsId) : undefined;
+  const isUserDBActive = activeDatasource?.type === 'userdb';
   const datasourceContext = activeDatasource
-    ? `\n## 当前激活数据源（用户已在输入框选择）
+    ? isUserDBActive
+      ? `\n## 当前激活用户数据库（用户已在输入框选择）
+用户已选择以下本地 SQLite 用户数据库作为本次分析的数据来源，请优先从该数据库查询数据生成报表：
+- **数据库名称**: ${activeDatasource.name}
+- **数据库类型**: SQLite（本地嵌入式，无需网络，直接本地文件查询）
+- **数据源ID（工具调用必须使用此ID）**: \`${activeDatasource.id}\`
+
+**强制执行流程**：
+1. **第一步：获取表结构** — 调用 \`get_database_schema\` 工具（datasourceId: "${activeDatasource.id}"）了解可用的表和字段
+2. **第二步：查询数据** — 根据用户需求调用 \`query_database\` 工具（datasourceId: "${activeDatasource.id}"）进行 SQL 查询（使用 SQLite 语法）
+3. **第三步：综合分析** — 结合数据库查询结果，生成完整分析报表
+4. SQL 安全要求：只允许 SELECT 查询，禁止 INSERT/UPDATE/DELETE/DROP 等写操作
+5. SQLite 语法提示：使用 \`strftime\` 处理日期，不支持 \`LIMIT n,m\` 改用 \`LIMIT n OFFSET m\`，字符串拼接用 \`||\``
+      : `\n## 当前激活数据源（用户已在输入框选择）
 用户已选择以下数据库作为本次分析的数据来源，请优先从该数据库查询数据生成报表：
-- **数据源名称**: ${activeDatasource.name}
-- **数据库类型**: ${activeDatasource.type}
-- **连接信息**: ${activeDatasource.host}:${activeDatasource.port}/${activeDatasource.database}
+- **数据源名称**: ${(activeDatasource as any).name}
+- **数据库类型**: ${(activeDatasource as any).type}
+- **连接信息**: ${(activeDatasource as any).host}:${(activeDatasource as any).port}/${(activeDatasource as any).database}
 - **数据源ID（工具调用必须使用此ID）**: \`${activeDatasource.id}\`
 
 **强制执行流程**：

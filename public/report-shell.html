@@ -71,6 +71,47 @@
   <script src="./vendor/apexcharts.min.js"></script>
   <script src="./vendor/vtable.min.js"></script>
 
+  <!-- Map GeoJSON preloading — async, non-blocking -->
+  <script>
+  (function () {
+    window.__mapReadyCallbacks = [];
+    window.__mapRegistered = { china: false, world: false };
+    window.__cityCoords = {};
+
+    // Notify all pending __mapReady callbacks once both maps are registered
+    function checkMapsDone() {
+      if (window.__mapRegistered.china && window.__mapRegistered.world) {
+        var cbs = window.__mapReadyCallbacks || [];
+        window.__mapReadyCallbacks = [];
+        for (var i = 0; i < cbs.length; i++) { try { cbs[i](); } catch(e) {} }
+      }
+    }
+
+    function fetchAndRegister(name, url, flag) {
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(geo) {
+          if (typeof echarts !== 'undefined') echarts.registerMap(name, geo);
+          window.__mapRegistered[flag] = true;
+          checkMapsDone();
+        })
+        .catch(function(err) {
+          console.warn('[map] Failed to load ' + url + ':', err);
+          window.__mapRegistered[flag] = true; // mark done anyway to unblock
+          checkMapsDone();
+        });
+    }
+
+    fetchAndRegister('china', './maps/china-provinces.json', 'china');
+    fetchAndRegister('world', './maps/world-countries.json', 'world');
+
+    fetch('./maps/china-city-coords.json')
+      .then(function(r) { return r.json(); })
+      .then(function(coords) { window.__cityCoords = coords; })
+      .catch(function() {});
+  })();
+  </script>
+
   <script>
   (function () {
     'use strict';
@@ -478,7 +519,22 @@
       '  try {\n' +
       '    if (!window.__FILTER_STATE__) window.__FILTER_STATE__ = {};\n' +
       '  } catch(e) {}\n' +
-      '  // Monkey-patch echarts.init to track all chart instances for theme updates\n' +
+      '  // Map helpers: inherit from shell or provide no-op stubs\n' +
+      '  try {\n' +
+      '    // __cityCoords: inherit city coordinate lookup from shell\n' +
+      '    window.__cityCoords = (parent && parent.__cityCoords) ? parent.__cityCoords : {};\n' +
+      '    // __mapReady(cb): call cb immediately if maps already registered, otherwise queue\n' +
+      '    window.__mapReady = function(cb) {\n' +
+      '      if (parent && parent.__mapRegistered && parent.__mapRegistered.china && parent.__mapRegistered.world) {\n' +
+      '        try { cb(); } catch(e) {}\n' +
+      '      } else if (parent && parent.__mapReadyCallbacks) {\n' +
+      '        parent.__mapReadyCallbacks.push(cb);\n' +
+      '      } else {\n' +
+      '        // Fallback: maps not available, call immediately\n' +
+      '        try { cb(); } catch(e) {}\n' +
+      '      }\n' +
+      '    };\n' +
+      '  } catch(e) {}\n' + +
       '  // We always re-patch using the stored original to handle re-use of the same echarts object\n' +
       '  try {\n' +
       '    if (typeof echarts !== "undefined") {\n' +

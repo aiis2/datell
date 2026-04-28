@@ -11,6 +11,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { getDataDir } from './dataDir';
+import {
+  listUserDBs,
+  getUserDBSchema,
+  executeUserDBSQL,
+  getUserDBTableData,
+  type UserDBConfig,
+} from './userdb';
 
 // ─── Types (duplicated here for main-process use) ──────────────────────────
 
@@ -380,6 +387,12 @@ export async function queryDatasource(
   sql: string,
   params?: unknown[]
 ): Promise<QueryResult> {
+  // Route user DBs to the embedded SQLite service (read-only in chat mode)
+  if (id.startsWith('udb_')) {
+    const result = executeUserDBSQL(id, sql, { readOnly: true });
+    return result;
+  }
+
   const cfg = readDatasources().find((c) => c.id === id);
   if (!cfg) throw new Error(`数据源 "${id}" 不存在`);
 
@@ -399,6 +412,11 @@ export async function queryDatasource(
 }
 
 export async function getDatasourceSchema(id: string, opts: SchemaOptions = {}): Promise<SchemaInfo> {
+  // Route user DBs
+  if (id.startsWith('udb_')) {
+    return getUserDBSchema(id, opts);
+  }
+
   const cfg = readDatasources().find((c) => c.id === id);
   if (!cfg) throw new Error(`数据源 "${id}" 不存在`);
 
@@ -411,6 +429,11 @@ export async function getDatasourceSchema(id: string, opts: SchemaOptions = {}):
 }
 
 export async function getTableData(id: string, tableName: string): Promise<TableDataResult> {
+  // Route user DBs
+  if (id.startsWith('udb_')) {
+    return getUserDBTableData(id, tableName);
+  }
+
   const cfg = readDatasources().find((c) => c.id === id);
   if (!cfg) throw new Error(`数据源 "${id}" 不存在`);
   if (cfg.type === 'mysql' || cfg.type === 'doris' || cfg.type === 'presto') {

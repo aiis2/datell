@@ -289,6 +289,39 @@ ${isEnglish ? '6. **Language**: Respond in **English** to the user.' : '6. **语
      正确：\`<div id="chart1" style="width:100%;height:400px;"></div>\`
      错误：\`<div id="chart1"></div>\`（无高度）或 \`<div id="chart1" style="height:100%;"></div>\`（依赖父容器）
      原因：srcdoc iframe 中外部 CSS 加载有延迟，无明确高度的容器初始尺寸为 0，导致 ECharts 绘制空白画布。
+   - **地图卡片使用规范（map-china / map-world / heatmap-geo / map-city-scatter / map-flight-route）**：
+     * 渲染环境已在 shell 层异步预加载 china（中国省级）和 world（世界各国）GeoJSON 并注册到 echarts；
+     * **必须**将 echarts.init 调用包裹在 \`window.__mapReady(function() { ... })\` 回调中，等地图数据就绪后再初始化，否则地图为空白：
+       \`\`\`js
+       window.__mapReady(function() {
+         var el = document.getElementById('china-map');
+         if (!el) return;
+         var chart = echarts.init(el);
+         chart.setOption({
+           series: [{ type: 'map', map: 'china', data: [{ name: '广东', value: 1280 }, { name: '上海', value: 950 }] }]
+         });
+       });
+       \`\`\`
+     * **map 键名**：中国地图用 \`'china'\`，世界地图用 \`'world'\`；
+     * **城市散点/飞线** 可通过 \`window.__cityCoords\`（已预加载 ~90 城市坐标 \`{ "北京": [116.4, 39.9], ... }\`）转换城市名到坐标，无需硬编码；
+     * **城市气泡图（map-city-scatter）** 示例：
+       \`\`\`js
+       window.__mapReady(function() {
+         var coords = window.__cityCoords || {};
+         var data = [{ city: '北京', value: 520 }, { city: '上海', value: 430 }];
+         var scatterData = data.filter(function(d) { return coords[d.city]; })
+           .map(function(d) { return { name: d.city, value: coords[d.city].concat([d.value]) }; });
+         var chart = echarts.init(document.getElementById('city-map'));
+         chart.setOption({
+           geo: { map: 'china', roam: false, itemStyle: { areaColor: '#e8f4fd', borderColor: '#aac8e4' } },
+           series: [{ type: 'scatter', coordinateSystem: 'geo', data: scatterData,
+             symbolSize: function(val) { return Math.max(6, Math.sqrt(val[2]) / 4); },
+             itemStyle: { color: '#3b82f6', opacity: 0.8 } }]
+         });
+       });
+       \`\`\`
+     * **飞线路线图（map-flight-route）** 使用 \`type: 'lines'\` + \`type: 'effectScatter'\`；
+     * **地理热力图（heatmap-geo）** 使用 \`type: 'heatmap'\` + \`coordinateSystem: 'geo'\`。
 9. **generate_slide HTML规范（演示文稿）**：
    - 每张幻灯片使用 \`<section class="slide">\` 标签包裹，宽度 1280px，高度 720px，固定宽高比
    - 支持键盘左/右方向键和鼠标点击翻页（通过内嵌JS实现）

@@ -41,13 +41,13 @@ const ChatInput: React.FC<ChatInputProps> = ({ activationStatus, onNeedActivatio
   // Hide locked enterprise models when plugin is not loaded (open-source mode)
   const models = allModels.filter((m) => !m.locked || enterprisePluginAvailable);
   const { templates, selectedTemplateId, setSelectedTemplate } = useReportStore();
-  const { datasources, activeDatasourceId, setActiveDatasource, loadDatasources } = useDatasourceStore();
+  const { datasources, userDBs, activeDatasourceId, setActiveDatasource, loadDatasources, loadUserDBs, allDatasources } = useDatasourceStore();
 
   const activeModel = models.find((m) => m.id === activeModelId);
-  const activeDatasource = activeDatasourceId ? datasources.find((d) => d.id === activeDatasourceId) : undefined;
+  const activeDatasource = activeDatasourceId ? allDatasources().find((d) => d.id === activeDatasourceId) : undefined;
 
-  // Load datasources on mount
-  useEffect(() => { loadDatasources(); }, [loadDatasources]);
+  // Load datasources and userDBs on mount
+  useEffect(() => { loadDatasources(); loadUserDBs(); }, [loadDatasources, loadUserDBs]);
 
   // Listen for scenario-card draft fills from EmptyState
   useEffect(() => {
@@ -310,7 +310,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ activationStatus, onNeedActivatio
               ) : null;
             })()}
             {/* Datasource selector */}
-            {datasources.length > 0 && (
+            {(datasources.length > 0 || userDBs.length > 0) && (
               <div className="relative">
                 <button
                   onClick={(e) => { e.stopPropagation(); setDsMenuOpen((v) => !v); }}
@@ -335,24 +335,54 @@ const ChatInput: React.FC<ChatInputProps> = ({ activationStatus, onNeedActivatio
                         <span className="text-gray-400">{t.chatInput.datasourceHint}</span>
                       )}
                     </div>
-                    {datasources.map((ds) => {
-                      const isActive = activeDatasourceId === ds.id;
-                      return (
-                        <button
-                          key={ds.id}
-                          onClick={() => { setActiveDatasource(isActive ? null : ds.id); setDsMenuOpen(false); setTimeout(() => textareaRef.current?.focus(), 0); }}
-                          className={`w-full text-left px-3 py-2.5 transition-colors flex items-start gap-2 ${
-                            isActive ? 'bg-emerald-50 dark:bg-emerald-900/40' : 'hover:bg-gray-50 dark:hover:bg-gray-700'
-                          }`}
-                        >
-                          <span className={`mt-0.5 w-4 flex-shrink-0 text-sm ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-transparent'}`}>✓</span>
-                          <div className="min-w-0">
-                            <div className={`text-sm font-medium truncate ${isActive ? 'text-emerald-700 dark:text-emerald-300' : ''}`}>{ds.name}</div>
-                            <div className="text-xs text-gray-400 truncate">{ds.type} · {ds.host}:{ds.port}/{ds.database}</div>
-                          </div>
-                        </button>
-                      );
-                    })}
+                    {/* User DBs group */}
+                    {userDBs.length > 0 && (
+                      <>
+                        <div className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide bg-gray-50 dark:bg-gray-800/60">用户数据库</div>
+                        {userDBs.map((db) => {
+                          const isActive = activeDatasourceId === db.id;
+                          return (
+                            <button
+                              key={db.id}
+                              onClick={() => { setActiveDatasource(isActive ? null : db.id); setDsMenuOpen(false); setTimeout(() => textareaRef.current?.focus(), 0); }}
+                              className={`w-full text-left px-3 py-2.5 transition-colors flex items-start gap-2 ${
+                                isActive ? 'bg-emerald-50 dark:bg-emerald-900/40' : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+                              }`}
+                            >
+                              <span className={`mt-0.5 w-4 flex-shrink-0 text-sm ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-transparent'}`}>✓</span>
+                              <div className="min-w-0">
+                                <div className={`text-sm font-medium truncate ${isActive ? 'text-emerald-700 dark:text-emerald-300' : ''}`}>{db.name}</div>
+                                <div className="text-xs text-gray-400 truncate">SQLite · {db.tableCount ?? 0} 张表</div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </>
+                    )}
+                    {/* External datasources group */}
+                    {datasources.length > 0 && (
+                      <>
+                        {userDBs.length > 0 && <div className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide bg-gray-50 dark:bg-gray-800/60 border-t border-gray-100 dark:border-gray-700">外部数据源</div>}
+                        {datasources.map((ds) => {
+                          const isActive = activeDatasourceId === ds.id;
+                          return (
+                            <button
+                              key={ds.id}
+                              onClick={() => { setActiveDatasource(isActive ? null : ds.id); setDsMenuOpen(false); setTimeout(() => textareaRef.current?.focus(), 0); }}
+                              className={`w-full text-left px-3 py-2.5 transition-colors flex items-start gap-2 ${
+                                isActive ? 'bg-emerald-50 dark:bg-emerald-900/40' : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+                              }`}
+                            >
+                              <span className={`mt-0.5 w-4 flex-shrink-0 text-sm ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-transparent'}`}>✓</span>
+                              <div className="min-w-0">
+                                <div className={`text-sm font-medium truncate ${isActive ? 'text-emerald-700 dark:text-emerald-300' : ''}`}>{ds.name}</div>
+                                <div className="text-xs text-gray-400 truncate">{ds.type} · {ds.host}:{ds.port}/{ds.database}</div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </>
+                    )}
                     {activeDatasourceId && (
                       <button
                         onClick={() => { setActiveDatasource(null); setDsMenuOpen(false); setTimeout(() => textareaRef.current?.focus(), 0); }}

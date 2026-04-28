@@ -170,6 +170,36 @@ contextBridge.exposeInMainWorld('electronAPI', {
   datasourceGetTableData: (id: string, tableName: string): Promise<import('../main/datasource').TableDataResult> =>
     ipcRenderer.invoke('datasource:getTableData', id, tableName),
 
+  // ===== User DB (embedded SQLite user libraries) =====
+  userdbList: (): Promise<import('../main/userdb').UserDBConfig[]> =>
+    ipcRenderer.invoke('userdb:list'),
+  userdbCreate: (name: string, description?: string): Promise<import('../main/userdb').UserDBConfig> =>
+    ipcRenderer.invoke('userdb:create', name, description),
+  userdbUpdate: (id: string, patch: { name?: string; description?: string }): Promise<import('../main/userdb').UserDBConfig> =>
+    ipcRenderer.invoke('userdb:update', id, patch),
+  userdbDelete: (id: string): Promise<void> =>
+    ipcRenderer.invoke('userdb:delete', id),
+  userdbGetSchema: (id: string, opts?: { limit?: number; search?: string }): Promise<import('../main/userdb').UserDBSchemaInfo> =>
+    ipcRenderer.invoke('userdb:getSchema', id, opts),
+  userdbExecute: (id: string, sql: string): Promise<import('../main/userdb').UserDBQueryResult> =>
+    ipcRenderer.invoke('userdb:execute', id, sql),
+  userdbQuery: (id: string, sql: string): Promise<import('../main/userdb').UserDBQueryResult> =>
+    ipcRenderer.invoke('userdb:query', id, sql),
+  userdbBatchInsert: (id: string, tableName: string, columns: string[], rows: unknown[][]): Promise<{ inserted: number }> =>
+    ipcRenderer.invoke('userdb:batchInsert', id, tableName, columns, rows),
+  userdbCreateTable: (id: string, ddl: string): Promise<void> =>
+    ipcRenderer.invoke('userdb:createTable', id, ddl),
+  userdbDropTable: (id: string, tableName: string): Promise<void> =>
+    ipcRenderer.invoke('userdb:dropTable', id, tableName),
+  userdbAddColumn: (id: string, tableName: string, colName: string, colType: string): Promise<void> =>
+    ipcRenderer.invoke('userdb:addColumn', id, tableName, colName, colType),
+  userdbAlterColumn: (id: string, tableName: string, colName: string, newType?: string, newComment?: string): Promise<void> =>
+    ipcRenderer.invoke('userdb:alterColumn', id, tableName, colName, newType, newComment),
+  userdbExport: (id: string, tableName: string, format: 'csv' | 'json'): Promise<string> =>
+    ipcRenderer.invoke('userdb:export', id, tableName, format),
+  userdbGetTableData: (id: string, tableName: string): Promise<import('../main/userdb').UserDBTableDataResult> =>
+    ipcRenderer.invoke('userdb:getTableData', id, tableName),
+
   // ===== File Picker =====
   fsSelectFile: (extensions: string[]): Promise<string | null> =>
     ipcRenderer.invoke('fs:selectFile', extensions),

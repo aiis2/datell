@@ -37,6 +37,7 @@ import {
 import { DatabaseService } from './database';
 import { getDataDir, ensureDataDirs, setDataDir } from './dataDir';
 import { createSkillsManager, listLegacyDirectorySkills } from './skillsManager';
+import { installSkillFromUrl } from './skillsInstallFromUrl';
 import {
   getAllDatasources,
   getMaskedDatasources,
@@ -47,6 +48,21 @@ import {
   getDatasourceSchema,
   getTableData,
 } from './datasource';
+import {
+  listUserDBs,
+  createUserDB,
+  updateUserDB,
+  deleteUserDB,
+  getUserDBSchema,
+  executeUserDBSQL,
+  batchInsert as userDBBatchInsert,
+  createTable as userDBCreateTable,
+  dropTable as userDBDropTable,
+  addColumn as userDBAddColumn,
+  alterColumn as userDBAlterColumn,
+  exportTableData as userDBExportTable,
+  getUserDBTableData,
+} from './userdb';
 import {
   listCollections, createCollection, deleteCollection,
   listDocuments, addDocument, removeDocument,
@@ -379,6 +395,31 @@ ipcMain.handle('datasource:query', (_e, id: string, sql: string, params?: unknow
 );
 ipcMain.handle('datasource:getSchema', (_e, id: string, opts?: any) => getDatasourceSchema(id, opts));
 ipcMain.handle('datasource:getTableData', (_e, id: string, tableName: string) => getTableData(id, tableName));
+
+/* ======== UserDB IPC Handlers ======== */
+
+ipcMain.handle('userdb:list', () => listUserDBs());
+ipcMain.handle('userdb:create', (_e, name: string, description?: string) => createUserDB(name, description));
+ipcMain.handle('userdb:update', (_e, id: string, patch: { name?: string; description?: string }) => updateUserDB(id, patch));
+ipcMain.handle('userdb:delete', (_e, id: string) => { deleteUserDB(id); });
+ipcMain.handle('userdb:getSchema', (_e, id: string, opts?: any) => getUserDBSchema(id, opts));
+ipcMain.handle('userdb:execute', (_e, id: string, sql: string) => executeUserDBSQL(id, sql));
+ipcMain.handle('userdb:query', (_e, id: string, sql: string) => executeUserDBSQL(id, sql, { readOnly: true }));
+ipcMain.handle('userdb:batchInsert', (_e, id: string, tableName: string, columns: string[], rows: unknown[][]) =>
+  userDBBatchInsert(id, tableName, columns, rows)
+);
+ipcMain.handle('userdb:createTable', (_e, id: string, ddl: string) => { userDBCreateTable(id, ddl); });
+ipcMain.handle('userdb:dropTable', (_e, id: string, tableName: string) => { userDBDropTable(id, tableName); });
+ipcMain.handle('userdb:addColumn', (_e, id: string, tableName: string, colName: string, colType: string) => {
+  userDBAddColumn(id, tableName, colName, colType);
+});
+ipcMain.handle('userdb:alterColumn', (_e, id: string, tableName: string, colName: string, newType?: string, newComment?: string) => {
+  userDBAlterColumn(id, tableName, colName, newType, newComment);
+});
+ipcMain.handle('userdb:export', (_e, id: string, tableName: string, format: 'csv' | 'json') =>
+  userDBExportTable(id, tableName, format)
+);
+ipcMain.handle('userdb:getTableData', (_e, id: string, tableName: string) => getUserDBTableData(id, tableName));
 
 /* ======== System Identity IPC Handlers ======== */
 
@@ -1546,120 +1587,37 @@ ipcMain.handle('skills:registry:import', (_e, sourcePath: string): { ok: boolean
 });
 
 ipcMain.handle('skills:installFromUrl', async (_e, url: string): Promise<{ ok: boolean; name?: string; toolCount?: number; error?: string }> => {
-  try {
-    const { net } = await import('electron');
+  const { net } = await import('electron');
 
-    // Helper: fetch raw content from a URL, returns null on error or non-200
-    async function fetchContent(fetchUrl: string, accept = 'application/json'): Promise<string | null> {
-      return new Promise<string | null>((resolve) => {
-        try {
-          const req = net.request({ method: 'GET', url: fetchUrl });
-          req.setHeader('Accept', accept);
-          req.on('response', (res) => {
-            if (res.statusCode && res.statusCode >= 400) { resolve(null); return; }
-            let data = '';
-            res.on('data', (chunk) => { data += chunk.toString(); });
-            res.on('end', () => resolve(data));
-            res.on('error', () => resolve(null));
+  async function fetchContent(fetchUrl: string, accept = 'application/json'): Promise<string | null> {
+    return new Promise<string | null>((resolve) => {
+      try {
+        const req = net.request({ method: 'GET', url: fetchUrl });
+        req.setHeader('Accept', accept);
+        req.on('response', (res) => {
+          if (res.statusCode && res.statusCode >= 400) {
+            resolve(null);
+            return;
+          }
+          let data = '';
+          res.on('data', (chunk) => {
+            data += chunk.toString();
           });
-          req.on('error', () => resolve(null));
-          req.end();
-        } catch { resolve(null); }
-      });
-    }
-
-    // Helper: save and return installed skill info
-    function saveSkill(parsed: Record<string, unknown>): { ok: boolean; name?: string; toolCount?: number; error?: string } {
-      if (!parsed.name || typeof parsed.name !== 'string') return { ok: false, error: '技能文件缺少 name 字段' };
-      if (!Array.isArray(parsed.tools) || parsed.tools.length === 0) return { ok: false, error: '技能文件缺少 tools 数组或为空' };
-      const safeName = String(parsed.name).replace(/[^a-zA-Z0-9_\-\u4e00-\u9fff]/g, '_').slice(0, 80);
-      const skillsDir = path.join(DATA_DIR, 'skills');
-      if (!fs.existsSync(skillsDir)) fs.mkdirSync(skillsDir, { recursive: true });
-      fs.writeFileSync(path.join(skillsDir, `${safeName}.json`), JSON.stringify(parsed, null, 2), 'utf-8');
-      return { ok: true, name: parsed.name as string, toolCount: (parsed.tools as unknown[]).length };
-    }
-
-    // ── GitHub repository URL handling ─────────────────────────────────
-    // Supports: https://github.com/owner/repo (installs first skill)
-    //           https://github.com/owner/repo#skill-name (installs named skill)
-    const ghRepoMatch = /^https?:\/\/github\.com\/([A-Za-z0-9_.\-]+)\/([A-Za-z0-9_.\-]+?)(?:\.git)?(?:#([A-Za-z0-9_.\-]+))?$/.exec(url.trim());
-    if (ghRepoMatch) {
-      const owner = ghRepoMatch[1];
-      const repo = ghRepoMatch[2];
-      const skillNameHint = ghRepoMatch[3] || null;
-      const rawBase = `https://raw.githubusercontent.com/${owner}/${repo}/main`;
-
-      // Try .claude-plugin/marketplace.json (Vercel Labs format)
-      const marketplaceRaw = await fetchContent(`${rawBase}/.claude-plugin/marketplace.json`, 'application/json, text/plain');
-      if (marketplaceRaw) {
-        let marketplace: Record<string, unknown>;
-        try { marketplace = JSON.parse(marketplaceRaw); } catch { return { ok: false, error: '解析 marketplace.json 失败' }; }
-        type PluginEntry = { name: string; description?: string; skills?: string[] };
-        const plugins = (marketplace.plugins as PluginEntry[]) || [];
-        if (plugins.length === 0) return { ok: false, error: '仓库中未找到技能定义 (plugins 数组为空)' };
-
-        const targetPlugin = skillNameHint
-          ? plugins.find((p) => p.name === skillNameHint)
-          : plugins[0];
-        if (!targetPlugin) {
-          return { ok: false, error: `未找到技能 "${skillNameHint}"，可用技能: ${plugins.map((p) => p.name).join(', ')}` };
-        }
-
-        // Fetch SKILL.md from the skill directory
-        const rawSkillDir = (targetPlugin.skills?.[0] || `./skills/${targetPlugin.name}`).replace(/^\.\//, '');
-        // Security: prevent path traversal
-        if (rawSkillDir.includes('..') || rawSkillDir.startsWith('/')) {
-          return { ok: false, error: '无效的技能路径（检测到路径遍历）' };
-        }
-        const skillMdContent = await fetchContent(`${rawBase}/${rawSkillDir}/SKILL.md`, 'text/plain, */*');
-        if (!skillMdContent) return { ok: false, error: `无法获取 ${rawSkillDir}/SKILL.md 内容` };
-
-        // Build skill JSON: single tool that returns instructions
-        // Use JSON.stringify for safe escaping of the SKILL.md content
-        const instrCode = `// ${targetPlugin.name} instructions from ${owner}/${repo}\nreturn ${JSON.stringify(skillMdContent)};`;
-        const skillJson: Record<string, unknown> = {
-          name: targetPlugin.name,
-          description: targetPlugin.description || `${targetPlugin.name} 技能 (来自 ${owner}/${repo})`,
-          version: String((marketplace as Record<string, unknown>).version || '1.0.0'),
-          source: url,
-          tools: [{
-            name: `${targetPlugin.name.replace(/[^a-zA-Z0-9_]/g, '_')}_instructions`,
-            description: `获取 ${targetPlugin.name} 技能的操作指南和能力说明`,
-            parameters: { type: 'object', properties: {} },
-            code: instrCode,
-          }],
-        };
-        return saveSkill(skillJson);
+          res.on('end', () => resolve(data));
+          res.on('error', () => resolve(null));
+        });
+        req.on('error', () => resolve(null));
+        req.end();
+      } catch {
+        resolve(null);
       }
-
-      // Try a direct skill.json in repo root
-      const directJson = await fetchContent(`${rawBase}/skill.json`, 'application/json');
-      if (directJson) {
-        let parsed: Record<string, unknown>;
-        try { parsed = JSON.parse(directJson); } catch { return { ok: false, error: 'skill.json 不是有效 JSON' }; }
-        return saveSkill(parsed);
-      }
-
-      return { ok: false, error: `仓库 ${owner}/${repo} 中未找到兼容的技能配置。可在 URL 后加 #技能名 指定特定技能（如 ${url}#agent-browser）` };
-    }
-
-    // ── Convert GitHub blob URL to raw URL ──────────────────────────────
-    let fetchUrl = url.trim();
-    if (/github\.com\/.+\/blob\//.test(fetchUrl)) {
-      fetchUrl = fetchUrl.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
-    }
-
-    // ── Normal JSON URL ─────────────────────────────────────────────────
-    const raw = await fetchContent(fetchUrl);
-    if (!raw) return { ok: false, error: 'URL 无法访问或返回空内容' };
-    let parsed: Record<string, unknown>;
-    try { parsed = JSON.parse(raw); } catch {
-      return { ok: false, error: 'URL 内容不是有效 JSON。如需安装 GitHub 仓库中的技能，请直接提供仓库根目录 URL（如 https://github.com/owner/repo）' };
-    }
-    return saveSkill(parsed);
-  } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+    });
   }
+
+  return installSkillFromUrl(url, {
+    dataDir: DATA_DIR,
+    fetchContent,
+  });
 });
 
 /* ======== Data Directory Migration IPC Handlers ======== */

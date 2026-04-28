@@ -388,9 +388,11 @@ const SvgPreview: React.FC<{ type: SvgPreviewType; color: string }> = ({ type, c
         return (
           <>
             <rect x={15} y={10} width={110} height={58} rx="4" fill={lt} />
-            <text x={70} y={42} textAnchor="middle" fontSize="20" fill={bar} opacity="0.3">🗺</text>
-            {[[40,30,4],[75,25,3],[100,40,5],[55,48,3],[85,55,4]].map(([x,y,r],i) => (
-              <circle key={i} cx={x} cy={y} r={r} fill={bar} opacity="0.7" />
+            {/* Simplified map outline using polyline paths */}
+            <path d="M25 50 L38 35 L55 38 L68 28 L82 32 L95 22 L110 30 L115 45 L100 55 L80 52 L60 58 L40 55 Z" fill={bar} opacity="0.18" stroke={bar} strokeWidth="1" strokeOpacity="0.4" />
+            <path d="M45 42 L58 36 L70 39 L80 34 L92 38 L88 48 L74 50 L58 52 Z" fill={bar} opacity="0.12" />
+            {[[40,45,3],[72,36,2.5],[95,28,3.5],[58,50,2],[85,48,2]].map(([x,y,r],i) => (
+              <circle key={i} cx={x} cy={y} r={r} fill={bar} opacity="0.75" />
             ))}
           </>
         );

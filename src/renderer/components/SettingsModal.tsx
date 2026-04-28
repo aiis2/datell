@@ -16,6 +16,7 @@ import type { ChunkOptions } from '../stores/ragStore';
 import { SvgWireframe, LayoutPreviewModal } from './SvgLayoutPreview';
 import PaletteEditorModal from './PaletteEditorModal';
 import RegistrySkillEditorModal from './RegistrySkillEditorModal';
+import DatabaseManagementTab from './database/DatabaseManagementTab';
 import { BUILT_IN_PRESETS, PRESET_CATEGORIES } from '../types/reportPresets';
 import type { ReportPreset } from '../types/reportPresets';
 import { CARD_CATALOG, CARD_CATEGORIES, CARD_CATEGORY_LABELS, setPreviewLang } from '../data/CardCatalog';
@@ -64,7 +65,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ activationStatus, onReact
 
   const { identity, loading: identityLoading, error: identityError, refresh: refreshIdentity } = useSystemStore();
 
-  const [activeTab, setActiveTab] = useState<'models' | 'mcp' | 'skills' | 'palette-schemes' | 'layout-templates' | 'card-components' | 'report-presets' | 'chart-engine' | 'prompt-hints' | 'memory' | 'system-info' | 'activation' | 'help' | 'storage' | 'data-parsing' | 'assets' | 'datasources' | 'rag' | 'knowledge-graph' | 'language'>('models');
+  const [activeTab, setActiveTab] = useState<'models' | 'mcp' | 'skills' | 'palette-schemes' | 'layout-templates' | 'card-components' | 'report-presets' | 'chart-engine' | 'prompt-hints' | 'memory' | 'system-info' | 'activation' | 'help' | 'storage' | 'data-parsing' | 'assets' | 'datasources' | 'rag' | 'knowledge-graph' | 'language' | 'db-management'>('models');
 
   const NAV_GROUPS = [
     { label: t.settings.navGroupAI, items: [
@@ -74,6 +75,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ activationStatus, onReact
     { label: t.settings.navGroupTools, items: [
       { key: 'skills' as const, label: t.settings.navSkills, icon: <Wrench size={14}/> },
       { key: 'datasources' as const, label: t.settings.navDatasources, icon: <Database size={14}/> },
+      { key: 'db-management' as const, label: 'DB 管理', icon: <Database size={14}/> },
       { key: 'rag' as const, label: t.settings.navRag, icon: <Library size={14}/> },
       { key: 'knowledge-graph' as const, label: t.settings.navKnowledgeGraph, icon: <GitMerge size={14}/> },
     ]},
@@ -169,6 +171,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ activationStatus, onReact
             {activeTab === 'chart-engine' && <ChartEngineTab />}
             {activeTab === 'assets' && <AssetsTab />}
             {activeTab === 'datasources' && <DatasourcesTab />}
+            {activeTab === 'db-management' && <DatabaseManagementTab />}
             {activeTab === 'rag' && <KnowledgeBaseTab />}
             {activeTab === 'knowledge-graph' && <KnowledgeGraphTab />}
             {activeTab === 'prompt-hints' && <PromptHintsTab prompts={userSystemPrompts} addPrompt={addUserPrompt} updatePrompt={updateUserPrompt} removePrompt={removeUserPrompt} />}
