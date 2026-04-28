@@ -11,6 +11,8 @@ The format is based on Keep a Changelog and this repository uses Semantic Versio
 - a normalized real-data validation pack for `datell-visual-report-preview`, including a public JSON input file and a matching static standalone HTML report example
 - a public-release validation script that checks install command accuracy, MIT licensing, English-only publication, and the real-data example pack
 - a public U.S. agriculture export example pack for README and skills.sh facing demos, including a public JSON subset, a static standalone HTML report, and a repository preview image
+- a European GDP magazine-style example pack that exercises a second layout family, mini image cards, and richer no-MCP structure cards for README and skills.sh demos
+- a no-MCP capability matrix that separates full catalog knowledge coverage from static fallback support tiers
 
 ### Changed
 
@@ -18,6 +20,7 @@ The format is based on Keep a Changelog and this repository uses Semantic Versio
 - documented the live skills.sh listing and the real-data validation pack in the public README
 - updated the public README to show a foreign example image, direct data links, and the current skills.sh publication model
 - refreshed the README preview image as a full-page capture and added skills.sh badges plus direct install and discovery links
+- expanded the README to show two layout styles and documented no-MCP support boundaries for the published card library
 
 ## [0.1.0] - 2026-04-24
 

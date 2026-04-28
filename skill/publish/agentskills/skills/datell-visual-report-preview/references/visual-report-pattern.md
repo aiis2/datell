@@ -52,9 +52,11 @@ Prefer these concrete card-library classes when composing fallback HTML.
 - KPI: `kpi-card`, `kpi-bullet-card`, `kpi-ranked-list`, `kpi-traffic-light`, `kpi-risk-flag`, `kpi-two-period`, `kpi-multi`.
 - Charts: `chart-card`, `card-subtitle`, `chart-footer`, `chart-container md`, `chart-container lg`, `chart-container full`.
 - Tables: `ranked-table`, `scorecard-table`, `heatmap-table`, `comparison-table`, `pivot-table`.
-- Narrative: `insight-callout`, `text-summary-card`, `metric-narrative`, `comparison-twoCol`.
-- Structure: `timeline-horizontal`, `timeline-dual-track`, `process-steps`.
+- Narrative: `insight-callout`, `text-summary-card`, `metric-narrative`, `comparison-twoCol`, `image-embed-card`.
+- Structure: `timeline-horizontal`, `timeline-dual-track`, `process-steps`, `cover-page`, `section-header`, `roadmap-card`.
 - Controls: `filter-btn-group`, `filter-select`, `filter-checkbox-group` only when the page is meant to stay interactive. Do not use them in the no-MCP basic-report fallback.
+
+When a selected card needs richer visuals but no interactive runtime, prefer inline SVG, semantic HTML, or pre-bundled static assets over dynamic widgets.
 
 ## Theme Variables
 

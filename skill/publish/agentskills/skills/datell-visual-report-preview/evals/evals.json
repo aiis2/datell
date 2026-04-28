@@ -105,6 +105,24 @@
         "Uses a real Datell layout id such as universal/dashboard-2col",
         "Uses a named palette preset such as palette-classic"
       ]
+    },
+    {
+      "id": 7,
+      "prompt": "No Datell MCP runtime is available. Produce a static universal/magazine-wide European macro snapshot that uses a metric-narrative hero, a ranked analytical chart, several image-embed-card mini tiles, a comparison-twoCol block, and palette-editorial. Keep the result fully standalone and non-interactive with no filter controls, event bus hooks, or linkage.",
+      "expected_output": "A standalone editorial HTML report that uses a second Datell layout family, mini image cards, and richer structure blocks while staying inside the no-MCP static fallback contract.",
+      "files": [
+        "SKILL.md",
+        "references/datell-knowledge-index.md",
+        "references/visual-report-pattern.md",
+        "references/datell-design-system-playbook.md",
+        "references/datell-no-mcp-capability-matrix.md"
+      ],
+      "expectations": [
+        "Mentions a canonical layout id such as universal/magazine-wide",
+        "Uses image-embed-card, metric-narrative, or comparison-twoCol instead of only basic cards",
+        "Keeps the result static and non-interactive",
+        "Does not require filter controls or event-bus behavior"
+      ]
     }
   ]
 }

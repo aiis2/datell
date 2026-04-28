@@ -43,9 +43,11 @@ Use the detailed markdown indexes when you need the full current inventory inste
 - `insight-callout`: prominent key takeaway or warning.
 - `text-summary-card`: short executive narrative with bullet highlights.
 - `metric-narrative`: one main value plus explanatory paragraph.
+- `image-embed-card`: compact image or illustration card for editorial side rails, country tiles, or product snapshots.
 - `timeline-horizontal` and `timeline-dual-track`: milestone or sequence storytelling.
 - `process-steps`: workflow or funnel stages.
 - `comparison-twoCol`: structured two-column qualitative comparison.
+- `cover-page`, `section-header`, and `roadmap-card`: framing blocks for longer editorial or roadmap-style reports.
 
 ## Layout Families
 
@@ -113,5 +115,6 @@ Minimum CSS variables to inline in standalone HTML:
 - Choose the chart engine only after layout family and card combination are already decided.
 - Keep all accent colors tied to palette variables.
 - For no-MCP fallback, prefer a credible static report over fake interactivity.
+- When a card needs media, use inline SVG, a safe remote image, or a local asset in `assets/` instead of assuming a host-side uploader or dynamic image service.
 
 For engine-specific guidance, see `datell-chart-engine-playbook.md`.

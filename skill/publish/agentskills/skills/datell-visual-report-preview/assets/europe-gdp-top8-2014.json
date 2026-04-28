@@ -1,0 +1,30 @@
+{
+  "source": {
+    "kind": "public-open-dataset-subset",
+    "name": "2014 World GDP With Codes",
+    "provider": "plotly/datasets",
+    "url": "https://raw.githubusercontent.com/plotly/datasets/master/2014_world_gdp_with_codes.csv",
+    "selection": "Top 8 European economies by GDP",
+    "unit": "USD billions",
+    "note": "This subset is intended for public README and skills.sh demos that need a second non-U.S. layout style and richer static card mix."
+  },
+  "summary": {
+    "totalGdp": 15217.5,
+    "averageGdp": 1902.19,
+    "leader": "Germany",
+    "leaderValue": 3820,
+    "trailing": "Sweden",
+    "trailingValue": 559.1,
+    "gap": 3260.9
+  },
+  "rows": [
+    { "rank": 1, "country": "Germany", "code": "DEU", "gdpBillions": 3820, "share": 25.1, "tier": "core", "signal": "Industrial scale anchor" },
+    { "rank": 2, "country": "France", "code": "FRA", "gdpBillions": 2902, "share": 19.1, "tier": "core", "signal": "Balanced continental engine" },
+    { "rank": 3, "country": "United Kingdom", "code": "GBR", "gdpBillions": 2848, "share": 18.7, "tier": "core", "signal": "Services-heavy scale leader" },
+    { "rank": 4, "country": "Italy", "code": "ITA", "gdpBillions": 2129, "share": 14.0, "tier": "core", "signal": "Large but lower-growth base" },
+    { "rank": 5, "country": "Spain", "code": "ESP", "gdpBillions": 1400, "share": 9.2, "tier": "support", "signal": "Recovery-phase major market" },
+    { "rank": 6, "country": "Netherlands", "code": "NLD", "gdpBillions": 880.4, "share": 5.8, "tier": "support", "signal": "Trade-efficient mid-size economy" },
+    { "rank": 7, "country": "Switzerland", "code": "CHE", "gdpBillions": 679, "share": 4.5, "tier": "support", "signal": "High-value specialist economy" },
+    { "rank": 8, "country": "Sweden", "code": "SWE", "gdpBillions": 559.1, "share": 3.7, "tier": "support", "signal": "Smaller innovation-led economy" }
+  ]
+}

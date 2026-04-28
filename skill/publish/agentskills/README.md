@@ -51,6 +51,8 @@ The skill follows the Agent Skills directory model: a `SKILL.md` entry point wit
 
 Use these references when you need the full Datell layout, palette, and card inventory instead of a reduced example subset.
 
+For no-MCP delivery planning, also use `references/datell-no-mcp-capability-matrix.md` to separate full catalog knowledge coverage from the static subset that can be rendered without interactive runtime support.
+
 ## Example Gallery
 
 ### Public U.S. Agriculture Example
@@ -63,6 +65,21 @@ This public-facing example uses a foreign open dataset instead of an internal ex
 - Standalone HTML: `skills/datell-visual-report-preview/assets/us-ag-exports-top8-2011-basic-report.html`
 - Example data: `skills/datell-visual-report-preview/assets/us-ag-exports-top8-2011.json`
 - Public source: `https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv`
+
+Layout style: `universal/dashboard-2col`
+
+### European GDP Magazine Example
+
+![European GDP magazine preview](skills/datell-visual-report-preview/assets/europe-gdp-top8-2014-preview.png)
+
+This second public-facing example uses a different layout family and a richer static card mix. It demonstrates a no-MCP `universal/magazine-wide` composition with mini image cards, a ranked analytical chart, a metric narrative hero, and a compact comparison block built from the top eight European economies in the 2014 public GDP dataset.
+
+- Preview image: `skills/datell-visual-report-preview/assets/europe-gdp-top8-2014-preview.png`
+- Standalone HTML: `skills/datell-visual-report-preview/assets/europe-gdp-top8-2014-magazine-report.html`
+- Example data: `skills/datell-visual-report-preview/assets/europe-gdp-top8-2014.json`
+- Public source: `https://raw.githubusercontent.com/plotly/datasets/master/2014_world_gdp_with_codes.csv`
+
+Layout style: `universal/magazine-wide`
 
 ## Real-Data Validation Pack
 
@@ -79,8 +96,21 @@ The input pack preserves 20 real December 2024 sales rows from an exported Datel
 
 - `skills/datell-visual-report-preview/assets/us-ag-exports-top8-2011.json`
 - `skills/datell-visual-report-preview/assets/us-ag-exports-top8-2011-basic-report.html`
+- `skills/datell-visual-report-preview/assets/europe-gdp-top8-2014.json`
+- `skills/datell-visual-report-preview/assets/europe-gdp-top8-2014-magazine-report.html`
 
-This example uses a public U.S. agriculture export dataset and narrows it to the top eight states by total exports. It is intended for README demos, skills.sh listing previews, and install-time evaluation where a public English-only sample is more appropriate than a translated internal export.
+These examples use public foreign datasets and keep the output English-only. The U.S. agriculture sample demonstrates a balanced dashboard-2col fallback, while the European GDP sample demonstrates a magazine-wide fallback with richer structure cards, mini image tiles, and a more editorial card rhythm.
+
+## Card Coverage And No-MCP Scope
+
+The skill mirrors the full current app-side card inventory in `references/datell-card-catalog.md`, but no-MCP delivery is intentionally capability-scoped rather than one-to-one with the in-app runtime.
+
+- Full catalog knowledge coverage: the published card catalog mirrors the current app-side card IDs so the skill can reason from the whole library.
+- Direct static no-MCP coverage: KPI cards, ranked and scorecard tables, comparison blocks, pivot-style summaries, insight cards, timeline and process blocks, image-embed cards, and other narrative structure cards.
+- Static-equivalent coverage: advanced charts, finance widgets, maps, org or mind-map style structures, and other richer blocks can still be used when rendered as static SVG, semantic HTML, or a safe chart engine snapshot.
+- Out of scope without MCP: `filter-*` controls and any event-bus, linkage, drilldown, or cross-card state behavior.
+
+See `skills/datell-visual-report-preview/references/datell-no-mcp-capability-matrix.md` for the detailed support tiers.
 
 ## Local Validation
 
@@ -112,12 +142,16 @@ skills/
     assets/us-ag-exports-top8-2011.json
     assets/us-ag-exports-top8-2011-basic-report.html
     assets/us-ag-exports-top8-2011-preview.png
+    assets/europe-gdp-top8-2014.json
+    assets/europe-gdp-top8-2014-magazine-report.html
+    assets/europe-gdp-top8-2014-preview.png
     evals/evals.json
     references/datell-chart-engine-playbook.md
     references/datell-card-catalog.md
     references/datell-design-system-playbook.md
     references/datell-knowledge-index.md
     references/datell-layout-catalog.md
+    references/datell-no-mcp-capability-matrix.md
     references/datell-palette-catalog.md
     references/visual-report-pattern.md
 mcp/

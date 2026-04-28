@@ -77,6 +77,7 @@ Use the publishable markdown knowledge base instead of inventing a reduced subse
 - Use [the Datell layout catalog](references/datell-layout-catalog.md) for built-in layout IDs.
 - Use [the Datell palette catalog](references/datell-palette-catalog.md) for built-in palette IDs.
 - Use [the Datell card catalog](references/datell-card-catalog.md) for the current app-side card component inventory.
+- Use [the no-MCP capability matrix](references/datell-no-mcp-capability-matrix.md) when you need to distinguish full catalog knowledge coverage from the subset or static equivalents that can be delivered without MCP.
 
 ## No-MCP Basic Report Contract
 
@@ -105,8 +106,13 @@ Prefer concrete Datell card variants over anonymous div blocks.
 - KPI cards: `kpi-card`, `kpi-bullet-card`, `kpi-ranked-list`, `kpi-traffic-light`, `kpi-risk-flag`, `kpi-two-period`, `kpi-multi`.
 - Chart cards: `chart-card` with `card-subtitle`, `chart-footer`, and a sized `chart-container` such as `md`, `lg`, or `full`.
 - Table cards: `ranked-table`, `scorecard-table`, `heatmap-table`, `comparison-table`, `pivot-table`.
-- Narrative and structure cards: `insight-callout`, `text-summary-card`, `metric-narrative`, `timeline-horizontal`, `timeline-dual-track`, `process-steps`, `comparison-twoCol`.
+- Narrative and structure cards: `insight-callout`, `text-summary-card`, `metric-narrative`, `timeline-horizontal`, `timeline-dual-track`, `process-steps`, `comparison-twoCol`, `image-embed-card`, `cover-page`, `section-header`, `roadmap-card`.
 - Filter controls: only use `zone-filter`, `filter-btn-group`, `filter-select`, or `filter-checkbox-group` when the host can execute basic browser JavaScript and the task explicitly requires embedded controls. Do not use them in the no-MCP basic report path.
+
+Catalog integration rule:
+
+- Treat the published card catalog as the full current inventory, not a reduced teaching subset.
+- In no-MCP mode, choose either a direct static card variant or the closest static equivalent documented in the no-MCP capability matrix instead of forcing one-to-one runtime parity.
 
 ## Layout Selection Guidance
 
@@ -177,5 +183,7 @@ See [the Datell knowledge index](references/datell-knowledge-index.md) for the f
 See [the Datell design system playbook](references/datell-design-system-playbook.md) for reusable card families, layout families, palette presets, and domain-to-layout guidance.
 
 See [the Datell chart engine playbook](references/datell-chart-engine-playbook.md) for ECharts versus ApexCharts decision rules, shared card integration rules, and engine-specific initialization patterns.
+
+See [the no-MCP capability matrix](references/datell-no-mcp-capability-matrix.md) for support tiers across KPI, chart, table, structure, finance, map, VTable, and filter families when MCP is unavailable.
 
 See [the real-sales example input](assets/real-sales-december-2024.json) and [the matching standalone report example](assets/real-sales-december-2024-basic-report.html) for a real-data no-MCP validation pack.

@@ -10,11 +10,15 @@ const rootPackageFile = path.join(repoRoot, 'package.json');
 const lockFile = path.join(repoRoot, 'package-lock.json');
 const mcpPackageFile = path.join(repoRoot, 'mcp', 'package.json');
 const skillFile = path.join(repoRoot, 'skills', 'datell-visual-report-preview', 'SKILL.md');
+const noMcpMatrixFile = path.join(repoRoot, 'skills', 'datell-visual-report-preview', 'references', 'datell-no-mcp-capability-matrix.md');
 const salesExampleDataFile = path.join(repoRoot, 'skills', 'datell-visual-report-preview', 'assets', 'real-sales-december-2024.json');
 const salesExampleHtmlFile = path.join(repoRoot, 'skills', 'datell-visual-report-preview', 'assets', 'real-sales-december-2024-basic-report.html');
 const usExampleDataFile = path.join(repoRoot, 'skills', 'datell-visual-report-preview', 'assets', 'us-ag-exports-top8-2011.json');
 const usExampleHtmlFile = path.join(repoRoot, 'skills', 'datell-visual-report-preview', 'assets', 'us-ag-exports-top8-2011-basic-report.html');
 const usExamplePreviewFile = path.join(repoRoot, 'skills', 'datell-visual-report-preview', 'assets', 'us-ag-exports-top8-2011-preview.png');
+const europeExampleDataFile = path.join(repoRoot, 'skills', 'datell-visual-report-preview', 'assets', 'europe-gdp-top8-2014.json');
+const europeExampleHtmlFile = path.join(repoRoot, 'skills', 'datell-visual-report-preview', 'assets', 'europe-gdp-top8-2014-magazine-report.html');
+const europeExamplePreviewFile = path.join(repoRoot, 'skills', 'datell-visual-report-preview', 'assets', 'europe-gdp-top8-2014-preview.png');
 
 async function collectTextFiles(dirPath, bucket = []) {
   const entries = await readdir(dirPath, { withFileTypes: true });
@@ -45,6 +49,13 @@ function formatUsdMillions(value) {
   })}M`;
 }
 
+function formatUsdBillions(value) {
+  return `USD ${Number(value || 0).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}B`;
+}
+
 function escapeRegExp(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -57,6 +68,10 @@ assert.match(readme, /img\.shields\.io\/badge\/install-npx%20skills%20add/i, 'RE
 assert.match(readme, /us-ag-exports-top8-2011-preview\.png/i, 'README should show the public foreign example preview image');
 assert.match(readme, /us-ag-exports-top8-2011\.json/i, 'README should link the public foreign example data file');
 assert.match(readme, /2011_us_ag_exports\.csv/i, 'README should cite the public U.S. agriculture dataset source');
+assert.match(readme, /europe-gdp-top8-2014-preview\.png/i, 'README should show the European GDP preview image');
+assert.match(readme, /europe-gdp-top8-2014\.json/i, 'README should link the European GDP data file');
+assert.match(readme, /2014_world_gdp_with_codes\.csv/i, 'README should cite the public world GDP dataset source');
+assert.match(readme, /datell-no-mcp-capability-matrix\.md/i, 'README should link the no-MCP capability matrix');
 
 const licenseText = await readFile(licenseFile, 'utf8');
 assert.match(licenseText, /^MIT License/m, 'LICENSE should be MIT');
@@ -65,11 +80,14 @@ const rootPackage = JSON.parse(await readFile(rootPackageFile, 'utf8'));
 const rootLock = JSON.parse(await readFile(lockFile, 'utf8'));
 const mcpPackage = JSON.parse(await readFile(mcpPackageFile, 'utf8'));
 const skillMarkdown = await readFile(skillFile, 'utf8');
+const noMcpMatrix = await readFile(noMcpMatrixFile, 'utf8');
 assert.equal(rootPackage.license, 'MIT', 'root package.json license should be MIT');
 assert.equal(rootLock.packages[''].license, 'MIT', 'root package-lock.json license should be MIT');
 assert.equal(rootLock.packages.mcp.license, 'MIT', 'mcp package-lock.json license should be MIT');
 assert.equal(mcpPackage.license, 'MIT', 'mcp package.json license should be MIT');
 assert.match(skillMarkdown, /^license: MIT$/m, 'SKILL.md frontmatter should declare MIT');
+assert.match(noMcpMatrix, /full catalog knowledge coverage|direct static support|partial or static-equivalent support|out of scope without MCP/i, 'no-MCP matrix should define support tiers');
+assert.match(noMcpMatrix, /filter-\*|event bus|linkage/i, 'no-MCP matrix should define the out-of-scope interactive set');
 
 const salesExampleData = JSON.parse(await readFile(salesExampleDataFile, 'utf8'));
 const salesRows = salesExampleData.rows || [];
@@ -109,6 +127,21 @@ assert.match(usExampleHtml, new RegExp(escapeRegExp(formatUsdMillions(totalExpor
 assert.match(usExampleHtml, new RegExp(escapeRegExp(leadingState.state)), 'foreign example HTML should show the leading state computed from the input data');
 assert.doesNotMatch(usExampleHtml, /__REPORT_EVENT_BUS__|filterChange|zone-filter|filter-btn-group|filter-select|filter-checkbox-group/i, 'foreign example HTML should stay static and non-interactive');
 
+const europeExampleData = JSON.parse(await readFile(europeExampleDataFile, 'utf8'));
+const europeRows = europeExampleData.rows || [];
+assert.equal(Array.isArray(europeRows), true, 'European GDP example should expose a rows array');
+assert.equal(europeRows.length, 8, 'European GDP example should preserve the top 8 selected countries');
+assert.equal(europeExampleData.source.url, 'https://raw.githubusercontent.com/plotly/datasets/master/2014_world_gdp_with_codes.csv', 'European GDP example should cite the public world GDP dataset source');
+
+const europeTotal = europeRows.reduce((sum, row) => sum + Number(row.gdpBillions || 0), 0);
+const europeLeader = europeRows.slice().sort((left, right) => Number(right.gdpBillions || 0) - Number(left.gdpBillions || 0))[0];
+const europeExampleHtml = await readFile(europeExampleHtmlFile, 'utf8');
+assert.match(europeExampleHtml, /report-container|report-header|metric-narrative|image-embed-card|comparison-twoCol/i, 'European GDP example should use richer static structure cards');
+assert.match(europeExampleHtml, /magazine-wide|editorial/i, 'European GDP example should reflect the second layout style and editorial direction');
+assert.match(europeExampleHtml, new RegExp(escapeRegExp(formatUsdBillions(europeTotal))), 'European GDP example should show the total GDP computed from the input data');
+assert.match(europeExampleHtml, new RegExp(escapeRegExp(europeLeader.country)), 'European GDP example should show the leading country computed from the input data');
+assert.doesNotMatch(europeExampleHtml, /__REPORT_EVENT_BUS__|filterChange|zone-filter|filter-btn-group|filter-select|filter-checkbox-group/i, 'European GDP example should stay static and non-interactive');
+
 for (const filePath of await collectTextFiles(repoRoot)) {
   const source = await readFile(filePath, 'utf8');
   assert.doesNotMatch(source, /[\u4e00-\u9fff]/, `public repository files should stay English-only: ${path.relative(repoRoot, filePath)}`);
@@ -119,5 +152,9 @@ await stat(salesExampleHtmlFile);
 await stat(usExampleDataFile);
 await stat(usExampleHtmlFile);
 await stat(usExamplePreviewFile);
+await stat(noMcpMatrixFile);
+await stat(europeExampleDataFile);
+await stat(europeExampleHtmlFile);
+await stat(europeExamplePreviewFile);
 
 console.log('public validation ok');

@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Europe GDP Magazine Snapshot</title>
+    <style>
+      :root {
+        --bg-body: #f2efe8;
+        --bg-card: #fdfaf4;
+        --bg-card-alt: #ece5d7;
+        --text-main: #20252d;
+        --text-sub: #626a75;
+        --text-header: #fcfaf5;
+        --color-primary: #0f5b78;
+        --color-secondary: #8d2f3f;
+        --color-accent: #c1902f;
+        --color-success: #35664b;
+        --border-table: rgba(98, 106, 117, 0.2);
+        --radius-card: 22px;
+        --shadow-card: 0 24px 54px rgba(32, 37, 45, 0.1);
+        --palette-color-1: #0f5b78;
+        --palette-color-2: #8d2f3f;
+        --palette-color-3: #c1902f;
+        --palette-color-4: #35664b;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: "Georgia", "Times New Roman", serif;
+        color: var(--text-main);
+        background:
+          radial-gradient(circle at top right, rgba(141, 47, 63, 0.08), transparent 28%),
+          linear-gradient(180deg, rgba(15, 91, 120, 0.08), transparent 24%),
+          var(--bg-body);
+      }
+
+      .report-container {
+        width: min(1240px, calc(100vw - 40px));
+        margin: 28px auto 48px;
+      }
+
+      .report-header {
+        padding: 34px;
+        border-radius: var(--radius-card);
+        background: linear-gradient(135deg, #173750 0%, #1d6678 44%, #8d2f3f 100%);
+        color: var(--text-header);
+        box-shadow: var(--shadow-card);
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        font-family: "Trebuchet MS", Arial, sans-serif;
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(252, 250, 245, 0.78);
+      }
+
+      .report-title {
+        margin: 0;
+        font-size: 40px;
+        line-height: 1.02;
+      }
+
+      .report-subtitle {
+        margin: 14px 0 0;
+        max-width: 840px;
+        font-size: 16px;
+        line-height: 1.65;
+        color: rgba(252, 250, 245, 0.9);
+      }
+
+      .report-timestamp {
+        margin: 16px 0 0;
+        font-family: "Trebuchet MS", Arial, sans-serif;
+        font-size: 13px;
+        color: rgba(252, 250, 245, 0.8);
+      }
+
+      .report-content {
+        display: grid;
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .grid-kpi {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .card {
+        border-radius: var(--radius-card);
+        background: var(--bg-card);
+        box-shadow: var(--shadow-card);
+        border: 1px solid rgba(15, 91, 120, 0.08);
+      }
+
+      .kpi-card,
+      .metric-narrative,
+      .chart-card,
+      .text-summary-card,
+      .image-embed-card,
+      .comparison-twoCol,
+      .kpi-ranked-list,
+      .insight-callout {
+        padding: 22px;
+      }
+
+      .kpi-label,
+      .card-subtitle,
+      .summary-label,
+      .comparison-label,
+      .insight-label {
+        color: var(--text-sub);
+        font-family: "Trebuchet MS", Arial, sans-serif;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .kpi-value,
+      .narrative-value {
+        margin-top: 10px;
+        font-size: 32px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .kpi-sub,
+      .narrative-copy,
+      .summary-copy,
+      .comparison-copy,
+      .chart-footer {
+        margin-top: 8px;
+        color: var(--text-sub);
+        font-family: "Trebuchet MS", Arial, sans-serif;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .magazine-shell {
+        display: grid;
+        grid-template-columns: minmax(0, 1.55fr) minmax(300px, 0.9fr);
+        gap: 18px;
+        align-items: start;
+      }
+
+      .main-column,
+      .side-column {
+        display: grid;
+        gap: 18px;
+        align-content: start;
+        align-self: start;
+      }
+
+      .metric-narrative {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(253, 250, 244, 1));
+      }
+
+      .card-title {
+        margin: 0;
+        font-size: 24px;
+      }
+
+      .ranking-table {
+        display: grid;
+        gap: 14px;
+        margin-top: 18px;
+      }
+
+      .ranking-row {
+        display: grid;
+        grid-template-columns: 150px minmax(0, 1fr) 120px;
+        gap: 14px;
+        align-items: center;
+      }
+
+      .ranking-label,
+      .ranking-value {
+        font-family: "Trebuchet MS", Arial, sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .ranking-track {
+        position: relative;
+        height: 15px;
+        border-radius: 999px;
+        background: rgba(15, 91, 120, 0.08);
+        overflow: hidden;
+      }
+
+      .ranking-bar {
+        position: absolute;
+        inset: 0 auto 0 0;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--palette-color-1) 0%, var(--palette-color-3) 100%);
+      }
+
+      .ranking-bar.alt {
+        background: linear-gradient(90deg, var(--palette-color-2) 0%, var(--palette-color-3) 100%);
+      }
+
+      .pct-100 { width: 100%; }
+      .pct-76-0 { width: 76%; }
+      .pct-74-6 { width: 74.6%; }
+      .pct-55-7 { width: 55.7%; }
+      .pct-36-6 { width: 36.6%; }
+      .pct-23-0 { width: 23%; }
+      .pct-17-8 { width: 17.8%; }
+      .pct-14-6 { width: 14.6%; }
+
+      .summary-list,
+      .comparison-grid,
+      .mini-image-grid,
+      .rank-list {
+        display: grid;
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .summary-item,
+      .comparison-panel,
+      .rank-item {
+        padding: 14px 16px;
+        border-radius: 16px;
+        background: var(--bg-card-alt);
+        border: 1px solid rgba(15, 91, 120, 0.08);
+      }
+
+      .summary-item strong,
+      .comparison-panel strong {
+        display: block;
+        margin-bottom: 6px;
+        font-family: "Trebuchet MS", Arial, sans-serif;
+        font-size: 14px;
+      }
+
+      .mini-image-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .image-embed-card {
+        padding: 14px;
+      }
+
+      .mini-art {
+        width: 100%;
+        border-radius: 14px;
+        overflow: hidden;
+        border: 1px solid rgba(15, 91, 120, 0.1);
+        background: #fff;
+      }
+
+      .mini-meta {
+        margin-top: 10px;
+        font-family: "Trebuchet MS", Arial, sans-serif;
+        display: grid;
+        gap: 4px;
+      }
+
+      .mini-meta strong { font-size: 13px; }
+      .mini-meta span { font-size: 12px; color: var(--text-sub); }
+
+      .rank-item {
+        display: grid;
+        grid-template-columns: 26px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        font-family: "Trebuchet MS", Arial, sans-serif;
+      }
+
+      .rank-num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        background: rgba(15, 91, 120, 0.12);
+        color: var(--color-primary);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .insight-callout {
+        background: linear-gradient(135deg, rgba(141, 47, 63, 0.08), rgba(201, 144, 47, 0.08));
+        border: 1px solid rgba(141, 47, 63, 0.12);
+      }
+
+      @media (max-width: 980px) {
+        .grid-kpi,
+        .magazine-shell,
+        .mini-image-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .ranking-row {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="report-container">
+      <header class="report-header">
+        <p class="eyebrow">Public foreign-data example</p>
+        <h1 class="report-title">Europe GDP Magazine Snapshot</h1>
+        <p class="report-subtitle">Static no-MCP showcase using a public world GDP dataset. This sample isolates the top eight European economies in 2014 and renders them as a Datell-style `universal/magazine-wide` report with a metric narrative hero, ranked chart, image-embed mini cards, and a compact comparison block.</p>
+        <p class="report-timestamp">Updated 2026-04-28 · layout: universal/magazine-wide · palette: palette-editorial · input: europe-gdp-top8-2014.json</p>
+      </header>
+
+      <main class="report-content">
+        <section class="grid-kpi">
+          <article class="card kpi-card">
+            <div class="kpi-label">Top-8 Europe GDP total</div>
+            <div class="kpi-value">USD 15,217.50B</div>
+            <div class="kpi-sub">Eight public European rows selected from the world GDP source file.</div>
+          </article>
+          <article class="card kpi-card">
+            <div class="kpi-label">Leading economy</div>
+            <div class="kpi-value">Germany</div>
+            <div class="kpi-sub">USD 3,820.00B, or 25.1% of the selected total.</div>
+          </article>
+          <article class="card kpi-card">
+            <div class="kpi-label">Mean GDP per country</div>
+            <div class="kpi-value">USD 1,902.19B</div>
+            <div class="kpi-sub">The spread between Germany and Sweden is USD 3,260.90B.</div>
+          </article>
+        </section>
+
+        <section class="magazine-shell">
+          <div class="main-column">
+            <article class="card metric-narrative">
+              <div class="summary-label">Metric narrative</div>
+              <h2 class="card-title">A concentrated but layered regional picture</h2>
+              <div class="narrative-value">62.9%</div>
+              <div class="narrative-copy">Germany, France, and the United Kingdom together account for 62.9% of the top-eight selection, which makes the region look concentrated at the top while still leaving meaningful depth in Southern and Northern Europe.</div>
+            </article>
+
+            <article class="card chart-card">
+              <h2 class="card-title">GDP ranking across the selected economies</h2>
+              <div class="card-subtitle">Primary chart area rendered as a static ranked board inside the Datell shell.</div>
+              <div class="ranking-table">
+                <div class="ranking-row"><div class="ranking-label">Germany</div><div class="ranking-track"><div class="ranking-bar pct-100"></div></div><div class="ranking-value">USD 3,820.00B</div></div>
+                <div class="ranking-row"><div class="ranking-label">France</div><div class="ranking-track"><div class="ranking-bar alt pct-76-0"></div></div><div class="ranking-value">USD 2,902.00B</div></div>
+                <div class="ranking-row"><div class="ranking-label">United Kingdom</div><div class="ranking-track"><div class="ranking-bar pct-74-6"></div></div><div class="ranking-value">USD 2,848.00B</div></div>
+                <div class="ranking-row"><div class="ranking-label">Italy</div><div class="ranking-track"><div class="ranking-bar alt pct-55-7"></div></div><div class="ranking-value">USD 2,129.00B</div></div>
+                <div class="ranking-row"><div class="ranking-label">Spain</div><div class="ranking-track"><div class="ranking-bar pct-36-6"></div></div><div class="ranking-value">USD 1,400.00B</div></div>
+                <div class="ranking-row"><div class="ranking-label">Netherlands</div><div class="ranking-track"><div class="ranking-bar alt pct-23-0"></div></div><div class="ranking-value">USD 880.40B</div></div>
+                <div class="ranking-row"><div class="ranking-label">Switzerland</div><div class="ranking-track"><div class="ranking-bar pct-17-8"></div></div><div class="ranking-value">USD 679.00B</div></div>
+                <div class="ranking-row"><div class="ranking-label">Sweden</div><div class="ranking-track"><div class="ranking-bar alt pct-14-6"></div></div><div class="ranking-value">USD 559.10B</div></div>
+              </div>
+              <div class="chart-footer">No filter controls, event bus hooks, or linkage logic are used in this no-MCP magazine-wide sample.</div>
+            </article>
+
+            <article class="card comparison-twoCol">
+              <div class="comparison-label">Comparison block</div>
+              <h2 class="card-title">Scale leaders versus support tier</h2>
+              <div class="comparison-grid">
+                <div class="comparison-panel">
+                  <strong>Scale leaders</strong>
+                  <div class="comparison-copy">Germany, France, the United Kingdom, and Italy together provide 76.9% of the total GDP shown here. They define the dominant scale narrative of the sample.</div>
+                </div>
+                <div class="comparison-panel">
+                  <strong>Support tier</strong>
+                  <div class="comparison-copy">Spain, the Netherlands, Switzerland, and Sweden keep the sample from collapsing into a single-country story and show how mid-size economies still shape regional balance.</div>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <aside class="side-column">
+            <article class="card text-summary-card">
+              <div class="summary-label">Editorial summary</div>
+              <h2 class="card-title">What this second layout demonstrates</h2>
+              <div class="summary-list">
+                <div class="summary-item"><strong>Different card rhythm</strong>The layout intentionally moves away from dashboard-2col into a hero-plus-side-rail composition.</div>
+                <div class="summary-item"><strong>Mini media without MCP</strong>Image-embed mini cards work fine as inline SVG and static assets without relying on a dynamic media runtime.</div>
+                <div class="summary-item"><strong>Richer structure coverage</strong>Metric narrative and comparison-twoCol blocks remain credible in static HTML and are useful for README-facing showcase pages.</div>
+              </div>
+            </article>
+
+            <article class="card kpi-ranked-list">
+              <div class="summary-label">Share ladder</div>
+              <h2 class="card-title">Largest shares in the selected total</h2>
+              <div class="rank-list">
+                <div class="rank-item"><span class="rank-num">1</span><span>Germany</span><span>25.1%</span></div>
+                <div class="rank-item"><span class="rank-num">2</span><span>France</span><span>19.1%</span></div>
+                <div class="rank-item"><span class="rank-num">3</span><span>United Kingdom</span><span>18.7%</span></div>
+                <div class="rank-item"><span class="rank-num">4</span><span>Italy</span><span>14.0%</span></div>
+              </div>
+            </article>
+
+            <div class="mini-image-grid">
+              <article class="card image-embed-card">
+                <div class="mini-art">
+                  <svg viewBox="0 0 120 72" width="100%" height="100%" role="img" aria-label="Germany mini card">
+                    <rect width="120" height="24" y="0" fill="#111827"></rect>
+                    <rect width="120" height="24" y="24" fill="#b91c1c"></rect>
+                    <rect width="120" height="24" y="48" fill="#d4a62a"></rect>
+                  </svg>
+                </div>
+                <div class="mini-meta"><strong>Germany</strong><span>USD 3,820.00B · 25.1%</span></div>
+              </article>
+              <article class="card image-embed-card">
+                <div class="mini-art">
+                  <svg viewBox="0 0 120 72" width="100%" height="100%" role="img" aria-label="France mini card">
+                    <rect width="40" height="72" x="0" fill="#1d4ed8"></rect>
+                    <rect width="40" height="72" x="40" fill="#f8fafc"></rect>
+                    <rect width="40" height="72" x="80" fill="#b91c1c"></rect>
+                  </svg>
+                </div>
+                <div class="mini-meta"><strong>France</strong><span>USD 2,902.00B · 19.1%</span></div>
+              </article>
+              <article class="card image-embed-card">
+                <div class="mini-art">
+                  <svg viewBox="0 0 120 72" width="100%" height="100%" role="img" aria-label="United Kingdom mini card">
+                    <rect width="120" height="72" fill="#1e3a8a"></rect>
+                    <path d="M0 0 L120 72 M120 0 L0 72" stroke="#f8fafc" stroke-width="12"></path>
+                    <path d="M0 0 L120 72 M120 0 L0 72" stroke="#b91c1c" stroke-width="6"></path>
+                    <rect x="50" y="0" width="20" height="72" fill="#f8fafc"></rect>
+                    <rect x="0" y="26" width="120" height="20" fill="#f8fafc"></rect>
+                    <rect x="54" y="0" width="12" height="72" fill="#b91c1c"></rect>
+                    <rect x="0" y="30" width="120" height="12" fill="#b91c1c"></rect>
+                  </svg>
+                </div>
+                <div class="mini-meta"><strong>United Kingdom</strong><span>USD 2,848.00B · 18.7%</span></div>
+              </article>
+              <article class="card image-embed-card">
+                <div class="mini-art">
+                  <svg viewBox="0 0 120 72" width="100%" height="100%" role="img" aria-label="Italy mini card">
+                    <rect width="40" height="72" x="0" fill="#166534"></rect>
+                    <rect width="40" height="72" x="40" fill="#f8fafc"></rect>
+                    <rect width="40" height="72" x="80" fill="#b91c1c"></rect>
+                  </svg>
+                </div>
+                <div class="mini-meta"><strong>Italy</strong><span>USD 2,129.00B · 14.0%</span></div>
+              </article>
+            </div>
+
+            <article class="card insight-callout">
+              <div class="insight-label">Key takeaway</div>
+              <h2 class="card-title">The layout, not just the data, shows coverage</h2>
+              <div class="summary-copy">This sample intentionally proves that no-MCP output can use a second layout family, mini image tiles, and richer narrative composition without drifting into a generic landing page.</div>
+            </article>
+          </aside>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
