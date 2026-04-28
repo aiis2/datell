@@ -1,0 +1,33 @@
+{
+  "source": {
+    "kind": "public-open-dataset-subset",
+    "name": "2011 U.S. Agriculture Exports",
+    "provider": "plotly/datasets",
+    "url": "https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv",
+    "selection": "Top 8 states by total exports",
+    "unit": "USD millions",
+    "note": "This subset is intended for public README and skills.sh demonstrations. It avoids internal business data while remaining grounded in a real open dataset."
+  },
+  "summary": {
+    "totalExports": 67050.04,
+    "leader": "California",
+    "leaderValue": 16472.88,
+    "fruitsTotal": 8878.23,
+    "veggiesTotal": 2490.15,
+    "beefTotal": 3088.9,
+    "wheatTotal": 3156.8,
+    "cottonTotal": 3417.69,
+    "fruitShare": 13.2,
+    "veggieShare": 3.7
+  },
+  "rows": [
+    { "rank": 1, "state": "California", "totalExports": 16472.88, "share": 24.6, "fruits": 8736.4, "veggies": 2106.79, "beef": 228.7, "wheat": 249.3, "cotton": 1064.95, "primaryCommodity": "Fruits" },
+    { "rank": 2, "state": "Iowa", "totalExports": 11273.76, "share": 16.8, "fruits": 3.24, "veggies": 7.1, "beef": 289.8, "wheat": 3.1, "cotton": 0, "primaryCommodity": "Beef" },
+    { "rank": 3, "state": "Illinois", "totalExports": 8709.48, "share": 13.0, "fruits": 12.53, "veggies": 39.95, "beef": 53.7, "wheat": 223.8, "cotton": 0, "primaryCommodity": "Wheat" },
+    { "rank": 4, "state": "Minnesota", "totalExports": 7192.33, "share": 10.7, "fruits": 7.91, "veggies": 120.37, "beef": 112.3, "wheat": 538.1, "cotton": 0, "primaryCommodity": "Wheat" },
+    { "rank": 5, "state": "Nebraska", "totalExports": 7114.13, "share": 10.6, "fruits": 2.16, "veggies": 53.5, "beef": 762.2, "wheat": 292.3, "cotton": 0, "primaryCommodity": "Beef" },
+    { "rank": 6, "state": "Texas", "totalExports": 6648.22, "share": 9.9, "fruits": 99.9, "veggies": 115.23, "beef": 961, "wheat": 309.7, "cotton": 2308.76, "primaryCommodity": "Cotton" },
+    { "rank": 7, "state": "Indiana", "totalExports": 5050.23, "share": 7.5, "fruits": 12.98, "veggies": 37.89, "beef": 21.9, "wheat": 114, "cotton": 0, "primaryCommodity": "Wheat" },
+    { "rank": 8, "state": "Kansas", "totalExports": 4589.01, "share": 6.8, "fruits": 3.11, "veggies": 9.32, "beef": 659.3, "wheat": 1426.5, "cotton": 43.98, "primaryCommodity": "Wheat" }
+  ]
+}

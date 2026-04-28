@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>2011 U.S. Agriculture Export Leaders</title>
+    <style>
+      :root {
+        --bg-body: #f7f0e6;
+        --bg-card: #fffdf8;
+        --bg-card-alt: #f0e5d6;
+        --text-main: #1f2937;
+        --text-sub: #5b6573;
+        --text-header: #fffaf4;
+        --color-primary: #173f7a;
+        --color-secondary: #9b2c2c;
+        --color-accent: #c9802b;
+        --color-success: #2f6f4f;
+        --border-table: rgba(91, 101, 115, 0.18);
+        --radius-card: 22px;
+        --shadow-card: 0 24px 54px rgba(31, 41, 55, 0.12);
+        --palette-color-1: #173f7a;
+        --palette-color-2: #a93a32;
+        --palette-color-3: #d7a24a;
+        --palette-color-4: #577c64;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        color: var(--text-main);
+        background:
+          linear-gradient(180deg, rgba(23, 63, 122, 0.08), transparent 22%),
+          linear-gradient(135deg, rgba(169, 58, 50, 0.06), transparent 34%),
+          var(--bg-body);
+      }
+
+      .report-container {
+        width: min(1240px, calc(100vw - 40px));
+        margin: 30px auto 48px;
+      }
+
+      .report-header {
+        padding: 34px;
+        border-radius: var(--radius-card);
+        background: linear-gradient(135deg, var(--palette-color-1) 0%, #234d91 52%, var(--palette-color-2) 100%);
+        color: var(--text-header);
+        box-shadow: var(--shadow-card);
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        font-family: "Trebuchet MS", Arial, sans-serif;
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(255, 250, 244, 0.8);
+      }
+
+      .report-title {
+        margin: 0;
+        font-size: 38px;
+        line-height: 1.04;
+      }
+
+      .report-subtitle {
+        margin: 14px 0 0;
+        max-width: 800px;
+        font-size: 16px;
+        line-height: 1.65;
+        color: rgba(255, 250, 244, 0.92);
+      }
+
+      .report-timestamp {
+        margin: 16px 0 0;
+        font-family: "Trebuchet MS", Arial, sans-serif;
+        font-size: 13px;
+        color: rgba(255, 250, 244, 0.82);
+      }
+
+      .report-content {
+        display: grid;
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .grid-kpi {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .grid-charts {
+        display: grid;
+        grid-template-columns: minmax(0, 1.5fr) minmax(340px, 0.92fr);
+        gap: 16px;
+      }
+
+      .card {
+        border-radius: var(--radius-card);
+        background: var(--bg-card);
+        box-shadow: var(--shadow-card);
+        border: 1px solid rgba(23, 63, 122, 0.08);
+      }
+
+      .kpi-card,
+      .chart-card,
+      .text-summary-card,
+      .scorecard-card {
+        padding: 22px;
+      }
+
+      .kpi-label,
+      .card-subtitle,
+      .summary-label,
+      .scorecard-note {
+        color: var(--text-sub);
+        font-family: "Trebuchet MS", Arial, sans-serif;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .kpi-value {
+        margin-top: 10px;
+        font-size: 30px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .kpi-sub {
+        margin-top: 8px;
+        color: var(--text-sub);
+        font-family: "Trebuchet MS", Arial, sans-serif;
+        font-size: 13px;
+      }
+
+      .card-title {
+        margin: 0;
+        font-size: 22px;
+      }
+
+      .chart-footer {
+        margin-top: 16px;
+        color: var(--text-sub);
+        font-family: "Trebuchet MS", Arial, sans-serif;
+        font-size: 13px;
+      }
+
+      .ranking-table {
+        display: grid;
+        gap: 14px;
+        margin-top: 18px;
+      }
+
+      .ranking-row {
+        display: grid;
+        grid-template-columns: 120px minmax(0, 1fr) 120px;
+        gap: 14px;
+        align-items: center;
+      }
+
+      .ranking-label,
+      .ranking-value {
+        font-family: "Trebuchet MS", Arial, sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .ranking-track {
+        position: relative;
+        height: 16px;
+        border-radius: 999px;
+        background: rgba(23, 63, 122, 0.08);
+        overflow: hidden;
+      }
+
+      .ranking-bar {
+        position: absolute;
+        inset: 0 auto 0 0;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--palette-color-1) 0%, var(--palette-color-3) 100%);
+      }
+
+      .ranking-bar.alt {
+        background: linear-gradient(90deg, var(--palette-color-2) 0%, var(--palette-color-3) 100%);
+      }
+
+      .pct-100 { width: 100%; }
+      .pct-68-4 { width: 68.4%; }
+      .pct-52-9 { width: 52.9%; }
+      .pct-43-7 { width: 43.7%; }
+      .pct-43-2 { width: 43.2%; }
+      .pct-40-4 { width: 40.4%; }
+      .pct-30-7 { width: 30.7%; }
+      .pct-27-9 { width: 27.9%; }
+
+      .summary-list {
+        display: grid;
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .summary-item {
+        padding: 14px 16px;
+        border-radius: 16px;
+        background: var(--bg-card-alt);
+        border: 1px solid rgba(23, 63, 122, 0.08);
+      }
+
+      .summary-item strong {
+        display: block;
+        margin-bottom: 6px;
+        font-family: "Trebuchet MS", Arial, sans-serif;
+        font-size: 14px;
+      }
+
+      .scorecard-card {
+        grid-column: 1 / -1;
+      }
+
+      .scorecard-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 18px;
+      }
+
+      .scorecard-table th,
+      .scorecard-table td {
+        padding: 12px 14px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-table);
+        font-family: "Trebuchet MS", Arial, sans-serif;
+        font-size: 14px;
+      }
+
+      .scorecard-table th {
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--text-sub);
+        background: rgba(23, 63, 122, 0.05);
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .status-pill.leader {
+        color: var(--color-secondary);
+        background: rgba(169, 58, 50, 0.12);
+      }
+
+      .status-pill.balanced {
+        color: var(--color-success);
+        background: rgba(47, 111, 79, 0.12);
+      }
+
+      @media (max-width: 980px) {
+        .grid-kpi,
+        .grid-charts {
+          grid-template-columns: 1fr;
+        }
+
+        .ranking-row {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="report-container">
+      <header class="report-header">
+        <p class="eyebrow">Public foreign-data example</p>
+        <h1 class="report-title">2011 U.S. Agriculture Export Leaders</h1>
+        <p class="report-subtitle">Static no-MCP showcase using a public open dataset. This sample narrows the 2011 U.S. agriculture exports file to the top eight states by total exports, then renders a Datell-style fallback report with KPI cards, one primary ranking chart, one narrative panel, and one scorecard table.</p>
+        <p class="report-timestamp">Updated 2026-04-28 · layout: universal/dashboard-2col · palette: editorial-americana · input: us-ag-exports-top8-2011.json</p>
+      </header>
+
+      <main class="report-content">
+        <section class="grid-kpi">
+          <article class="card kpi-card">
+            <div class="kpi-label">Top-8 export total</div>
+            <div class="kpi-value">USD 67,050.04M</div>
+            <div class="kpi-sub">Eight public rows from the top-ranked U.S. states in the source dataset.</div>
+          </article>
+          <article class="card kpi-card">
+            <div class="kpi-label">Leading state</div>
+            <div class="kpi-value">California</div>
+            <div class="kpi-sub">USD 16,472.88M, or 24.6% of the selected export total.</div>
+          </article>
+          <article class="card kpi-card">
+            <div class="kpi-label">Produce concentration</div>
+            <div class="kpi-value">USD 8,878.23M</div>
+            <div class="kpi-sub">Fruits account for 13.2% of the selected total, heavily concentrated in California.</div>
+          </article>
+          <article class="card kpi-card">
+            <div class="kpi-label">Cotton signal</div>
+            <div class="kpi-value">Texas</div>
+            <div class="kpi-sub">Texas contributes USD 2,308.76M in cotton exports, the highest single-state cotton value in the pack.</div>
+          </article>
+        </section>
+
+        <section class="grid-charts">
+          <article class="card chart-card">
+            <h2 class="card-title">State export ranking</h2>
+            <div class="card-subtitle">Primary chart area rendered as a static editorial ranking board inside the Datell shell.</div>
+            <div class="ranking-table">
+              <div class="ranking-row">
+                <div class="ranking-label">California</div>
+                <div class="ranking-track"><div class="ranking-bar pct-100"></div></div>
+                <div class="ranking-value">USD 16,472.88M</div>
+              </div>
+              <div class="ranking-row">
+                <div class="ranking-label">Iowa</div>
+                <div class="ranking-track"><div class="ranking-bar alt pct-68-4"></div></div>
+                <div class="ranking-value">USD 11,273.76M</div>
+              </div>
+              <div class="ranking-row">
+                <div class="ranking-label">Illinois</div>
+                <div class="ranking-track"><div class="ranking-bar pct-52-9"></div></div>
+                <div class="ranking-value">USD 8,709.48M</div>
+              </div>
+              <div class="ranking-row">
+                <div class="ranking-label">Minnesota</div>
+                <div class="ranking-track"><div class="ranking-bar alt pct-43-7"></div></div>
+                <div class="ranking-value">USD 7,192.33M</div>
+              </div>
+              <div class="ranking-row">
+                <div class="ranking-label">Nebraska</div>
+                <div class="ranking-track"><div class="ranking-bar pct-43-2"></div></div>
+                <div class="ranking-value">USD 7,114.13M</div>
+              </div>
+              <div class="ranking-row">
+                <div class="ranking-label">Texas</div>
+                <div class="ranking-track"><div class="ranking-bar alt pct-40-4"></div></div>
+                <div class="ranking-value">USD 6,648.22M</div>
+              </div>
+              <div class="ranking-row">
+                <div class="ranking-label">Indiana</div>
+                <div class="ranking-track"><div class="ranking-bar pct-30-7"></div></div>
+                <div class="ranking-value">USD 5,050.23M</div>
+              </div>
+              <div class="ranking-row">
+                <div class="ranking-label">Kansas</div>
+                <div class="ranking-track"><div class="ranking-bar alt pct-27-9"></div></div>
+                <div class="ranking-value">USD 4,589.01M</div>
+              </div>
+            </div>
+            <div class="chart-footer">No client-side filters, event bus hooks, or linked brushing are used in this no-MCP basic-report example.</div>
+          </article>
+
+          <article class="card text-summary-card">
+            <div class="summary-label">Narrative summary</div>
+            <h2 class="card-title">What this public sample highlights</h2>
+            <div class="summary-list">
+              <div class="summary-item">
+                <strong>California is the produce anchor</strong>
+                California alone contributes USD 8,736.40M in fruits and USD 2,106.79M in vegetables, far ahead of the rest of the pack.
+              </div>
+              <div class="summary-item">
+                <strong>Texas is the cotton outlier</strong>
+                Texas brings USD 2,308.76M in cotton, which explains why its mix looks different from the Midwest grain and beef states.
+              </div>
+              <div class="summary-item">
+                <strong>Midwest states provide depth</strong>
+                Iowa, Illinois, Minnesota, Nebraska, Indiana, and Kansas collectively keep the ranking broad-based rather than coastal-only.
+              </div>
+            </div>
+          </article>
+
+          <article class="card scorecard-card">
+            <div class="summary-label">Export scorecard</div>
+            <h2 class="card-title">Top-state commodity signals</h2>
+            <div class="scorecard-note">Each value is derived directly from the public JSON subset and kept static for documentation and install-time preview use.</div>
+            <table class="scorecard-table">
+              <thead>
+                <tr>
+                  <th>State</th>
+                  <th>Total exports</th>
+                  <th>Share</th>
+                  <th>Primary commodity</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>California</td>
+                  <td>USD 16,472.88M</td>
+                  <td>24.6%</td>
+                  <td>Fruits</td>
+                  <td><span class="status-pill leader">Lead anchor</span></td>
+                </tr>
+                <tr>
+                  <td>Iowa</td>
+                  <td>USD 11,273.76M</td>
+                  <td>16.8%</td>
+                  <td>Beef</td>
+                  <td><span class="status-pill balanced">High-volume mix</span></td>
+                </tr>
+                <tr>
+                  <td>Illinois</td>
+                  <td>USD 8,709.48M</td>
+                  <td>13.0%</td>
+                  <td>Wheat</td>
+                  <td><span class="status-pill balanced">High-volume mix</span></td>
+                </tr>
+                <tr>
+                  <td>Minnesota</td>
+                  <td>USD 7,192.33M</td>
+                  <td>10.7%</td>
+                  <td>Wheat</td>
+                  <td><span class="status-pill balanced">High-volume mix</span></td>
+                </tr>
+                <tr>
+                  <td>Nebraska</td>
+                  <td>USD 7,114.13M</td>
+                  <td>10.6%</td>
+                  <td>Beef</td>
+                  <td><span class="status-pill balanced">High-volume mix</span></td>
+                </tr>
+                <tr>
+                  <td>Texas</td>
+                  <td>USD 6,648.22M</td>
+                  <td>9.9%</td>
+                  <td>Cotton</td>
+                  <td><span class="status-pill leader">Category outlier</span></td>
+                </tr>
+                <tr>
+                  <td>Indiana</td>
+                  <td>USD 5,050.23M</td>
+                  <td>7.5%</td>
+                  <td>Wheat</td>
+                  <td><span class="status-pill balanced">Support tier</span></td>
+                </tr>
+                <tr>
+                  <td>Kansas</td>
+                  <td>USD 4,589.01M</td>
+                  <td>6.8%</td>
+                  <td>Wheat</td>
+                  <td><span class="status-pill balanced">Support tier</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </article>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

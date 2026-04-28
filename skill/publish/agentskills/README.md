@@ -17,6 +17,8 @@ The public listing is already live on skills.sh:
 - `https://skills.sh/aiis2/frontend-design-report`
 - `https://skills.sh/aiis2/frontend-design-report/datell-visual-report-preview`
 
+skills.sh does not require a separate manual submission flow for this repository at the moment. Once the GitHub repository is public, installable, and indexed, the listing page becomes the publish surface.
+
 ## What You Get
 
 - One installable skill: `datell-visual-report-preview`
@@ -38,14 +40,36 @@ The skill follows the Agent Skills directory model: a `SKILL.md` entry point wit
 
 Use these references when you need the full Datell layout, palette, and card inventory instead of a reduced example subset.
 
+## Example Gallery
+
+### Public U.S. Agriculture Example
+
+![U.S. agriculture exports preview](skills/datell-visual-report-preview/assets/us-ag-exports-top8-2011-preview.png)
+
+This public-facing example uses a foreign open dataset instead of an internal export. It demonstrates the exact no-MCP fallback contract with a static Datell-style report built from the top eight U.S. states by 2011 agriculture export value.
+
+- Preview image: `skills/datell-visual-report-preview/assets/us-ag-exports-top8-2011-preview.png`
+- Standalone HTML: `skills/datell-visual-report-preview/assets/us-ag-exports-top8-2011-basic-report.html`
+- Example data: `skills/datell-visual-report-preview/assets/us-ag-exports-top8-2011.json`
+- Public source: `https://raw.githubusercontent.com/plotly/datasets/master/2011_us_ag_exports.csv`
+
 ## Real-Data Validation Pack
 
-The public repository now includes one normalized real-data input pack and a matching no-MCP standalone report example:
+The public repository now includes two validation packs: one normalized internal-origin export example and one public foreign dataset example.
+
+### Normalized sales export example
 
 - `skills/datell-visual-report-preview/assets/real-sales-december-2024.json`
 - `skills/datell-visual-report-preview/assets/real-sales-december-2024-basic-report.html`
 
 The input pack preserves 20 real December 2024 sales rows from an exported Datell report while translating labels to English for public publication. The HTML example shows the expected static basic-report result: KPI row, one primary chart area, one narrative block, and one scorecard table with no filter controls or linkage hooks.
+
+### Public foreign dataset example
+
+- `skills/datell-visual-report-preview/assets/us-ag-exports-top8-2011.json`
+- `skills/datell-visual-report-preview/assets/us-ag-exports-top8-2011-basic-report.html`
+
+This example uses a public U.S. agriculture export dataset and narrows it to the top eight states by total exports. It is intended for README demos, skills.sh listing previews, and install-time evaluation where a public English-only sample is more appropriate than a translated internal export.
 
 ## Local Validation
 
@@ -74,6 +98,9 @@ skills/
     SKILL.md
     assets/real-sales-december-2024.json
     assets/real-sales-december-2024-basic-report.html
+    assets/us-ag-exports-top8-2011.json
+    assets/us-ag-exports-top8-2011-basic-report.html
+    assets/us-ag-exports-top8-2011-preview.png
     evals/evals.json
     references/datell-chart-engine-playbook.md
     references/datell-card-catalog.md
