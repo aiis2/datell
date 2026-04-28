@@ -4,7 +4,7 @@ description: Create Datell visual reports with a hybrid workflow. Prefer the loc
 license: Apache-2.0
 compatibility: Designed for Agent Skills compatible coding agents. If a Datell MCP runtime exposing datell_generate_chart is available, use it; otherwise generate standalone HTML directly.
 metadata:
-  author: Datell Team
+  author: aiis2
   track: hybrid-skill
   scope: visual-report-only
 ---
@@ -45,7 +45,7 @@ Produce a complete HTML document, not a fragment.
 
 When generating a Datell-style report, follow this order:
 
-1. Choose layout family.
+1. Choose the layout family and canonical layout ID.
 2. Choose card combination.
 3. Choose chart engine.
 4. Fill the shared Datell shell and card system.
@@ -69,13 +69,32 @@ When Datell MCP is not available:
 - return or save a complete standalone HTML report
 - use CDN ECharts or an offline-safe fallback depending on the environment
 
+## Datell Knowledge Base
+
+Use the publishable markdown knowledge base instead of inventing a reduced subset from memory.
+
+- Start from [the Datell knowledge index](references/datell-knowledge-index.md).
+- Use [the Datell layout catalog](references/datell-layout-catalog.md) for built-in layout IDs.
+- Use [the Datell palette catalog](references/datell-palette-catalog.md) for built-in palette IDs.
+- Use [the Datell card catalog](references/datell-card-catalog.md) for the current app-side card component inventory.
+
+## No-MCP Basic Report Contract
+
+When MCP is unavailable, the fallback should become a static basic report rather than a partially interactive app shell.
+
+- Produce a non-interactive standalone HTML report.
+- Do not use filter controls in the no-MCP basic report path.
+- Do not emit `window.__REPORT_EVENT_BUS__`, `filterChange`, `callTool(...)`, cross-card linkage, linked brushing, or card-to-card drilldown hooks.
+- Keep the composition simple: one layout ID, one palette ID, one KPI row, one primary chart area, and only the minimum supporting table or narrative cards.
+- If a chart library cannot be loaded safely, fall back to static SVG or semantic HTML blocks instead of adding fake interactivity.
+
 ## Datell Fallback Design System
 
 When MCP is unavailable, do not drop to a generic HTML dashboard. Mirror Datell's real report shell and card system in the standalone output.
 
 - Use the shell structure `report-container`, `report-header`, `report-title`, `report-timestamp`, and `report-content`.
 - For standard dashboards, use `grid-kpi` for the KPI row and `grid-charts` for the main content area.
-- For denser reports or reports with controls, use the zone structure `report-zones`, `zone-kpi`, `zone-filter`, and `zone-content`.
+- For embedded hosts that explicitly support local controls, use the zone structure `report-zones`, `zone-kpi`, `zone-filter`, and `zone-content`.
 - Use `card` as the base wrapper, then layer specialized classes such as `chart-card`, `kpi-card`, and `data-table` patterns on top.
 - Make tables span full width when they are the main evidence block.
 
@@ -87,19 +106,19 @@ Prefer concrete Datell card variants over anonymous div blocks.
 - Chart cards: `chart-card` with `card-subtitle`, `chart-footer`, and a sized `chart-container` such as `md`, `lg`, or `full`.
 - Table cards: `ranked-table`, `scorecard-table`, `heatmap-table`, `comparison-table`, `pivot-table`.
 - Narrative and structure cards: `insight-callout`, `text-summary-card`, `metric-narrative`, `timeline-horizontal`, `timeline-dual-track`, `process-steps`, `comparison-twoCol`.
-- Filter controls: only use `zone-filter`, `filter-btn-group`, `filter-select`, or `filter-checkbox-group` when the host can execute basic browser JavaScript or when the user explicitly wants a control strip.
+- Filter controls: only use `zone-filter`, `filter-btn-group`, `filter-select`, or `filter-checkbox-group` when the host can execute basic browser JavaScript and the task explicitly requires embedded controls. Do not use them in the no-MCP basic report path.
 
 ## Layout Selection Guidance
 
-Choose a Datell-style layout family before composing cards.
+Choose a Datell-style canonical layout ID before composing cards.
 
-- `dashboard-2col`: the default for balanced KPI plus chart dashboards.
-- `dashboard-3col`: use for wide screens and high-density monitoring.
-- `bento-grid`: use when card importance is uneven and one or two hero cards should span more columns.
-- `compact-dashboard`: use for operational monitoring, realtime boards, and dense KPI plus small chart collections.
-- `magazine-wide`: use when the report needs a dominant main story with a supporting side rail.
-- `print-a4`: use for document-style exports and PDF-oriented reports.
-- `mobile-first`: use when the request explicitly targets narrow screens.
+- `universal/dashboard-2col`: the default for balanced KPI plus chart dashboards.
+- `universal/dashboard-3col`: use for wide screens and high-density monitoring.
+- `universal/bento-grid`: use when card importance is uneven and one or two hero cards should span more columns.
+- `universal/compact-dashboard`: use for operational monitoring, realtime boards, and dense KPI plus small chart collections.
+- `universal/magazine-wide`: use when the report needs a dominant main story with a supporting side rail.
+- `universal/print-a4`: use for document-style exports and PDF-oriented reports.
+- `universal/mobile-first`: use when the request explicitly targets narrow screens.
 - If the domain is obvious, mirror Datell's domain layouts such as `finance/kpi-3col`, `ecommerce/gmv-overview`, `sales/daily-report`, or `operations/server-monitor` in structure and card choice.
 
 ## Chart Engine Decision Guidance
@@ -135,6 +154,7 @@ Inline Datell's theme variables so the fallback report keeps the same visual gra
 - If the user asks for an offline-safe deliverable, avoid CDN dependencies and fall back to static SVG or simple semantic HTML blocks.
 - Do not assume Datell-only helpers such as `callTool(...)` exist unless they are actually exposed by the current host.
 - When MCP is unavailable, still inline the Datell shell classes and theme variables instead of switching to a different design language.
+- When MCP is unavailable, keep the result non-interactive and do not emit filter controls, event-bus hooks, or linkage logic.
 - When using ApexCharts, keep the same Datell card shell, use `new ApexCharts(...)` inside the chosen `chart-card`, and prefer `window.__APEX_PALETTE__` when the host exposes it.
 - When using ECharts, keep the same Datell card shell, guard the chart container before `echarts.init(...)`, and keep an explicit chart height.
 
@@ -151,6 +171,8 @@ Inline Datell's theme variables so the fallback report keeps the same visual gra
 ## Reference
 
 See [the visual report pattern guide](references/visual-report-pattern.md) for the recommended page structure, CSS skeleton, and chart bootstrapping pattern.
+
+See [the Datell knowledge index](references/datell-knowledge-index.md) for the full publishable markdown index of layouts, palettes, and card components.
 
 See [the Datell design system playbook](references/datell-design-system-playbook.md) for reusable card families, layout families, palette presets, and domain-to-layout guidance.
 

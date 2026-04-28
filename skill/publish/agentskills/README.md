@@ -1,51 +1,54 @@
 # Datell Agent Skills
 
-This repository is the standalone publish tree for Datell Agent Skills and the optional Datell visual-report MCP runtime.
+Datell Agent Skills publishes a report-focused Agent Skills repository with one installable skill and an optional visual-report MCP runtime.
 
 ## Install
 
-Install the published skill from a Git repository with the Agent Skills CLI:
+Install the published skill from GitHub with the Agent Skills CLI:
 
 ```bash
-npx skills add <owner>/datell-skills --skill datell-visual-report-preview
+npx skills add aiis2/frontend-design-report --skill datell-visual-report-preview
 ```
 
-The same repository also ships `.claude-plugin/marketplace.json` so it can be imported by compatibility installers that understand Claude-style marketplace metadata.
+The repository also ships `.claude-plugin/marketplace.json` for hosts that support Claude-style marketplace imports.
 
-## Compatibility
+## What You Get
 
-- Install surface: a single installable skill, `datell-visual-report-preview`
+- One installable skill: `datell-visual-report-preview`
 - Preferred runtime path: call `datell_generate_chart` when a compatible MCP host is available
-- Fallback path: produce standalone HTML that preserves the Datell layout, card, and palette system
-- MCP package scope: visual-report runtime only
+- Standalone fallback path: generate self-contained HTML that preserves the Datell layout, card, and palette system
+- No-MCP basic-report mode: generate a static, non-interactive HTML report without filter controls, event-bus hooks, or cross-card linkage
+- Optional MCP package scope: visual-report runtime only
 
-This merged skill should prefer MCP when `datell_generate_chart` is available and otherwise stay fully usable through the standalone HTML fallback path.
-The merged runtime remains limited to visual report scope in this repository.
+## Skill Layout
+
+The skill follows the Agent Skills directory model: a `SKILL.md` entry point with focused reference files loaded on demand.
+
+- `skills/datell-visual-report-preview/SKILL.md`
+- `skills/datell-visual-report-preview/references/datell-knowledge-index.md`
+- `skills/datell-visual-report-preview/references/datell-layout-catalog.md`
+- `skills/datell-visual-report-preview/references/datell-palette-catalog.md`
+- `skills/datell-visual-report-preview/references/datell-card-catalog.md`
+- `skills/datell-visual-report-preview/references/visual-report-pattern.md`
+
+Use these references when you need the full Datell layout, palette, and card inventory instead of a reduced example subset.
 
 ## Local Validation
 
-Install dependencies from the repository root:
+Install dependencies and run the repository checks:
 
 ```bash
 npm install
-```
-
-Run the full local validation suite:
-
-```bash
 npm run validate
 ```
 
-This command validates JSON files, repository layout, eval integrity, and the runnable MCP workspace.
+This validates JSON files, repository layout, eval integrity, and the runnable MCP workspace.
 
 ## Support Policy
 
-This repository currently supports only the following surfaces:
+This repository currently ships only the report-preview skill and the matching visual-report MCP runtime.
 
-- the `datell-visual-report-preview` skill
-- the `@datell/mcp` visual-report runtime
-
-Issues outside that scope, including memory, RAG, or unrelated application runtime behavior, are out of scope for this repository unless a dedicated design pass expands the contract.
+Requests outside that surface, such as memory, RAG, or unrelated application runtime features, should be handled in a separate repository or design pass.
 
 ## Repository Layout
 
@@ -57,7 +60,11 @@ skills/
     SKILL.md
     evals/evals.json
     references/datell-chart-engine-playbook.md
+    references/datell-card-catalog.md
     references/datell-design-system-playbook.md
+    references/datell-knowledge-index.md
+    references/datell-layout-catalog.md
+    references/datell-palette-catalog.md
     references/visual-report-pattern.md
 mcp/
   package.json
@@ -70,5 +77,3 @@ scripts/
   validate-json.mjs
   validate-layout.mjs
 ```
-
-See [STANDALONE-REPO-CHECKLIST.md](STANDALONE-REPO-CHECKLIST.md) for the remaining non-blocking follow-up work after the initial standalone extraction.

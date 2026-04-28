@@ -19,10 +19,11 @@
     },
     {
       "id": 2,
-      "prompt": "No Datell MCP runtime is available. Generate a compact-dashboard style visual report for category sales with a kpi-traffic-light card, an insight-callout, and a palette-slate-dark theme.",
-      "expected_output": "The workflow falls back cleanly to standalone HTML output while still using Datell card classes, compact layout guidance, and a real dark palette.",
+      "prompt": "No Datell MCP runtime is available. Generate a static compact-dashboard style visual report for category sales with universal/compact-dashboard, a kpi-traffic-light card, an insight-callout, and a palette-slate-dark theme. The fallback must stay non-interactive: no filter controls, no event bus hooks, and no cross-card linkage.",
+      "expected_output": "The workflow falls back cleanly to standalone HTML output while still using Datell card classes, a real dark palette, and a static non-interactive no-MCP contract.",
       "files": [
         "SKILL.md",
+        "references/datell-knowledge-index.md",
         "references/visual-report-pattern.md",
         "references/datell-design-system-playbook.md"
       ],
@@ -30,45 +31,51 @@
         "Explicitly describes the fallback or fall back path",
         "Keeps the output as a ready-to-open HTML deliverable",
         "Does not require datell_generate_chart when the tool is unavailable",
-        "Uses Datell fallback cards such as kpi-traffic-light or insight-callout"
+        "Uses Datell fallback cards such as kpi-traffic-light or insight-callout",
+        "Keeps the result non-interactive and does not require filter controls or event bus hooks"
       ]
     },
     {
       "id": 3,
-      "prompt": "No Datell MCP runtime is available. Produce a bento-grid executive dashboard that uses kpi-bullet-card, kpi-ranked-list, a scorecard-table, and palette-editorial while keeping the report printable.",
-      "expected_output": "A standalone HTML report that mirrors Datell's richer card library, layout families, and palette system without relying on MCP.",
+      "prompt": "No Datell MCP runtime is available. Produce a static executive dashboard with universal/bento-grid, kpi-bullet-card, kpi-ranked-list, a scorecard-table, and palette-editorial while keeping the report printable. Do not add filter controls, event bus hooks, or cross-card linkage.",
+      "expected_output": "A standalone HTML report that mirrors Datell's richer card library, canonical layout ids, and palette system without relying on MCP or interactivity.",
       "files": [
         "SKILL.md",
+        "references/datell-knowledge-index.md",
         "references/visual-report-pattern.md",
         "references/datell-design-system-playbook.md"
       ],
       "expectations": [
-        "Mentions a Datell layout family such as bento-grid or print-a4",
+        "Mentions a canonical Datell layout id such as universal/bento-grid or universal/print-a4",
         "Uses concrete card-library variants instead of anonymous cards",
-        "Mentions palette guidance such as palette-editorial or CSS palette variables"
+        "Mentions palette guidance such as palette-editorial or CSS palette variables",
+        "Keeps the result static and non-interactive"
       ]
     },
     {
       "id": 4,
-      "prompt": "No Datell MCP runtime is available. Produce a finance/kpi-3col style quarterly finance review with a cashflow emphasis, using kpi-two-period, kpi-bullet-card, a scorecard-table, an insight-callout, and palette-royal-blue.",
-      "expected_output": "A standalone finance HTML report that uses Datell's finance layout grammar, concrete card-library variants, and a real enterprise palette instead of a generic dashboard template.",
+      "prompt": "No Datell MCP runtime is available. Produce a static finance/kpi-3col quarterly finance review with a cashflow emphasis, using kpi-two-period, kpi-bullet-card, a scorecard-table, an insight-callout, and palette-royal-blue. Keep the fallback non-interactive with no filter controls, no event bus hooks, and no linkage.",
+      "expected_output": "A standalone finance HTML report that uses Datell's finance layout grammar, concrete card-library variants, and a real enterprise palette instead of a generic dashboard template, while staying static in the no-MCP path.",
       "files": [
         "SKILL.md",
+        "references/datell-knowledge-index.md",
         "references/visual-report-pattern.md",
         "references/datell-design-system-playbook.md"
       ],
       "expectations": [
         "Mentions a finance-specific layout such as finance/kpi-3col or finance/pnl-report",
         "Uses finance-appropriate Datell cards such as kpi-two-period, kpi-bullet-card, scorecard-table, or insight-callout",
-        "Uses a named palette preset such as palette-royal-blue or palette-classic"
+        "Uses a named palette preset such as palette-royal-blue or palette-classic",
+        "Keeps the no-MCP result static and non-interactive"
       ]
     },
     {
       "id": 5,
-      "prompt": "No Datell MCP runtime is available. Produce a compact-dashboard dark monitoring report that keeps the same Datell chart-card shell but chooses ApexCharts for the main visualization, uses a kpi-traffic-light row, an insight-callout, and palette-slate-dark.",
-      "expected_output": "A standalone HTML report that first chooses layout and card combination, then chooses ApexCharts without changing the Datell shell or card integration model.",
+      "prompt": "No Datell MCP runtime is available. Produce a static dark monitoring report with universal/compact-dashboard that keeps the same Datell chart-card shell but chooses ApexCharts for the main visualization, uses a kpi-traffic-light row, an insight-callout, and palette-slate-dark, and avoids filter controls, event bus hooks, and cross-card linkage.",
+      "expected_output": "A standalone HTML report that first chooses layout and card combination, then chooses ApexCharts without changing the Datell shell or card integration model, while keeping the no-MCP result static and non-interactive.",
       "files": [
         "SKILL.md",
+        "references/datell-knowledge-index.md",
         "references/visual-report-pattern.md",
         "references/datell-design-system-playbook.md",
         "references/datell-chart-engine-playbook.md"
@@ -76,7 +83,27 @@
       "expectations": [
         "Mentions ApexCharts as the selected engine for the scenario",
         "Keeps the same chart-card and chart-container shell instead of inventing a separate Apex layout",
-        "Mentions a shared Datell shell and card system with engine-specific initialization only"
+        "Mentions a shared Datell shell and card system with engine-specific initialization only",
+        "Keeps the result static and non-interactive in the no-MCP path"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "No Datell MCP runtime is available. Produce a basic standalone quarterly revenue report with universal/dashboard-2col, palette-classic, a KPI row, one main chart, and one supporting scorecard or summary block. The output must stay non-interactive: no filter controls, no event bus hooks, and no cross-card linkage.",
+      "expected_output": "A ready-to-open standalone HTML report that uses Datell's real layout and palette system while explicitly staying static and non-interactive when MCP is unavailable.",
+      "files": [
+        "SKILL.md",
+        "references/visual-report-pattern.md",
+        "references/datell-knowledge-index.md",
+        "references/datell-layout-catalog.md",
+        "references/datell-palette-catalog.md",
+        "references/datell-card-catalog.md"
+      ],
+      "expectations": [
+        "Mentions a static or non-interactive no-MCP fallback",
+        "Does not require filter controls or window.__REPORT_EVENT_BUS__",
+        "Uses a real Datell layout id such as universal/dashboard-2col",
+        "Uses a named palette preset such as palette-classic"
       ]
     }
   ]

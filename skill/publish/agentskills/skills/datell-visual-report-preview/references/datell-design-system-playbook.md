@@ -2,6 +2,15 @@
 
 Use this reference when the no-MCP fallback should stay visually close to Datell's in-app report preview. This document is intentionally reusable across future skills that need Datell cards, layouts, and palettes.
 
+## Knowledge Base Index
+
+Use the detailed markdown indexes when you need the full current inventory instead of the summarized playbook below.
+
+- [datell-knowledge-index.md](datell-knowledge-index.md)
+- [datell-layout-catalog.md](datell-layout-catalog.md)
+- [datell-palette-catalog.md](datell-palette-catalog.md)
+- [datell-card-catalog.md](datell-card-catalog.md)
+
 ## Card Families
 
 ### KPI Cards
@@ -40,13 +49,13 @@ Use this reference when the no-MCP fallback should stay visually close to Datell
 
 ## Layout Families
 
-- `dashboard-2col`: balanced default for KPI row plus two-column analytical grid.
-- `dashboard-3col`: wide-screen monitoring and denser dashboards.
-- `bento-grid`: asymmetric hero-card composition.
-- `compact-dashboard`: dense operations board with small gaps and many cards.
-- `magazine-wide`: dominant main story plus supporting side rail.
-- `print-a4`: calmer printable report flow.
-- `mobile-first`: narrow-screen single-column delivery.
+- `universal/dashboard-2col`: balanced default for KPI row plus two-column analytical grid.
+- `universal/dashboard-3col`: wide-screen monitoring and denser dashboards.
+- `universal/bento-grid`: asymmetric hero-card composition.
+- `universal/compact-dashboard`: dense operations board with small gaps and many cards.
+- `universal/magazine-wide`: dominant main story plus supporting side rail.
+- `universal/print-a4`: calmer printable report flow.
+- `universal/mobile-first`: narrow-screen single-column delivery.
 
 When interaction or denser composition matters, prefer the zone-based shell:
 

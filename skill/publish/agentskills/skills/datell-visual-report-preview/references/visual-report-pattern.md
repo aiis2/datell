@@ -17,15 +17,33 @@ Use the same semantic skeleton Datell uses in its report shell.
 
 Choose a layout family before writing the HTML.
 
-- `dashboard-2col`: balanced default for most management dashboards.
-- `dashboard-3col`: wide-screen KPI walls and denser chart boards.
-- `bento-grid`: asymmetrical hero-card composition with one or two emphasis blocks.
-- `compact-dashboard`: high-density realtime monitoring.
-- `magazine-wide`: one main story plus one supporting side rail.
-- `print-a4`: printable document flow with calmer spacing.
-- `mobile-first`: narrow-screen single-column flow.
+- `universal/dashboard-2col`: balanced default for most management dashboards.
+- `universal/dashboard-3col`: wide-screen KPI walls and denser chart boards.
+- `universal/bento-grid`: asymmetrical hero-card composition with one or two emphasis blocks.
+- `universal/compact-dashboard`: high-density realtime monitoring.
+- `universal/magazine-wide`: one main story plus one supporting side rail.
+- `universal/print-a4`: printable document flow with calmer spacing.
+- `universal/mobile-first`: narrow-screen single-column flow.
 
 If the domain is obvious, mimic the card rhythm of real Datell layouts like `finance/kpi-3col`, `ecommerce/gmv-overview`, `sales/daily-report`, or `operations/server-monitor`.
+
+## Standalone CSS Responsibility
+
+The skeleton below covers the shared Datell shell only. When you choose richer variant classes from the card catalog, inline the matching card-library rules or equivalent variant-specific CSS in the same HTML document.
+
+- Do not assume an external Datell stylesheet exists.
+- Do not emit variant classes such as `kpi-rank`, `heatmap-table`, `comparison-table`, `pivot-table`, or advanced narrative blocks unless the document also includes the matching card-library rules.
+- Keep the standalone report self-contained: shell CSS, variant-specific CSS, chart bootstrapping, and data assumptions should all live in the same deliverable.
+
+## No-MCP Static Fallback Contract
+
+When `datell_generate_chart` is unavailable, the standalone fallback should be a static report, not a partially interactive mini-app.
+
+- Produce a non-interactive or tooltip-only report.
+- Do not use filter controls, `zone-filter`, `filter-btn-group`, `filter-select`, `filter-checkbox-group`, `filter-search-box`, or `filter-global-panel`.
+- Do not emit `window.__REPORT_EVENT_BUS__`, `filterChange`, `callTool(...)`, linked brushing, cross-card selection, or card-to-card linkage.
+- Keep the composition basic: KPI row, one main chart block, and only the minimum supporting table or narrative cards.
+- If no safe chart runtime exists, keep the same shell and replace the chart with static SVG, semantic HTML, or narrative plus table evidence.
 
 ## Card Catalog
 
@@ -36,7 +54,7 @@ Prefer these concrete card-library classes when composing fallback HTML.
 - Tables: `ranked-table`, `scorecard-table`, `heatmap-table`, `comparison-table`, `pivot-table`.
 - Narrative: `insight-callout`, `text-summary-card`, `metric-narrative`, `comparison-twoCol`.
 - Structure: `timeline-horizontal`, `timeline-dual-track`, `process-steps`.
-- Controls: `filter-btn-group`, `filter-select`, `filter-checkbox-group` only when the page is meant to stay interactive.
+- Controls: `filter-btn-group`, `filter-select`, `filter-checkbox-group` only when the page is meant to stay interactive. Do not use them in the no-MCP basic-report fallback.
 
 ## Theme Variables
 
@@ -179,7 +197,7 @@ Use palette families close to real Datell presets.
     <div class="report-container">
       <header class="report-header">
         <h1 class="report-title">Revenue Quality Review</h1>
-        <p class="report-timestamp">Updated 2026-04-24 · layout: dashboard-2col · palette: palette-classic</p>
+        <p class="report-timestamp">Updated 2026-04-24 · layout: universal/dashboard-2col · palette: palette-classic</p>
       </header>
       <main class="report-content">
         <section class="grid-kpi">
