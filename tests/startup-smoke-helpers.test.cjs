@@ -54,7 +54,7 @@ assert.deepEqual(
   }),
   {
     command: 'xvfb-run',
-    args: ['-a', '/tmp/release/linux-unpacked/datell', '--startup-smoke-test'],
+    args: ['-a', '/tmp/release/linux-unpacked/datell', '--startup-smoke-test', '--no-sandbox'],
   },
   'Linux smoke should launch the packaged app under xvfb-run',
 );

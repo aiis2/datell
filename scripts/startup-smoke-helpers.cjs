@@ -29,7 +29,7 @@ function buildSmokeLaunchCommand({ platform, executablePath }) {
   if (platform === 'linux') {
     return {
       command: 'xvfb-run',
-      args: ['-a', executablePath, '--startup-smoke-test'],
+      args: ['-a', executablePath, '--startup-smoke-test', '--no-sandbox'],
     };
   }
 
