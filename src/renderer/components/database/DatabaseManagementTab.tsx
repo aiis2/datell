@@ -9,13 +9,38 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  IconDatabasePlus, IconDatabase, IconServer, IconTable, IconPlus,
-  IconTrash, IconEdit, IconDownload, IconUpload, IconRefresh,
-  IconPlayerPlay, IconX, IconChevronRight, IconChevronDown,
-  IconColumns, IconAlertCircle, IconCheck, IconCopy, IconSearch,
-  IconHistory, IconLoader2, IconFileImport, IconFileExport,
-  IconTablePlus,
-} from '@tabler/icons-react';
+  DatabaseZap, Database, Server, Table2, Plus,
+  Trash2, Pencil, Download, Upload, RefreshCw,
+  Play, X, ChevronRight, ChevronDown,
+  Columns2, AlertCircle, Check, Copy, Search,
+  History, Loader2, FileInput, FileOutput,
+  TableProperties,
+} from 'lucide-react';
+// Re-export with Tabler-style names for backward compatibility within this file
+const IconDatabasePlus = DatabaseZap;
+const IconDatabase = Database;
+const IconServer = Server;
+const IconTable = Table2;
+const IconPlus = Plus;
+const IconTrash = Trash2;
+const IconEdit = Pencil;
+const IconDownload = Download;
+const IconUpload = Upload;
+const IconRefresh = RefreshCw;
+const IconPlayerPlay = Play;
+const IconX = X;
+const IconChevronRight = ChevronRight;
+const IconChevronDown = ChevronDown;
+const IconColumns = Columns2;
+const IconAlertCircle = AlertCircle;
+const IconCheck = Check;
+const IconCopy = Copy;
+const IconSearch = Search;
+const IconHistory = History;
+const IconLoader2 = Loader2;
+const IconFileImport = FileInput;
+const IconFileExport = FileOutput;
+const IconTablePlus = TableProperties;
 import { useDatasourceStore } from '../../stores/datasourceStore';
 import type { UserDBConfig, DatasourceConfig, ActiveDatasource, SchemaInfo } from '../../stores/datasourceStore';
 import { useI18n } from '../../i18n';
@@ -46,6 +71,7 @@ const DBSourceList: React.FC<{
   onSelect: (id: string) => void;
 }> = ({ selectedId, onSelect }) => {
   const { datasources, userDBs, loadDatasources, loadUserDBs, createUserDB, deleteUserDB } = useDatasourceStore();
+  const { t } = useI18n();
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState('');
   const [newDesc, setNewDesc] = useState('');
@@ -72,7 +98,7 @@ const DBSourceList: React.FC<{
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    if (!confirm('确定要删除这个用户数据库吗？此操作不可恢复。')) return;
+    if (!confirm(t.dbManagement.deleteConfirm)) return;
     await deleteUserDB(id);
     if (selectedId === id) onSelect('');
   };
@@ -80,21 +106,21 @@ const DBSourceList: React.FC<{
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-700">
-        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">数据库</span>
+        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t.dbManagement.sectionTitle}</span>
         <button
           onClick={() => setCreating(true)}
           className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-          title="新建用户数据库"
+          title={t.dbManagement.createBtnTitle}
         >
           <IconDatabasePlus size={12} />
-          新建
+          {t.dbManagement.createBtn}
         </button>
       </div>
 
       {/* User DBs */}
       {userDBs.length > 0 && (
         <div className="px-3 py-1.5">
-          <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">用户数据库</p>
+          <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{t.dbManagement.sectionUserDbs}</p>
           {userDBs.map((db) => (
             <div
               key={db.id}
@@ -110,13 +136,13 @@ const DBSourceList: React.FC<{
                 <div className="min-w-0">
                   <div className="text-xs font-medium truncate">{db.name}</div>
                   {db.tableCount !== undefined && (
-                    <div className="text-xs text-gray-400">{db.tableCount} 张表</div>
+                    <div className="text-xs text-gray-400">{db.tableCount} {t.dbManagement.tableCountUnit}</div>
                   )}
                 </div>
               </div>
               <button
                 onClick={(e) => handleDelete(e, db.id)}
-                title="删除"
+                title={t.dbManagement.deleteBtnTitle}
                 className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:text-red-500 transition-all"
               >
                 <IconTrash size={12} />
@@ -129,7 +155,7 @@ const DBSourceList: React.FC<{
       {/* External sources */}
       {datasources.length > 0 && (
         <div className="px-3 py-1.5 border-t border-gray-100 dark:border-gray-700/50">
-          <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">外部数据源</p>
+          <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{t.dbManagement.sectionExternal}</p>
           {datasources.map((ds) => (
             <div
               key={ds.id}
@@ -153,27 +179,27 @@ const DBSourceList: React.FC<{
       {userDBs.length === 0 && datasources.length === 0 && !creating && (
         <div className="flex-1 flex flex-col items-center justify-center p-4 text-center text-gray-400 dark:text-gray-500">
           <IconDatabase size={28} className="mb-2 opacity-40" />
-          <p className="text-xs">暂无数据库</p>
-          <p className="text-xs mt-1">点击"新建"创建用户数据库</p>
+          <p className="text-xs">{t.dbManagement.emptyTitle}</p>
+          <p className="text-xs mt-1">{t.dbManagement.emptyHint}</p>
         </div>
       )}
 
       {/* Create user DB form */}
       {creating && (
         <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-          <p className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-2">新建用户数据库</p>
+          <p className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-2">{t.dbManagement.createFormTitle}</p>
           <input
             autoFocus
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleCreate(); if (e.key === 'Escape') setCreating(false); }}
-            placeholder="数据库名称"
+            placeholder={t.dbManagement.namePlaceholder}
             className="w-full text-xs px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 mb-1.5"
           />
           <textarea
             value={newDesc}
             onChange={(e) => setNewDesc(e.target.value)}
-            placeholder="描述（可选）"
+            placeholder={t.dbManagement.descPlaceholder}
             rows={2}
             className="w-full text-xs px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 resize-none mb-2"
           />
@@ -184,13 +210,13 @@ const DBSourceList: React.FC<{
               className="flex-1 flex items-center justify-center gap-1 px-2 py-1 rounded text-xs bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
             >
               {busy ? <IconLoader2 size={12} className="animate-spin" /> : <IconCheck size={12} />}
-              创建
+              {t.dbManagement.createConfirm}
             </button>
             <button
               onClick={() => { setCreating(false); setNewName(''); setNewDesc(''); }}
               className="px-2 py-1 rounded text-xs border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
-              取消
+              {t.dbManagement.cancelBtn}
             </button>
           </div>
         </div>
@@ -210,6 +236,7 @@ const TableBrowser: React.FC<{
   schema: SchemaInfo | null;
   loading: boolean;
 }> = ({ sourceId, isUserDB, selectedTable, onSelectTable, onImport, onRefresh, schema, loading }) => {
+  const { t } = useI18n();
   const [search, setSearch] = useState('');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newTableDDL, setNewTableDDL] = useState('CREATE TABLE my_table (\n  id INTEGER PRIMARY KEY,\n  name TEXT NOT NULL\n)');
@@ -227,7 +254,7 @@ const TableBrowser: React.FC<{
       setCreateDialogOpen(false);
       onRefresh();
     } catch (err) {
-      alert('建表失败: ' + (err instanceof Error ? err.message : String(err)));
+      alert(t.dbManagement.createTableError + (err instanceof Error ? err.message : String(err)));
     } finally {
       setCreating(false);
     }
@@ -242,7 +269,7 @@ const TableBrowser: React.FC<{
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="搜索表..."
+            placeholder={t.dbManagement.searchPlaceholder}
             className="w-full pl-6 pr-2 py-1 text-xs border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
           />
         </div>
@@ -258,7 +285,7 @@ const TableBrowser: React.FC<{
         {!loading && filtered.length === 0 && (
           <div className="text-center text-gray-400 dark:text-gray-500 py-6">
             <IconTable size={24} className="mx-auto mb-1 opacity-40" />
-            <p className="text-xs">{search ? '无匹配表' : '暂无表'}</p>
+            <p className="text-xs">{search ? t.dbManagement.noMatches : t.dbManagement.noTables}</p>
           </div>
         )}
         {!loading && filtered.map((table) => (
@@ -274,7 +301,7 @@ const TableBrowser: React.FC<{
             <IconTable size={13} className="shrink-0 text-gray-400" />
             <div className="min-w-0 flex-1">
               <div className="text-xs font-medium truncate">{table.name}</div>
-              <div className="text-xs text-gray-400">{table.columns.length} 列</div>
+              <div className="text-xs text-gray-400">{table.columns.length} {t.dbManagement.columnCountUnit}</div>
             </div>
           </div>
         ))}
@@ -285,7 +312,7 @@ const TableBrowser: React.FC<{
         <button
           onClick={onRefresh}
           className="flex items-center gap-1 px-2 py-1 rounded text-xs border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          title="刷新"
+          title={t.dbManagement.refreshTitle}
         >
           <IconRefresh size={11} />
         </button>
@@ -294,18 +321,18 @@ const TableBrowser: React.FC<{
             <button
               onClick={() => setCreateDialogOpen(true)}
               className="flex items-center gap-1 px-2 py-1 rounded text-xs border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              title="新建表"
+              title={t.dbManagement.createTableBtn}
             >
               <IconTablePlus size={11} />
-              新建表
+              {t.dbManagement.createTableBtn}
             </button>
             <button
               onClick={onImport}
               className="flex items-center gap-1 px-2 py-1 rounded text-xs border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              title="导入数据"
+              title={t.dbManagement.importBtn}
             >
               <IconFileImport size={11} />
-              导入
+              {t.dbManagement.importBtn}
             </button>
           </>
         )}
@@ -316,30 +343,30 @@ const TableBrowser: React.FC<{
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-5 w-[480px] max-w-[90vw]">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">新建表</h3>
-              <button onClick={() => setCreateDialogOpen(false)} title="关闭" className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+              <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">{t.dbManagement.createTableTitle}</h3>
+              <button onClick={() => setCreateDialogOpen(false)} title={t.dbManagement.closeTitle} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                 <IconX size={16} />
               </button>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">输入 CREATE TABLE 语句：</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{t.dbManagement.createTableLabel}</p>
             <textarea
               value={newTableDDL}
               onChange={(e) => setNewTableDDL(e.target.value)}
               rows={8}
-              title="CREATE TABLE 语句"
-              aria-label="CREATE TABLE 语句"
+              title={t.dbManagement.createTableLabel}
+              aria-label={t.dbManagement.createTableLabel}
               placeholder="CREATE TABLE my_table (...)"
               className="w-full text-xs font-mono px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 resize-none mb-3"
               spellCheck={false}
             />
             <div className="flex justify-end gap-2">
-              <button onClick={() => setCreateDialogOpen(false)} className="px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">取消</button>
+              <button onClick={() => setCreateDialogOpen(false)} className="px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">{t.dbManagement.cancelBtn}</button>
               <button
                 onClick={handleCreateTable}
                 disabled={creating}
                 className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
               >
-                {creating ? '创建中...' : '确认创建'}
+                {creating ? t.dbManagement.creatingBtn : t.dbManagement.createTableConfirm}
               </button>
             </div>
           </div>
@@ -357,6 +384,7 @@ const TableDetailPanel: React.FC<{
   isUserDB: boolean;
   onRefresh: () => void;
 }> = ({ sourceId, tableName, columns, isUserDB, onRefresh }) => {
+  const { t } = useI18n();
   const [editingCol, setEditingCol] = useState<string | null>(null);
   const [editType, setEditType] = useState('');
   const [editComment, setEditComment] = useState('');
@@ -366,7 +394,7 @@ const TableDetailPanel: React.FC<{
   const [newColType, setNewColType] = useState('TEXT');
 
   const handleDropTable = async () => {
-    if (!confirm(`确定删除表 "${tableName}"？此操作不可恢复。`)) return;
+    if (!confirm(t.dbManagement.dropTableConfirmPrefix + tableName + t.dbManagement.dropTableConfirmSuffix)) return;
     await api().userdbDropTable(sourceId, tableName);
     onRefresh();
   };
@@ -379,7 +407,7 @@ const TableDetailPanel: React.FC<{
       setEditingCol(null);
       onRefresh();
     } catch (err) {
-      alert('修改失败: ' + (err instanceof Error ? err.message : String(err)));
+      alert(t.dbManagement.alterColError + (err instanceof Error ? err.message : String(err)));
     } finally {
       setBusy(false);
     }
@@ -395,7 +423,7 @@ const TableDetailPanel: React.FC<{
       setNewColType('TEXT');
       onRefresh();
     } catch (err) {
-      alert('添加列失败: ' + (err instanceof Error ? err.message : String(err)));
+      alert(t.dbManagement.addColError + (err instanceof Error ? err.message : String(err)));
     } finally {
       setBusy(false);
     }
@@ -412,7 +440,7 @@ const TableDetailPanel: React.FC<{
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
-      alert('导出失败: ' + (err instanceof Error ? err.message : String(err)));
+      alert(t.dbManagement.exportError + (err instanceof Error ? err.message : String(err)));
     }
   };
 
@@ -422,24 +450,24 @@ const TableDetailPanel: React.FC<{
         <div className="flex items-center gap-2">
           <IconTable size={14} className="text-blue-500" />
           <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 font-mono">{tableName}</span>
-          <span className="text-xs text-gray-400">{columns.length} 列</span>
+          <span className="text-xs text-gray-400">{columns.length} {t.dbManagement.columnCountUnit}</span>
         </div>
         <div className="flex items-center gap-1">
           {isUserDB && (
             <>
-              <button onClick={() => setAddingCol(true)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-blue-600 transition-colors" title="添加列">
+              <button onClick={() => setAddingCol(true)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-blue-600 transition-colors" title={t.dbManagement.addColumnTitle}>
                 <IconPlus size={13} />
               </button>
-              <button onClick={() => handleExport('csv')} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-green-600 transition-colors" title="导出 CSV">
+              <button onClick={() => handleExport('csv')} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-green-600 transition-colors" title={t.dbManagement.exportCsvTitle}>
                 <IconFileExport size={13} />
               </button>
-              <button onClick={handleDropTable} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-red-600 transition-colors" title="删除表">
+              <button onClick={handleDropTable} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-red-600 transition-colors" title={t.dbManagement.dropTableTitle}>
                 <IconTrash size={13} />
               </button>
             </>
           )}
           {!isUserDB && (
-            <button onClick={() => handleExport('csv')} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-green-600 transition-colors" title="导出 CSV">
+            <button onClick={() => handleExport('csv')} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-green-600 transition-colors" title={t.dbManagement.exportCsvTitle}>
               <IconFileExport size={13} />
             </button>
           )}
@@ -449,29 +477,29 @@ const TableDetailPanel: React.FC<{
       {/* Add column form */}
       {addingCol && isUserDB && (
         <div className="px-3 py-2 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800">
-          <p className="text-xs font-medium text-blue-700 dark:text-blue-300 mb-1.5">添加新列</p>
+          <p className="text-xs font-medium text-blue-700 dark:text-blue-300 mb-1.5">{t.dbManagement.addColHeader}</p>
           <div className="flex gap-1.5 items-center">
             <input
               autoFocus
               value={newColName}
               onChange={(e) => setNewColName(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleAddCol(); if (e.key === 'Escape') setAddingCol(false); }}
-              placeholder="列名"
+              placeholder={t.dbManagement.colNamePlaceholder}
               className="flex-1 text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
             />
             <select
               value={newColType}
               onChange={(e) => setNewColType(e.target.value)}
-              title="列类型"
-              aria-label="列类型"
+              title={t.dbManagement.colType}
+              aria-label={t.dbManagement.colType}
               className="text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
             >
-              {['TEXT', 'INTEGER', 'REAL', 'BLOB', 'NUMERIC'].map((t) => (
-                <option key={t} value={t}>{t}</option>
+              {['TEXT', 'INTEGER', 'REAL', 'BLOB', 'NUMERIC'].map((typ) => (
+                <option key={typ} value={typ}>{typ}</option>
               ))}
             </select>
-            <button onClick={handleAddCol} disabled={busy} className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">添加</button>
-            <button onClick={() => setAddingCol(false)} className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">取消</button>
+            <button onClick={handleAddCol} disabled={busy} className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">{t.dbManagement.addColBtn}</button>
+            <button onClick={() => setAddingCol(false)} className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">{t.dbManagement.cancelBtn}</button>
           </div>
         </div>
       )}
@@ -481,10 +509,10 @@ const TableDetailPanel: React.FC<{
         <table className="w-full text-xs">
           <thead className="sticky top-0 bg-gray-50 dark:bg-gray-800/80">
             <tr>
-              <th className="text-left px-3 py-1.5 font-medium text-gray-500 dark:text-gray-400">列名</th>
-              <th className="text-left px-3 py-1.5 font-medium text-gray-500 dark:text-gray-400">类型</th>
-              <th className="text-left px-3 py-1.5 font-medium text-gray-500 dark:text-gray-400">可空</th>
-              <th className="text-left px-3 py-1.5 font-medium text-gray-500 dark:text-gray-400">注释</th>
+              <th className="text-left px-3 py-1.5 font-medium text-gray-500 dark:text-gray-400">{t.dbManagement.colName}</th>
+              <th className="text-left px-3 py-1.5 font-medium text-gray-500 dark:text-gray-400">{t.dbManagement.colType}</th>
+              <th className="text-left px-3 py-1.5 font-medium text-gray-500 dark:text-gray-400">{t.dbManagement.colNullable}</th>
+              <th className="text-left px-3 py-1.5 font-medium text-gray-500 dark:text-gray-400">{t.dbManagement.colComment}</th>
               {isUserDB && <th className="px-3 py-1.5" />}
             </tr>
           </thead>
@@ -497,13 +525,13 @@ const TableDetailPanel: React.FC<{
                     <select
                       value={editType}
                       onChange={(e) => setEditType(e.target.value)}
-                      title="列类型"
-                      aria-label="列类型"
+                      title={t.dbManagement.colType}
+                      aria-label={t.dbManagement.colType}
                       className="text-xs px-1.5 py-0.5 border border-blue-400 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                       autoFocus
                     >
-                      {['TEXT', 'INTEGER', 'REAL', 'BLOB', 'NUMERIC'].map((t) => (
-                        <option key={t} value={t}>{t}</option>
+                      {['TEXT', 'INTEGER', 'REAL', 'BLOB', 'NUMERIC'].map((typ) => (
+                        <option key={typ} value={typ}>{typ}</option>
                       ))}
                     </select>
                   ) : (
@@ -519,7 +547,7 @@ const TableDetailPanel: React.FC<{
                       value={editComment}
                       onChange={(e) => setEditComment(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') handleSaveCol(); }}
-                      placeholder="注释"
+                      placeholder={t.dbManagement.commentPlaceholder}
                       className="text-xs px-1.5 py-0.5 border border-blue-400 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 w-full"
                     />
                   ) : (
@@ -530,13 +558,13 @@ const TableDetailPanel: React.FC<{
                   <td className="px-2 py-1.5">
                     {editingCol === col.name ? (
                       <div className="flex gap-1">
-                        <button onClick={handleSaveCol} disabled={busy} title="保存" className="p-0.5 text-green-600 hover:text-green-700 disabled:opacity-50"><IconCheck size={12} /></button>
-                        <button onClick={() => setEditingCol(null)} title="取消" className="p-0.5 text-gray-400 hover:text-gray-600"><IconX size={12} /></button>
+                        <button onClick={handleSaveCol} disabled={busy} title={t.dbManagement.saveTitle} className="p-0.5 text-green-600 hover:text-green-700 disabled:opacity-50"><IconCheck size={12} /></button>
+                        <button onClick={() => setEditingCol(null)} title={t.dbManagement.cancelBtn} className="p-0.5 text-gray-400 hover:text-gray-600"><IconX size={12} /></button>
                       </div>
                     ) : (
                       <button
                         onClick={() => { setEditingCol(col.name); setEditType(col.type); setEditComment(col.comment ?? ''); }}
-                        title="编辑"
+                        title={t.dbManagement.editColTitle}
                         className="p-0.5 text-gray-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-all"
                       >
                         <IconEdit size={12} />
@@ -558,6 +586,7 @@ const SQLConsole: React.FC<{
   sourceId: string;
   isUserDB: boolean;
 }> = ({ sourceId, isUserDB }) => {
+  const { t } = useI18n();
   const [sql, setSql] = useState('SELECT * FROM sqlite_master WHERE type = \'table\';');
   const [result, setResult] = useState<{ columns: string[]; rows: unknown[][]; rowCount: number; executionMs: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -612,7 +641,7 @@ const SQLConsole: React.FC<{
           onChange={(e) => setSql(e.target.value)}
           onKeyDown={handleKeyDown}
           rows={5}
-          placeholder={`输入 SQL 查询... (Ctrl+Enter 执行)${!isUserDB ? '\n仅支持 SELECT 查询' : ''}`}
+          placeholder={`${t.dbManagement.sqlPlaceholder}${!isUserDB ? t.dbManagement.readOnlyPlaceholderSuffix : ''}`}
           className="w-full px-3 py-2 text-xs font-mono bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 resize-none focus:outline-none"
           spellCheck={false}
         />
@@ -624,16 +653,16 @@ const SQLConsole: React.FC<{
               className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition-colors"
             >
               {executing ? <IconLoader2 size={11} className="animate-spin" /> : <IconPlayerPlay size={11} />}
-              执行
+              {t.dbManagement.executeBtn}
             </button>
             <button
               onClick={() => setSql('')}
               className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700 transition-colors"
             >
-              清空
+              {t.dbManagement.clearBtn}
             </button>
           </div>
-          <span className="text-xs text-gray-400">{!isUserDB ? '只读模式' : 'Ctrl+Enter 执行'}</span>
+          <span className="text-xs text-gray-400">{!isUserDB ? t.dbManagement.readOnlyMode : t.dbManagement.ctrlEnterHint}</span>
         </div>
       </div>
 
@@ -652,11 +681,11 @@ const SQLConsole: React.FC<{
           <div>
             <div className="flex items-center justify-between px-3 py-1.5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
               <span className="text-xs text-gray-500 dark:text-gray-400">
-                {result.rowCount} 行 · {result.executionMs}ms
+                {result.rowCount} rows · {result.executionMs}ms
               </span>
               <button onClick={copyResult} className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                 <IconCopy size={11} />
-                复制
+                {t.dbManagement.copyBtn}
               </button>
             </div>
             <div className="overflow-auto">
@@ -681,7 +710,7 @@ const SQLConsole: React.FC<{
                 </tbody>
               </table>
               {result.rows.length > 500 && (
-                <div className="text-center text-xs text-gray-400 py-2">仅显示前 500 行</div>
+                <div className="text-center text-xs text-gray-400 py-2">{t.dbManagement.truncatedNote}</div>
               )}
             </div>
           </div>
@@ -690,7 +719,7 @@ const SQLConsole: React.FC<{
         {!error && !result && (
           <div className="flex flex-col items-center justify-center h-32 text-gray-400 dark:text-gray-500">
             <IconPlayerPlay size={20} className="opacity-30 mb-1" />
-            <p className="text-xs">执行 SQL 查看结果</p>
+            <p className="text-xs">{t.dbManagement.consoleEmptyHint}</p>
           </div>
         )}
       </div>
@@ -705,6 +734,7 @@ const ImportDataDialog: React.FC<{
   onClose: () => void;
   onDone: () => void;
 }> = ({ sourceId, onClose, onDone }) => {
+  const { t } = useI18n();
   const [mode, setMode] = useState<'direct' | 'llm'>('direct');
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<{ headers: string[]; rows: unknown[][] } | null>(null);
@@ -763,7 +793,7 @@ const ImportDataDialog: React.FC<{
         }
       }
     } catch (err) {
-      setError('文件解析失败: ' + (err instanceof Error ? err.message : String(err)));
+      setError(t.dbManagement.parseError + (err instanceof Error ? err.message : String(err)));
     }
   };
 
@@ -816,7 +846,7 @@ const ImportDataDialog: React.FC<{
       onDone();
       onClose();
     } catch (err) {
-      setError('导入失败: ' + (err instanceof Error ? err.message : String(err)));
+      setError(t.dbManagement.importError + (err instanceof Error ? err.message : String(err)));
     } finally {
       setImporting(false);
     }
@@ -827,8 +857,8 @@ const ImportDataDialog: React.FC<{
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-[560px] max-w-[95vw] max-h-[80vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">导入数据</h3>
-          <button onClick={onClose} title="关闭" className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><IconX size={16} /></button>
+          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">{t.dbManagement.importDialogTitle}</h3>
+          <button onClick={onClose} title={t.dbManagement.closeTitle} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><IconX size={16} /></button>
         </div>
 
         {/* Mode selector */}
@@ -838,41 +868,41 @@ const ImportDataDialog: React.FC<{
             className={`px-3 py-1.5 text-xs rounded font-medium transition-colors ${mode === 'direct' ? 'bg-blue-600 text-white' : 'border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
           >
             <IconUpload size={11} className="inline mr-1" />
-            直接导入
+            {t.dbManagement.modeDirectBtn}
           </button>
           <button
             onClick={() => setMode('llm')}
             className={`px-3 py-1.5 text-xs rounded font-medium transition-colors ${mode === 'llm' ? 'bg-purple-600 text-white' : 'border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
           >
             <IconSearch size={11} className="inline mr-1" />
-            AI 智能解析
+            {t.dbManagement.modeLlmBtn}
           </button>
         </div>
 
         <div className="flex-1 overflow-auto p-5">
           {mode === 'direct' && (
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">支持 Excel (.xlsx/.xls)、CSV、JSON 格式</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">{t.dbManagement.directHint}</p>
               <label className="block w-full border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors">
                 <IconUpload size={20} className="mx-auto mb-2 text-gray-400" />
-                <p className="text-xs text-gray-500 dark:text-gray-400">{file ? file.name : '点击选择文件'}</p>
-                <input type="file" accept=".xlsx,.xls,.csv,.json,.tsv" onChange={handleFileChange} title="选择文件" aria-label="选择文件" className="sr-only" />
+                <p className="text-xs text-gray-500 dark:text-gray-400">{file ? file.name : t.dbManagement.selectFilePlaceholder}</p>
+                <input type="file" accept=".xlsx,.xls,.csv,.json,.tsv" onChange={handleFileChange} title={t.dbManagement.selectFilePlaceholder} aria-label={t.dbManagement.selectFilePlaceholder} className="sr-only" />
               </label>
 
               {preview && (
                 <div className="mt-3">
                   <div className="flex items-center gap-2 mb-2">
-                    <label className="text-xs font-medium text-gray-700 dark:text-gray-300">表名:</label>
+                    <label className="text-xs font-medium text-gray-700 dark:text-gray-300">{t.dbManagement.tableNameLabel}</label>
                     <input
                       value={tableName}
                       onChange={(e) => setTableName(e.target.value)}
-                      title="表名"
-                      aria-label="表名"
-                      placeholder="表名"
+                      title={t.dbManagement.tableNameLabel}
+                      aria-label={t.dbManagement.tableNameLabel}
+                      placeholder={t.dbManagement.tableNameLabel}
                       className="flex-1 text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-mono"
                     />
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">数据预览（前 {preview.rows.length} 行）：</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Preview ({preview.rows.length} rows):</div>
                   <div className="overflow-auto max-h-48 border border-gray-200 dark:border-gray-700 rounded">
                     <table className="w-full text-xs">
                       <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0">
@@ -901,10 +931,10 @@ const ImportDataDialog: React.FC<{
           {mode === 'llm' && (
             <div className="text-center py-8">
               <IconSearch size={28} className="mx-auto mb-2 text-purple-400 opacity-60" />
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">AI 智能解析</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">上传任意文本文件，AI 将自动识别数据结构并导入</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.dbManagement.llmTitle}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">{t.dbManagement.llmDesc}</p>
               <p className="text-xs text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded p-3">
-                在聊天窗口选择此用户数据库，上传文本文件并输入："请将此文件的数据结构化到当前用户数据库"，AI 将自动完成 LLM 流式解析导入。
+                {t.dbManagement.llmHint}
               </p>
             </div>
           )}
@@ -919,13 +949,13 @@ const ImportDataDialog: React.FC<{
           {progress && (
             <div className="mt-3">
               <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
-                <span>导入中...</span>
-                <span>{progress.inserted} / {progress.total} 行</span>
+                <span>{t.dbManagement.progressText}</span>
+                <span>{progress.inserted} / {progress.total} rows</span>
               </div>
               <progress
                 value={progress.inserted}
                 max={progress.total || 1}
-                aria-label="导入进度"
+                aria-label={t.dbManagement.progressText}
                 className="w-full h-1.5 rounded-full overflow-hidden [&::-webkit-progress-bar]:bg-gray-200 dark:[&::-webkit-progress-bar]:bg-gray-700 [&::-webkit-progress-value]:bg-blue-500"
               />
             </div>
@@ -934,14 +964,14 @@ const ImportDataDialog: React.FC<{
 
         {/* Footer */}
         <div className="flex justify-end gap-2 px-5 py-3 border-t border-gray-200 dark:border-gray-700">
-          <button onClick={onClose} className="px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">取消</button>
+          <button onClick={onClose} className="px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">{t.dbManagement.cancelBtn}</button>
           {mode === 'direct' && (
             <button
               onClick={handleImport}
               disabled={!preview || importing || !tableName.trim()}
               className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
             >
-              {importing ? '导入中...' : '开始导入'}
+              {importing ? t.dbManagement.importingBtn : t.dbManagement.startImportBtn}
             </button>
           )}
         </div>
@@ -954,6 +984,7 @@ const ImportDataDialog: React.FC<{
 
 const DatabaseManagementTab: React.FC = () => {
   const { userDBs, datasources, getDatasourceSchema, getUserDBSchema } = useDatasourceStore();
+  const { t } = useI18n();
   const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
   const [selectedTable, setSelectedTable] = useState<string | null>(null);
   const [rightTab, setRightTab] = useState<RightPanelTab>('detail');
@@ -968,7 +999,7 @@ const DatabaseManagementTab: React.FC = () => {
   const selectedIsUserDB = selectedSource ? isUserDB(selectedSource) : false;
 
   const selectedTableInfo: TableInfo | null = selectedTable && schema
-    ? schema.tables.find((t) => t.name === selectedTable) ?? null
+    ? schema.tables.find((tbl) => tbl.name === selectedTable) ?? null
     : null;
 
   const loadSchema = useCallback(async (id: string) => {
@@ -1024,7 +1055,7 @@ const DatabaseManagementTab: React.FC = () => {
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-500">
             <IconDatabase size={24} className="opacity-30 mb-1" />
-            <p className="text-xs">选择数据库</p>
+            <p className="text-xs">{t.dbManagement.selectDbHint}</p>
           </div>
         )}
       </div>
@@ -1044,7 +1075,7 @@ const DatabaseManagementTab: React.FC = () => {
                 }`}
               >
                 <IconColumns size={12} className="inline mr-1" />
-                表详情
+                {t.dbManagement.tabDetail}
               </button>
               <button
                 onClick={() => setRightTab('console')}
@@ -1055,7 +1086,7 @@ const DatabaseManagementTab: React.FC = () => {
                 }`}
               >
                 <IconPlayerPlay size={12} className="inline mr-1" />
-                SQL 控制台
+                {t.dbManagement.tabConsole}
               </button>
             </div>
 
@@ -1073,7 +1104,7 @@ const DatabaseManagementTab: React.FC = () => {
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-500">
                     <IconTable size={24} className="opacity-30 mb-1" />
-                    <p className="text-xs">选择表查看详情</p>
+                    <p className="text-xs">{t.dbManagement.selectTableHint}</p>
                   </div>
                 )
               )}
@@ -1085,7 +1116,7 @@ const DatabaseManagementTab: React.FC = () => {
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-500">
             <IconDatabase size={32} className="opacity-20 mb-2" />
-            <p className="text-sm">选择数据库开始管理</p>
+            <p className="text-sm">{t.dbManagement.startHint}</p>
           </div>
         )}
       </div>

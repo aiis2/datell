@@ -338,7 +338,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ activationStatus, onNeedActivatio
                     {/* User DBs group */}
                     {userDBs.length > 0 && (
                       <>
-                        <div className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide bg-gray-50 dark:bg-gray-800/60">用户数据库</div>
+                        <div className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide bg-gray-50 dark:bg-gray-800/60">{t.chatInput.groupUserDbs}</div>
                         {userDBs.map((db) => {
                           const isActive = activeDatasourceId === db.id;
                           return (
@@ -362,7 +362,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ activationStatus, onNeedActivatio
                     {/* External datasources group */}
                     {datasources.length > 0 && (
                       <>
-                        {userDBs.length > 0 && <div className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide bg-gray-50 dark:bg-gray-800/60 border-t border-gray-100 dark:border-gray-700">外部数据源</div>}
+                        {userDBs.length > 0 && <div className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide bg-gray-50 dark:bg-gray-800/60 border-t border-gray-100 dark:border-gray-700">{t.chatInput.groupExternalSources}</div>}
                         {datasources.map((ds) => {
                           const isActive = activeDatasourceId === ds.id;
                           return (

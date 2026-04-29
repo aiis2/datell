@@ -126,17 +126,31 @@ A 60-year dataset covering 200+ countries. Datell automatically explores the dat
 
 ---
 
-#### Built-in SQLite User Databases — SQL Console
+#### Built-in SQLite User Databases — Large-Scale SQL Analysis
 
-Create lightweight embedded SQLite databases directly inside Datell — no external DB server needed. The DB Management panel (Settings → DB Management) lets you create tables, browse schemas, import CSV/Excel data, and run arbitrary SQL queries. The SQL Console shows live query execution with a result grid.
+Create lightweight embedded SQLite databases directly inside Datell — no external DB server needed. The DB Management panel (Settings → DB Management) lets you create tables, browse schemas, import CSV/Excel data, and run arbitrary SQL queries against datasets of any size.
 
-SQL executing (spinner on Run button, query in progress):
+**Real-scale test: 50,000-row sales dataset (2023–2024)**, 15 columns, 10 categories, 12 salespersons, 5 regions — imported in seconds, queried at sub-100ms per aggregation.
 
-![DB Management — SQL Executing](docs/screenshots/db-management-sql-executing.png)
+Table schema browser — 15-column `sales_records` table with rich field types:
 
-SQL results returned — 5 rows, 9ms execution, full column display with copy-to-clipboard:
+![DB Management — Table Schema (50k rows)](docs/screenshots/db-large-table-schema.png)
 
-![DB Management — SQL Results](docs/screenshots/db-management-sql-results.png)
+**SQL Step 1**: Revenue breakdown by category — 10 rows, 42ms, aggregating across 50,000 records:
+
+![DB Management — SQL Query 1: Category Revenue](docs/screenshots/db-sql-query1-category.png)
+
+**SQL Step 2**: Monthly revenue trend — 24 rows (2 years), 58ms:
+
+![DB Management — SQL Query 2: Monthly Trend](docs/screenshots/db-sql-query2-monthly.png)
+
+**SQL Step 3**: Salesperson performance ranking (executing — spinner active):
+
+![DB Management — SQL Query 3: Executing](docs/screenshots/db-sql-query3-executing.png)
+
+**SQL Step 3 result**: Top 10 salespersons, ordered by total revenue — 10 rows, 35ms:
+
+![DB Management — SQL Query 3: Salesperson Results](docs/screenshots/db-sql-query3-salesperson.png)
 
 ---
 
@@ -433,17 +447,31 @@ Datell 走的是更系统化的路线。模型面对的不是一块完全空白�
 
 ---
 
-#### 内置 SQLite 用户数据库 — SQL 控制台
+#### 内置 SQLite 用户数据库 — 大规模 SQL 分析
 
-在 Datell 内部直接创建轻量级嵌入式 SQLite 数据库，无需任何外部数据库服务器。通过设置 → DB 管理面板，可创建表、浏览表结构、导入 CSV/Excel 数据，并执行任意 SQL 查询，结果以表格实时展示。
+在 Datell 内部直接创建轻量级嵌入式 SQLite 数据库，无需任何外部数据库服务器。通过设置 → DB 管理面板，可创建表、浏览表结构、导入 CSV/Excel 数据，并执行任意 SQL 查询。
 
-SQL 执行中（Run 按钮显示旋转动画，查询进行中）：
+**真实规模测试：50,000 条销售记录（2023–2024 年）**，15 列、10 个品类、12 名销售员、5 个大区，导入数秒完成，每次聚合查询响应时间低于 100ms。
 
-![DB 管理 — SQL 执行中](docs/screenshots/db-management-sql-executing.png)
+表结构浏览器 — 15 列 `sales_records` 表，多种字段类型：
 
-SQL 返回结果 — 5 行数据、9ms 执行时间，完整列展示并支持一键复制：
+![DB 管理 — 表结构（50,000 行）](docs/screenshots/db-large-table-schema.png)
 
-![DB 管理 — SQL 结果](docs/screenshots/db-management-sql-results.png)
+**SQL 第 1 步**：按品类汇总收入 — 10 行结果，对 5 万条记录聚合，耗时 42ms：
+
+![DB 管理 — SQL 查询 1：品类收入](docs/screenshots/db-sql-query1-category.png)
+
+**SQL 第 2 步**：按月收入趋势 — 24 行（跨 2 年），58ms：
+
+![DB 管理 — SQL 查询 2：月度趋势](docs/screenshots/db-sql-query2-monthly.png)
+
+**SQL 第 3 步**：销售人员业绩排名（执行中 — 旋转动画）：
+
+![DB 管理 — SQL 查询 3：执行中](docs/screenshots/db-sql-query3-executing.png)
+
+**SQL 第 3 步结果**：前 10 名销售人员按收入排序 — 10 行，35ms：
+
+![DB 管理 — SQL 查询 3：销售业绩](docs/screenshots/db-sql-query3-salesperson.png)
 
 ---
 

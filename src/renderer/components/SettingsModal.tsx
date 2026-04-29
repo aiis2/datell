@@ -75,7 +75,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ activationStatus, onReact
     { label: t.settings.navGroupTools, items: [
       { key: 'skills' as const, label: t.settings.navSkills, icon: <Wrench size={14}/> },
       { key: 'datasources' as const, label: t.settings.navDatasources, icon: <Database size={14}/> },
-      { key: 'db-management' as const, label: 'DB 管理', icon: <Database size={14}/> },
+      { key: 'db-management' as const, label: t.settings.navDbManagement, icon: <Database size={14}/> },
       { key: 'rag' as const, label: t.settings.navRag, icon: <Library size={14}/> },
       { key: 'knowledge-graph' as const, label: t.settings.navKnowledgeGraph, icon: <GitMerge size={14}/> },
     ]},
