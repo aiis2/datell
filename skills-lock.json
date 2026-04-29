@@ -6,6 +6,12 @@
       "sourceType": "github",
       "skillPath": "skills/datell-visual-report-preview/SKILL.md",
       "computedHash": "07feab5a90ff03649aa899e9f9ef3d8f8bf5ef4ef74ec9b878703d3dbcc35a5e"
+    },
+    "frontend-design-report": {
+      "source": "aiis2/frontend-design-report",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-design-report/SKILL.md",
+      "computedHash": "a8f811761cf245e961023a1173b880fef3ef4a68f758ed619dc448475f1cdd4b"
     }
   }
 }
