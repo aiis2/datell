@@ -44,6 +44,9 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: false
         run: npx electron-builder --mac --publish=never
 
+      - name: Smoke packaged startup
+        run: node scripts/smoke-packaged-startup.cjs
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:

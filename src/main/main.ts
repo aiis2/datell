@@ -34,6 +34,7 @@ import {
   injectFilterControlsRuntime,
   needsInteractivityEngineRuntime,
 } from './exportHtmlBundleUtils';
+import { findRendererDistRoot } from './distAssetPaths';
 import { DatabaseService } from './database';
 import { getDataDir, ensureDataDirs, setDataDir } from './dataDir';
 import { createSkillsManager, listLegacyDirectorySkills } from './skillsManager';
@@ -149,6 +150,49 @@ let db: DatabaseService = new DatabaseService(DB_PATH);
 const skillsManager = createSkillsManager(DATA_DIR);
 
 const isDev = !app.isPackaged;
+const STARTUP_SMOKE_READY_MARKER = 'STARTUP_SMOKE_READY';
+const STARTUP_SMOKE_FAIL_MARKER = 'STARTUP_SMOKE_FAIL';
+const startupSmokeEnabled = process.argv.includes('--startup-smoke-test') || process.env.DATELL_STARTUP_SMOKE === '1';
+const startupSmokeStatusFile = (process.env.DATELL_STARTUP_SMOKE_FILE || '').trim();
+
+function writeStartupSmokeResult(status: 'ready' | 'fail', detail: string): void {
+  if (!startupSmokeEnabled) {
+    return;
+  }
+
+  const marker = status === 'ready' ? STARTUP_SMOKE_READY_MARKER : STARTUP_SMOKE_FAIL_MARKER;
+  const payload = JSON.stringify({
+    status,
+    detail,
+    pid: process.pid,
+    timestamp: new Date().toISOString(),
+  });
+
+  if (startupSmokeStatusFile) {
+    try {
+      fs.writeFileSync(startupSmokeStatusFile, payload, 'utf8');
+    } catch (error) {
+      console.error(`[${marker}] failed to write status file: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  const message = `[${marker}] ${detail}`;
+  if (status === 'ready') {
+    console.log(message);
+    return;
+  }
+  console.error(message);
+}
+
+function exitForStartupSmoke(code: number): void {
+  if (!startupSmokeEnabled) {
+    return;
+  }
+
+  setTimeout(() => {
+    app.exit(code);
+  }, 150);
+}
 
 /** Current UI language — updated by renderer via 'app:set-language' IPC. Used for native dialogs. */
 let appLang: 'zh-CN' | 'en-US' = 'zh-CN';
@@ -266,27 +310,58 @@ function createWindow() {
   win.removeMenu();
   Menu.setApplicationMenu(null);
 
+  let forceQuit = startupSmokeEnabled;
+  let startupSmokeSettled = false;
+
+  const completeStartupSmoke = (status: 'ready' | 'fail', detail: string, exitCode: number) => {
+    if (!startupSmokeEnabled || startupSmokeSettled) {
+      return;
+    }
+
+    startupSmokeSettled = true;
+    forceQuit = true;
+    writeStartupSmokeResult(status, detail);
+
+    if (splashWin && !splashWin.isDestroyed()) {
+      splashWin.close();
+      splashWin = null;
+    }
+
+    exitForStartupSmoke(exitCode);
+  };
+
   win.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
     console.error(`[did-fail-load] ${errorCode} ${errorDescription} ${validatedURL}`);
+    completeStartupSmoke('fail', `did-fail-load ${errorCode} ${errorDescription} ${validatedURL}`, 1);
   });
 
   win.webContents.on('render-process-gone', (_event, details) => {
     console.error(`[render-process-gone] reason=${details.reason} exitCode=${details.exitCode}`);
+    completeStartupSmoke('fail', `render-process-gone ${details.reason} ${details.exitCode}`, 1);
   });
+
+  const startupSmokeTimeout = startupSmokeEnabled
+    ? setTimeout(() => {
+        completeStartupSmoke('fail', 'ready-to-show timeout', 1);
+      }, 15000)
+    : null;
 
   // Show main window and close splash when React is ready
   win.once('ready-to-show', () => {
+    if (startupSmokeTimeout) {
+      clearTimeout(startupSmokeTimeout);
+    }
     if (splashWin && !splashWin.isDestroyed()) {
       splashWin.close();
       splashWin = null;
     }
     win.show();
+    completeStartupSmoke('ready', 'ready-to-show', 0);
   });
 
   // ── Confirm before quitting — prevents accidental close when settings drawer is open ──
   // The native window X and the settings-drawer X are visually close on Windows;
   // this dialog ensures the user always intends to exit the whole application.
-  let forceQuit = false;
   win.on('close', async (event) => {
     if (forceQuit) return; // allow programmatic quit
     event.preventDefault();
@@ -318,7 +393,12 @@ function createWindow() {
       win.show();
     }
   }, 10000);
-  win.once('closed', () => clearTimeout(showFallback));
+  win.once('closed', () => {
+    clearTimeout(showFallback);
+    if (startupSmokeTimeout) {
+      clearTimeout(startupSmokeTimeout);
+    }
+  });
 
   // DevTools access is locked by default in production builds.
   // It can be unlocked per-session via the secret 10-click on the version label
@@ -348,7 +428,9 @@ function createWindow() {
   } else {
     // Use app:// custom protocol — all pages share same origin (app://localhost)
     win.loadURL('app://localhost/index.html').catch((error) => {
-      console.error(`[loadURL app://] ${error instanceof Error ? error.message : String(error)}`);
+      const message = `[loadURL app://] ${error instanceof Error ? error.message : String(error)}`;
+      console.error(message);
+      completeStartupSmoke('fail', message, 1);
     });
   }
 
@@ -1751,7 +1833,7 @@ app.whenReady().then(async () => {
   }
 
   // Register app:// protocol handler — maps app://localhost/* to dist/ directory
-  const distPath = path.join(__dirname, '../dist');
+  const distPath = findRendererDistRoot(app.getAppPath(), __dirname);
   protocol.handle('app', (request) => {
     const url = new URL(request.url);
     // Strip leading slash, default to index.html

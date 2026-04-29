@@ -27,7 +27,7 @@ jobs:
       - name: Install Linux build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y rpm fakeroot dpkg
+          sudo apt-get install -y rpm fakeroot dpkg xvfb
 
       - name: Write build flags (community build)
         run: node scripts/write-build-flags.js
@@ -46,6 +46,9 @@ jobs:
 
       - name: Package Linux (AppImage + deb)
         run: npx electron-builder --linux --publish=never
+
+      - name: Smoke packaged startup
+        run: node scripts/smoke-packaged-startup.cjs
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

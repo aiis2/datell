@@ -42,6 +42,9 @@ jobs:
       - name: Package Windows (x64 portable)
         run: npx electron-builder --win --publish=never
 
+      - name: Smoke packaged startup
+        run: node scripts/smoke-packaged-startup.cjs
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:

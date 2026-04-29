@@ -1,10 +1,11 @@
 {
   "name": "datell",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "dist-electron/main/main.js",
   "scripts": {
     "dev": "concurrently \"vite\" \"wait-on tcp:5173 && tsc -p src/main/tsconfig.json && electron .\"",
     "build:rag": "node scripts/build-system-rag.js",
+    "smoke:startup:packaged": "node scripts/smoke-packaged-startup.cjs",
     "build": "node scripts/write-build-flags.js && node scripts/build-system-rag.js && tsc -p src/main/tsconfig.json && vite build && electron-builder",
     "build:win": "node scripts/write-build-flags.js && node scripts/build-icon-sprite.js && node scripts/build-system-rag.js && node -e \"try{require('fs').rmSync('release/datellData',{recursive:true,force:true})}catch(e){}\" && tsc -p src/main/tsconfig.json && vite build && electron-builder --win",
     "build:win:enterprise": "node scripts/build-enterprise.js",
