@@ -2,6 +2,7 @@ node_modules/
 dist/
 dist-electron/
 release/
+.github/RELEASE_BODY.generated.md
 *.log
 .env
 .env.*

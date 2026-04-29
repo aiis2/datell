@@ -1,4 +1,4 @@
-### First Public Release / 首次公开发布
+### Datell Desktop Release / Datell 桌面版发布
 
 Datell is a polished local-first desktop app for AI-assisted data analysis and interactive report generation.
 Datell 是一款打磨完善的本地优先桌面应用，专注于 AI 驱动的数据分析与交互式报表生成。
@@ -10,10 +10,10 @@ It brings agentic analysis, interactive dashboards, and export-ready deliverable
 
 | Platform | File | Notes |
 |---|---|---|
-| Windows x64 | `Datell-1.0.0-win-x64-portable.exe` | Portable, no install needed / 免安装，双击可用 |
-| macOS x64 | `Datell-1.0.0-mac-x64.dmg` | Intel Mac |
-| macOS arm64 | `Datell-1.0.0-mac-arm64.dmg` | Apple Silicon (M1/M2/M3) |
-| Linux x64 | `Datell-1.0.0.AppImage` | Portable AppImage for most distros / 适用于大多数发行版 |
+| Windows x64 | `Datell-{{VERSION}}-win-x64-portable.exe` | Portable, no install needed / 免安装，双击可用 |
+| macOS x64 | `Datell-{{VERSION}}-mac-x64.dmg` | Intel Mac |
+| macOS arm64 | `Datell-{{VERSION}}-mac-arm64.dmg` | Apple Silicon (M1/M2/M3) |
+| Linux x64 | `Datell-{{VERSION}}.AppImage` | Portable AppImage for most distros / 适用于大多数发行版 |
 
 > **macOS first launch**: If blocked by Gatekeeper, right-click the app and choose "Open".
 > **macOS 首次打开**：如果被系统拦截，请右键应用并选择“打开”。
