@@ -1,6 +1,6 @@
 ---
 name: datell-visual-report-preview
-description: Create Datell visual reports with a hybrid workflow. Prefer the local Datell MCP runtime via datell_generate_chart when available, otherwise fall back to a polished standalone HTML report.
+description: Create Datell visual reports, dashboards, KPI pages, and no-MCP standalone HTML through the frontend-design-report repository. Prefer the local Datell MCP runtime via datell_generate_chart when available, otherwise fall back to a polished standalone HTML report.
 license: MIT
 compatibility: Designed for Agent Skills compatible coding agents. If a Datell MCP runtime exposing datell_generate_chart is available, use it; otherwise generate standalone HTML directly.
 metadata:
@@ -12,6 +12,8 @@ metadata:
 # Datell Visual Report Preview
 
 Use this skill when the user wants a visual report, dashboard, KPI summary page, or chart-heavy HTML deliverable.
+
+This is the primary implementation skill in the frontend-design-report repository. The separate `frontend-design-report` alias skill resolves to the same report-generation workflow for repository-name discovery and installation.
 
 ## Decision Tree
 

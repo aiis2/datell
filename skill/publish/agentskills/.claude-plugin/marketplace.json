@@ -4,9 +4,16 @@
   "plugins": [
     {
       "name": "datell-visual-report-preview",
-      "description": "Create Datell visual reports through a hybrid workflow: prefer datell_generate_chart when MCP is available, otherwise fall back to standalone HTML.",
+      "description": "Create Datell visual reports, dashboards, KPI pages, and no-MCP standalone HTML through the frontend-design-report repository. Prefer datell_generate_chart when MCP is available and fall back to self-contained HTML when it is not.",
       "skills": [
         "./skills/datell-visual-report-preview"
+      ]
+    },
+    {
+      "name": "frontend-design-report",
+      "description": "Search and install alias for frontend-design-report. Use it for Datell-style visual reports, dashboards, KPI summaries, and standalone HTML report generation with or without MCP.",
+      "skills": [
+        "./skills/frontend-design-report"
       ]
     }
   ]

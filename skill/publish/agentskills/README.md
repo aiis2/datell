@@ -2,7 +2,9 @@
 
 ## Overview
 
-frontend-design-report is the public release repository for Datell-style visual report generation. It provides one installable Agent Skill, `datell-visual-report-preview`, together with a companion visual-report MCP workspace, reference catalogs, and validated example assets.
+frontend-design-report is the public release repository for Datell-style visual report generation. It provides one primary installable Agent Skill, `datell-visual-report-preview`, one repository-name alias skill, `frontend-design-report`, together with a companion visual-report MCP workspace, reference catalogs, and validated example assets.
+
+The repository also publishes `frontend-design-report` as a discovery and installation alias so the repository name itself can resolve to the same report-generation capability surface.
 
 [![skills.sh repository](https://img.shields.io/badge/skills.sh-repository-111827?logo=vercel&logoColor=white)](https://skills.sh/aiis2/frontend-design-report)
 [![skills.sh skill](https://img.shields.io/badge/skills.sh-datell--visual--report--preview-1d4ed8?logo=vercel&logoColor=white)](https://skills.sh/aiis2/frontend-design-report/datell-visual-report-preview)
@@ -17,6 +19,12 @@ Install the published skill from GitHub with the Agent Skills CLI:
 npx skills add aiis2/frontend-design-report --skill datell-visual-report-preview
 ```
 
+Search-friendly alias install:
+
+```bash
+npx skills add aiis2/frontend-design-report --skill frontend-design-report
+```
+
 ## Project Links
 
 - Open the repository page on skills.sh: `https://skills.sh/aiis2/frontend-design-report`
@@ -25,7 +33,8 @@ npx skills add aiis2/frontend-design-report --skill datell-visual-report-preview
 
 ## Included Capabilities
 
-- One installable skill: `datell-visual-report-preview`
+- Primary installable skill: `datell-visual-report-preview`
+- Discovery alias skill: `frontend-design-report`
 - Preferred runtime path: call `datell_generate_chart` when a compatible MCP host is available
 - Standalone fallback path: generate self-contained HTML that preserves the Datell layout, card, and palette system
 - No-MCP basic-report mode: generate a static, non-interactive HTML report without filter controls, event-bus hooks, or cross-card linkage
@@ -34,16 +43,17 @@ npx skills add aiis2/frontend-design-report --skill datell-visual-report-preview
 
 ## Repository Contents
 
-The repository is organized around a single published skill with focused reference files loaded on demand.
+The repository is organized around one primary published skill plus one discovery alias that points to the same report-generation workflow.
 
 - `skills/datell-visual-report-preview/SKILL.md`
+- `skills/frontend-design-report/SKILL.md`
 - `skills/datell-visual-report-preview/references/datell-knowledge-index.md`
 - `skills/datell-visual-report-preview/references/datell-layout-catalog.md`
 - `skills/datell-visual-report-preview/references/datell-palette-catalog.md`
 - `skills/datell-visual-report-preview/references/datell-card-catalog.md`
 - `skills/datell-visual-report-preview/references/visual-report-pattern.md`
 
-Use these references when you need the full Datell layout, palette, and card inventory instead of a reduced example subset.
+Use these references when you need the full Datell layout, palette, and card inventory instead of a reduced example subset. The alias skill reuses the same reference system and runtime contract.
 
 For no-MCP delivery planning, also use `references/datell-no-mcp-capability-matrix.md` to separate full catalog knowledge coverage from the static subset that can be rendered without interactive runtime support.
 
@@ -136,7 +146,7 @@ This validates JSON files, repository layout, eval integrity, and the runnable M
 
 This repository is intentionally scoped to report generation.
 
-- It publishes one report-focused skill and one matching visual-report MCP workspace.
+- It publishes one primary report-focused skill, one discovery alias skill, and one matching visual-report MCP workspace.
 - It keeps the public surface centered on Datell-style report generation, no-MCP fallback guidance, and curated example assets.
 - It does not package unrelated application features in this repository.
 
@@ -168,6 +178,8 @@ skills/
     references/datell-no-mcp-capability-matrix.md
     references/datell-palette-catalog.md
     references/visual-report-pattern.md
+  frontend-design-report/
+    SKILL.md
 mcp/
   package.json
   README.md
