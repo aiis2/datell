@@ -51,6 +51,7 @@ export interface UserDBTableDataResult {
   columns: string[];
   rows: unknown[][];
   rowCount: number;
+  totalCount: number;
 }
 
 // ─── Registry helpers ────────────────────────────────────────────────────────
@@ -393,17 +394,78 @@ export function exportTableData(id: string, tableName: string, format: 'csv' | '
 
 // ─── Table data preview ──────────────────────────────────────────────────────
 
-export function getUserDBTableData(id: string, tableName: string, limit = 200): UserDBTableDataResult {
+export function getUserDBTableData(id: string, tableName: string, limit = 200, offset = 0): UserDBTableDataResult {
   const db = openDB(id, true);
   const safe = (s: string) => s.replace(/"/g, '""');
   try {
-    const rows = db.prepare(`SELECT * FROM "${safe(tableName)}" LIMIT ?`).all(limit) as Record<string, unknown>[];
-    const columns = rows.length > 0 ? Object.keys(rows[0]) : [];
+    const totalRow = db.prepare(
+      `SELECT COUNT(*) AS cnt FROM "${safe(tableName)}"`
+    ).get() as { cnt: number };
+    const rows = db.prepare(
+      `SELECT * FROM "${safe(tableName)}" LIMIT ? OFFSET ?`
+    ).all(limit, offset) as Record<string, unknown>[];
+    const columns = rows.length > 0
+      ? Object.keys(rows[0])
+      : (db.pragma(`table_info("${safe(tableName)}")`) as Array<{ name: string }>).map((c) => c.name);
     return {
       columns,
       rows: rows.map((r) => columns.map((c) => r[c] ?? null)),
       rowCount: rows.length,
+      totalCount: totalRow?.cnt ?? 0,
     };
+  } finally {
+    db.close();
+  }
+}
+
+// ─── Table / Column DDL ───────────────────────────────────────────────────────
+
+export function renameTable(id: string, oldName: string, newName: string): void {
+  const db = openDB(id, false);
+  const safe = (s: string) => s.replace(/"/g, '""');
+  try {
+    db.prepare(`ALTER TABLE "${safe(oldName)}" RENAME TO "${safe(newName)}"`).run();
+  } finally {
+    db.close();
+  }
+}
+
+export function renameColumn(id: string, tableName: string, oldColName: string, newColName: string): void {
+  const db = openDB(id, false);
+  const safe = (s: string) => s.replace(/"/g, '""');
+  try {
+    // SQLite 3.25.0+ supports RENAME COLUMN
+    db.prepare(`ALTER TABLE "${safe(tableName)}" RENAME COLUMN "${safe(oldColName)}" TO "${safe(newColName)}"`).run();
+  } finally {
+    db.close();
+  }
+}
+
+export function dropColumn(id: string, tableName: string, colName: string): void {
+  const db = openDB(id, false);
+  const safe = (s: string) => s.replace(/"/g, '""');
+  try {
+    // SQLite 3.35.0+ supports DROP COLUMN
+    db.prepare(`ALTER TABLE "${safe(tableName)}" DROP COLUMN "${safe(colName)}"`).run();
+  } finally {
+    db.close();
+  }
+}
+
+export function updateRow(
+  id: string,
+  tableName: string,
+  updates: Record<string, unknown>,
+  whereCol: string,
+  whereVal: unknown,
+): void {
+  if (!Object.keys(updates).length) return;
+  const db = openDB(id, false);
+  const safe = (s: string) => s.replace(/"/g, '""');
+  try {
+    const setClauses = Object.keys(updates).map((k) => `"${safe(k)}" = ?`).join(', ');
+    const values: unknown[] = [...Object.values(updates), whereVal];
+    db.prepare(`UPDATE "${safe(tableName)}" SET ${setClauses} WHERE "${safe(whereCol)}" = ?`).run(...values as any[]);
   } finally {
     db.close();
   }

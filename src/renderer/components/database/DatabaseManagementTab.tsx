@@ -14,7 +14,8 @@ import {
   Play, X, ChevronRight, ChevronDown,
   Columns2, AlertCircle, Check, Copy, Search,
   History, Loader2, FileInput, FileOutput,
-  TableProperties,
+  TableProperties, ChevronsLeft, ChevronsRight,
+  ChevronLeft, RowsIcon, PenLine,
 } from 'lucide-react';
 // Re-export with Tabler-style names for backward compatibility within this file
 const IconDatabasePlus = DatabaseZap;
@@ -41,6 +42,11 @@ const IconLoader2 = Loader2;
 const IconFileImport = FileInput;
 const IconFileExport = FileOutput;
 const IconTablePlus = TableProperties;
+const IconChevronsLeft = ChevronsLeft;
+const IconChevronsRight = ChevronsRight;
+const IconChevronLeft = ChevronLeft;
+const IconRows = RowsIcon ?? Table2;
+const IconPenLine = PenLine ?? Pencil;
 import { useDatasourceStore } from '../../stores/datasourceStore';
 import type { UserDBConfig, DatasourceConfig, ActiveDatasource, SchemaInfo } from '../../stores/datasourceStore';
 import { useI18n } from '../../i18n';
@@ -53,7 +59,7 @@ interface TableInfo {
   columns: Array<{ name: string; type: string; nullable: boolean; comment?: string }>;
 }
 
-type RightPanelTab = 'detail' | 'console';
+type RightPanelTab = 'detail' | 'console' | 'data';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -62,6 +68,65 @@ function isUserDB(ds: ActiveDatasource): ds is UserDBConfig {
 }
 
 const api = () => window.electronAPI as any;
+
+const SQL_TYPES = ['TEXT', 'INTEGER', 'REAL', 'BLOB', 'NUMERIC'];
+
+/** Proper CSV parser that handles quoted fields and custom delimiters */
+function parseCSV(text: string, delimiter: string): string[][] {
+  const rows: string[][] = [];
+  const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trimEnd();
+  if (!normalized) return [];
+  let row: string[] = [];
+  let field = '';
+  let inQuote = false;
+  for (let i = 0; i < normalized.length; i++) {
+    const ch = normalized[i];
+    if (inQuote) {
+      if (ch === '"') {
+        if (normalized[i + 1] === '"') { field += '"'; i++; }
+        else inQuote = false;
+      } else {
+        field += ch;
+      }
+    } else {
+      if (ch === '"' && field === '') {
+        inQuote = true;
+      } else if (ch === delimiter) {
+        row.push(field); field = '';
+      } else if (ch === '\n') {
+        row.push(field); rows.push(row); row = []; field = '';
+      } else {
+        field += ch;
+      }
+    }
+  }
+  row.push(field);
+  if (row.some((f) => f !== '')) rows.push(row);
+  return rows;
+}
+
+/** Detect the most likely delimiter from the first line of a CSV file */
+function detectDelimiter(firstLine: string): string {
+  const candidates: [string, RegExp][] = [
+    [',', /,/g], ['\t', /\t/g], [';', /;/g], ['|', /\|/g],
+  ];
+  let best = ',';
+  let bestCount = 0;
+  for (const [d, re] of candidates) {
+    const count = (firstLine.match(re) ?? []).length;
+    if (count > bestCount) { bestCount = count; best = d; }
+  }
+  return best;
+}
+
+/** Infer SQLite type from an array of sample values */
+function inferType(values: unknown[]): string {
+  const nonNull = values.filter((v) => v != null && v !== '');
+  if (!nonNull.length) return 'TEXT';
+  if (nonNull.every((v) => /^-?\d+$/.test(String(v)))) return 'INTEGER';
+  if (nonNull.every((v) => /^-?\d*\.?\d+([eE][+-]?\d+)?$/.test(String(v)))) return 'REAL';
+  return 'TEXT';
+}
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -241,6 +306,9 @@ const TableBrowser: React.FC<{
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newTableDDL, setNewTableDDL] = useState('CREATE TABLE my_table (\n  id INTEGER PRIMARY KEY,\n  name TEXT NOT NULL\n)');
   const [creating, setCreating] = useState(false);
+  const [renamingTable, setRenamingTable] = useState<string | null>(null);
+  const [renameTableValue, setRenameTableValue] = useState('');
+  const [renameBusy, setRenameBusy] = useState(false);
 
   const tables = schema?.tables ?? [];
   const filtered = search
@@ -257,6 +325,20 @@ const TableBrowser: React.FC<{
       alert(t.dbManagement.createTableError + (err instanceof Error ? err.message : String(err)));
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleRenameTable = async () => {
+    if (!renamingTable || !renameTableValue.trim()) return;
+    setRenameBusy(true);
+    try {
+      await api().userdbRenameTable(sourceId, renamingTable, renameTableValue.trim());
+      setRenamingTable(null);
+      onRefresh();
+    } catch (err) {
+      alert(t.dbManagement.renameTableError + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setRenameBusy(false);
     }
   };
 
@@ -292,17 +374,49 @@ const TableBrowser: React.FC<{
           <div
             key={table.name}
             onClick={() => onSelectTable(table.name)}
-            className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer transition-colors ${
+            className={`group flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer transition-colors ${
               selectedTable === table.name
                 ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
                 : 'hover:bg-gray-100 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-300'
             }`}
           >
             <IconTable size={13} className="shrink-0 text-gray-400" />
-            <div className="min-w-0 flex-1">
-              <div className="text-xs font-medium truncate">{table.name}</div>
-              <div className="text-xs text-gray-400">{table.columns.length} {t.dbManagement.columnCountUnit}</div>
-            </div>
+            {renamingTable === table.name ? (
+              <input
+                autoFocus
+                value={renameTableValue}
+                onChange={(e) => setRenameTableValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleRenameTable();
+                  if (e.key === 'Escape') setRenamingTable(null);
+                }}
+                onBlur={handleRenameTable}
+                onClick={(e) => e.stopPropagation()}
+                title={t.dbManagement.renameTableLabel}
+                aria-label={t.dbManagement.renameTableLabel}
+                className="flex-1 text-xs px-1 py-0.5 border border-blue-400 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-mono"
+              />
+            ) : (
+              <>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-medium truncate">{table.name}</div>
+                  <div className="text-xs text-gray-400">{table.columns.length} {t.dbManagement.columnCountUnit}</div>
+                </div>
+                {isUserDB && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setRenamingTable(table.name);
+                      setRenameTableValue(table.name);
+                    }}
+                    className="p-0.5 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-blue-500 transition-all"
+                    title={t.dbManagement.renameTableTitle}
+                  >
+                    <IconPenLine size={11} />
+                  </button>
+                )}
+              </>
+            )}
           </div>
         ))}
       </div>
@@ -392,6 +506,8 @@ const TableDetailPanel: React.FC<{
   const [addingCol, setAddingCol] = useState(false);
   const [newColName, setNewColName] = useState('');
   const [newColType, setNewColType] = useState('TEXT');
+  const [renamingCol, setRenamingCol] = useState<string | null>(null);
+  const [renameColValue, setRenameColValue] = useState('');
 
   const handleDropTable = async () => {
     if (!confirm(t.dbManagement.dropTableConfirmPrefix + tableName + t.dbManagement.dropTableConfirmSuffix)) return;
@@ -408,6 +524,36 @@ const TableDetailPanel: React.FC<{
       onRefresh();
     } catch (err) {
       alert(t.dbManagement.alterColError + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleRenameCol = async (oldName: string) => {
+    if (!renameColValue.trim() || renameColValue.trim() === oldName) {
+      setRenamingCol(null);
+      return;
+    }
+    setBusy(true);
+    try {
+      await api().userdbRenameColumn(sourceId, tableName, oldName, renameColValue.trim());
+      setRenamingCol(null);
+      onRefresh();
+    } catch (err) {
+      alert(t.dbManagement.renameColError + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDropCol = async (colName: string) => {
+    if (!confirm(t.dbManagement.dropColConfirmPrefix + colName + t.dbManagement.dropColConfirmSuffix)) return;
+    setBusy(true);
+    try {
+      await api().userdbDropColumn(sourceId, tableName, colName);
+      onRefresh();
+    } catch (err) {
+      alert(t.dbManagement.dropColError + (err instanceof Error ? err.message : String(err)));
     } finally {
       setBusy(false);
     }
@@ -461,6 +607,9 @@ const TableDetailPanel: React.FC<{
               <button onClick={() => handleExport('csv')} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-green-600 transition-colors" title={t.dbManagement.exportCsvTitle}>
                 <IconFileExport size={13} />
               </button>
+              <button onClick={() => handleExport('json')} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-green-600 transition-colors" title={t.dbManagement.exportJsonTitle}>
+                <IconDownload size={13} />
+              </button>
               <button onClick={handleDropTable} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-red-600 transition-colors" title={t.dbManagement.dropTableTitle}>
                 <IconTrash size={13} />
               </button>
@@ -485,6 +634,8 @@ const TableDetailPanel: React.FC<{
               onChange={(e) => setNewColName(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleAddCol(); if (e.key === 'Escape') setAddingCol(false); }}
               placeholder={t.dbManagement.colNamePlaceholder}
+              title={t.dbManagement.colNamePlaceholder}
+              aria-label={t.dbManagement.colNamePlaceholder}
               className="flex-1 text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
             />
             <select
@@ -494,7 +645,7 @@ const TableDetailPanel: React.FC<{
               aria-label={t.dbManagement.colType}
               className="text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
             >
-              {['TEXT', 'INTEGER', 'REAL', 'BLOB', 'NUMERIC'].map((typ) => (
+              {SQL_TYPES.map((typ) => (
                 <option key={typ} value={typ}>{typ}</option>
               ))}
             </select>
@@ -513,13 +664,42 @@ const TableDetailPanel: React.FC<{
               <th className="text-left px-3 py-1.5 font-medium text-gray-500 dark:text-gray-400">{t.dbManagement.colType}</th>
               <th className="text-left px-3 py-1.5 font-medium text-gray-500 dark:text-gray-400">{t.dbManagement.colNullable}</th>
               <th className="text-left px-3 py-1.5 font-medium text-gray-500 dark:text-gray-400">{t.dbManagement.colComment}</th>
-              {isUserDB && <th className="px-3 py-1.5" />}
+              {isUserDB && <th className="px-3 py-1.5 w-20" />}
             </tr>
           </thead>
           <tbody>
             {columns.map((col) => (
-              <tr key={col.name} className="border-t border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                <td className="px-3 py-1.5 font-mono text-gray-800 dark:text-gray-200">{col.name}</td>
+              <tr key={col.name} className="group border-t border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                <td className="px-3 py-1.5 font-mono text-gray-800 dark:text-gray-200">
+                  {renamingCol === col.name && isUserDB ? (
+                    <input
+                      autoFocus
+                      value={renameColValue}
+                      onChange={(e) => setRenameColValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleRenameCol(col.name);
+                        if (e.key === 'Escape') setRenamingCol(null);
+                      }}
+                      onBlur={() => handleRenameCol(col.name)}
+                      title={t.dbManagement.renameColLabel}
+                      aria-label={t.dbManagement.renameColLabel}
+                      className="text-xs px-1.5 py-0.5 border border-blue-400 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-mono w-full"
+                    />
+                  ) : (
+                    <span
+                      onDoubleClick={() => {
+                        if (isUserDB) {
+                          setRenamingCol(col.name);
+                          setRenameColValue(col.name);
+                        }
+                      }}
+                      title={isUserDB ? t.dbManagement.renameColTitle : undefined}
+                      className={isUserDB ? 'cursor-text' : ''}
+                    >
+                      {col.name}
+                    </span>
+                  )}
+                </td>
                 <td className="px-3 py-1.5">
                   {editingCol === col.name && isUserDB ? (
                     <select
@@ -530,7 +710,7 @@ const TableDetailPanel: React.FC<{
                       className="text-xs px-1.5 py-0.5 border border-blue-400 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                       autoFocus
                     >
-                      {['TEXT', 'INTEGER', 'REAL', 'BLOB', 'NUMERIC'].map((typ) => (
+                      {SQL_TYPES.map((typ) => (
                         <option key={typ} value={typ}>{typ}</option>
                       ))}
                     </select>
@@ -548,6 +728,8 @@ const TableDetailPanel: React.FC<{
                       onChange={(e) => setEditComment(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') handleSaveCol(); }}
                       placeholder={t.dbManagement.commentPlaceholder}
+                      title={t.dbManagement.commentPlaceholder}
+                      aria-label={t.dbManagement.commentPlaceholder}
                       className="text-xs px-1.5 py-0.5 border border-blue-400 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 w-full"
                     />
                   ) : (
@@ -562,13 +744,22 @@ const TableDetailPanel: React.FC<{
                         <button onClick={() => setEditingCol(null)} title={t.dbManagement.cancelBtn} className="p-0.5 text-gray-400 hover:text-gray-600"><IconX size={12} /></button>
                       </div>
                     ) : (
-                      <button
-                        onClick={() => { setEditingCol(col.name); setEditType(col.type); setEditComment(col.comment ?? ''); }}
-                        title={t.dbManagement.editColTitle}
-                        className="p-0.5 text-gray-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-all"
-                      >
-                        <IconEdit size={12} />
-                      </button>
+                      <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-all">
+                        <button
+                          onClick={() => { setEditingCol(col.name); setEditType(col.type); setEditComment(col.comment ?? ''); }}
+                          title={t.dbManagement.editColTitle}
+                          className="p-0.5 text-gray-400 hover:text-blue-500"
+                        >
+                          <IconEdit size={11} />
+                        </button>
+                        <button
+                          onClick={() => handleDropCol(col.name)}
+                          title={t.dbManagement.dropColTitle}
+                          className="p-0.5 text-gray-400 hover:text-red-500"
+                        >
+                          <IconTrash size={11} />
+                        </button>
+                      </div>
                     )}
                   </td>
                 )}
@@ -592,6 +783,8 @@ const SQLConsole: React.FC<{
   const [error, setError] = useState<string | null>(null);
   const [executing, setExecuting] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(50);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const execute = async () => {
@@ -599,6 +792,7 @@ const SQLConsole: React.FC<{
     setExecuting(true);
     setError(null);
     setResult(null);
+    setPage(0);
     try {
       let res: any;
       if (isUserDB) {
@@ -631,6 +825,9 @@ const SQLConsole: React.FC<{
     navigator.clipboard.writeText(lines.join('\n'));
   };
 
+  const totalPages = result ? Math.ceil(result.rows.length / pageSize) : 0;
+  const pagedRows = result ? result.rows.slice(page * pageSize, (page + 1) * pageSize) : [];
+
   return (
     <div className="flex flex-col h-full">
       {/* SQL input */}
@@ -642,6 +839,8 @@ const SQLConsole: React.FC<{
           onKeyDown={handleKeyDown}
           rows={5}
           placeholder={`${t.dbManagement.sqlPlaceholder}${!isUserDB ? t.dbManagement.readOnlyPlaceholderSuffix : ''}`}
+          title={t.dbManagement.sqlPlaceholder}
+          aria-label={t.dbManagement.sqlPlaceholder}
           className="w-full px-3 py-2 text-xs font-mono bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 resize-none focus:outline-none"
           spellCheck={false}
         />
@@ -667,7 +866,7 @@ const SQLConsole: React.FC<{
       </div>
 
       {/* Result */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto flex flex-col">
         {error && (
           <div className="p-3 m-2 rounded bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
             <div className="flex items-start gap-2">
@@ -678,28 +877,32 @@ const SQLConsole: React.FC<{
         )}
 
         {result && (
-          <div>
-            <div className="flex items-center justify-between px-3 py-1.5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+          <div className="flex flex-col flex-1 min-h-0">
+            <div className="flex items-center justify-between px-3 py-1.5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 shrink-0">
               <span className="text-xs text-gray-500 dark:text-gray-400">
-                {result.rowCount} rows · {result.executionMs}ms
+                {result.rowCount} {t.dbManagement.tableCountUnit.replace('张', '')} · {result.executionMs}ms
               </span>
-              <button onClick={copyResult} className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                <IconCopy size={11} />
-                {t.dbManagement.copyBtn}
-              </button>
+              <div className="flex items-center gap-2">
+                <button onClick={copyResult} className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                  <IconCopy size={11} />
+                  {t.dbManagement.copyBtn}
+                </button>
+              </div>
             </div>
-            <div className="overflow-auto">
+            <div className="flex-1 overflow-auto">
               <table className="w-full text-xs border-collapse">
                 <thead className="sticky top-0 bg-gray-100 dark:bg-gray-800">
                   <tr>
+                    <th className="text-right px-2 py-1.5 font-medium text-gray-400 border-r border-gray-200 dark:border-gray-700 w-10">#</th>
                     {result.columns.map((col) => (
                       <th key={col} className="text-left px-3 py-1.5 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700 whitespace-nowrap">{col}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {result.rows.slice(0, 500).map((row, ri) => (
+                  {pagedRows.map((row, ri) => (
                     <tr key={ri} className={`border-t border-gray-100 dark:border-gray-700/50 ${ri % 2 === 0 ? '' : 'bg-gray-50 dark:bg-gray-800/30'}`}>
+                      <td className="px-2 py-1 text-right text-gray-400 border-r border-gray-100 dark:border-gray-700/50 font-mono text-xs">{page * pageSize + ri + 1}</td>
                       {(row as unknown[]).map((cell, ci) => (
                         <td key={ci} className="px-3 py-1 text-gray-700 dark:text-gray-300 border-r border-gray-100 dark:border-gray-700/50 max-w-[200px] truncate font-mono" title={cell == null ? 'NULL' : String(cell)}>
                           {cell == null ? <span className="text-gray-400 italic">NULL</span> : String(cell)}
@@ -709,10 +912,33 @@ const SQLConsole: React.FC<{
                   ))}
                 </tbody>
               </table>
-              {result.rows.length > 500 && (
-                <div className="text-center text-xs text-gray-400 py-2">{t.dbManagement.truncatedNote}</div>
-              )}
             </div>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-3 py-1.5 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 shrink-0">
+                <div className="flex items-center gap-1">
+                  <button onClick={() => setPage(0)} disabled={page === 0} title={t.dbManagement.pageFirst} className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30"><IconChevronsLeft size={13} /></button>
+                  <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0} title={t.dbManagement.pagePrev} className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30"><IconChevronLeft size={13} /></button>
+                  <span className="text-xs text-gray-500 px-1">
+                    {t.dbManagement.pageInfo.replace('{p}', String(page + 1)).replace('{t}', String(totalPages))}
+                  </span>
+                  <button onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1} title={t.dbManagement.pageNext} className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30"><IconChevronRight size={13} /></button>
+                  <button onClick={() => setPage(totalPages - 1)} disabled={page >= totalPages - 1} title={t.dbManagement.pageLast} className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30"><IconChevronsRight size={13} /></button>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-gray-400">{t.dbManagement.rowsPerPage}</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => { setPageSize(Number(e.target.value)); setPage(0); }}
+                    title={t.dbManagement.rowsPerPage}
+                    aria-label={t.dbManagement.rowsPerPage}
+                    className="text-xs px-1 py-0.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  >
+                    {[20, 50, 100, 200].map((n) => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -727,6 +953,194 @@ const SQLConsole: React.FC<{
   );
 };
 
+// ─── Table Data Preview ───────────────────────────────────────────────────────
+
+const TABLE_DATA_PAGE_SIZE = 50;
+
+const TableDataPreview: React.FC<{
+  sourceId: string;
+  tableName: string;
+  isUserDB: boolean;
+}> = ({ sourceId, tableName, isUserDB }) => {
+  const { t } = useI18n();
+  const [data, setData] = useState<{ columns: string[]; rows: unknown[][]; totalCount: number } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [editingCell, setEditingCell] = useState<{ row: number; col: string } | null>(null);
+  const [editValue, setEditValue] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const fetchData = useCallback(async (p: number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await api().userdbGetTableData(sourceId, tableName, TABLE_DATA_PAGE_SIZE, p * TABLE_DATA_PAGE_SIZE);
+      setData(result);
+    } catch (err) {
+      setError(t.dbManagement.dataPreviewFetchError + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setLoading(false);
+    }
+  }, [sourceId, tableName]);
+
+  useEffect(() => {
+    setPage(0);
+    fetchData(0);
+  }, [sourceId, tableName]);
+
+  const handleCellDblClick = (rowIdx: number, colName: string, value: unknown) => {
+    if (!isUserDB) return;
+    setEditingCell({ row: rowIdx, col: colName });
+    setEditValue(value == null ? '' : String(value));
+  };
+
+  const handleSaveCell = async () => {
+    if (!editingCell || !data) return;
+    const row = data.rows[editingCell.row];
+    const colIdx = data.columns.indexOf(editingCell.col);
+    // Use rowid as the WHERE clause anchor (first column as fallback)
+    const pkCol = data.columns[0];
+    const pkVal = row[0];
+    setSaving(true);
+    try {
+      await api().userdbUpdateRow(sourceId, tableName, { [editingCell.col]: editValue }, pkCol, pkVal);
+      // Update local state
+      const newRows = data.rows.map((r, ri) => {
+        if (ri !== editingCell.row) return r;
+        const newRow = [...(r as unknown[])];
+        newRow[colIdx] = editValue;
+        return newRow;
+      });
+      setData({ ...data, rows: newRows });
+      setEditingCell(null);
+    } catch (err) {
+      alert(t.dbManagement.updateRowError + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const totalPages = data ? Math.ceil(data.totalCount / TABLE_DATA_PAGE_SIZE) : 0;
+
+  const goToPage = (p: number) => {
+    setPage(p);
+    fetchData(p);
+    setEditingCell(null);
+  };
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-full text-gray-400 dark:text-gray-500">
+      <IconLoader2 size={18} className="animate-spin mr-2" />
+      <span className="text-xs">{t.dbManagement.dataPreviewLoading}</span>
+    </div>
+  );
+
+  if (error) return (
+    <div className="p-4 m-3 rounded bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-start gap-2">
+      <IconAlertCircle size={14} className="text-red-500 shrink-0 mt-0.5" />
+      <p className="text-xs text-red-700 dark:text-red-300">{error}</p>
+    </div>
+  );
+
+  if (!data || data.rows.length === 0) return (
+    <div className="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-500">
+      <IconRows size={24} className="opacity-30 mb-1" />
+      <p className="text-xs">{t.dbManagement.dataPreviewEmpty}</p>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="flex items-center justify-between px-3 py-1.5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 shrink-0">
+        <span className="text-xs text-gray-500 dark:text-gray-400">
+          {t.dbManagement.dataPreviewRowCount.replace('{n}', String(data.totalCount))}
+        </span>
+        {isUserDB && (
+          <span className="text-xs text-gray-400 italic">{t.dbManagement.dataPreviewDblClickHint}</span>
+        )}
+      </div>
+      {/* Table */}
+      <div className="flex-1 overflow-auto">
+        <table className="w-full text-xs border-collapse">
+          <thead className="sticky top-0 bg-gray-100 dark:bg-gray-800">
+            <tr>
+              <th className="text-right px-2 py-1.5 font-medium text-gray-400 border-r border-gray-200 dark:border-gray-700 w-10">#</th>
+              {data.columns.map((col) => (
+                <th key={col} className="text-left px-3 py-1.5 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700 whitespace-nowrap">{col}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {data.rows.map((row, ri) => (
+              <tr key={ri} className={`border-t border-gray-100 dark:border-gray-700/50 ${ri % 2 === 0 ? '' : 'bg-gray-50 dark:bg-gray-800/30'}`}>
+                <td className="px-2 py-1 text-right text-gray-400 border-r border-gray-100 dark:border-gray-700/50 font-mono">{page * TABLE_DATA_PAGE_SIZE + ri + 1}</td>
+                {data.columns.map((col, ci) => {
+                  const val = (row as unknown[])[ci];
+                  const isEditing = editingCell?.row === ri && editingCell?.col === col;
+                  return (
+                    <td
+                      key={ci}
+                      onDoubleClick={() => handleCellDblClick(ri, col, val)}
+                      className={`px-3 py-1 border-r border-gray-100 dark:border-gray-700/50 max-w-[200px] font-mono ${
+                        isEditing ? 'p-0' : 'truncate text-gray-700 dark:text-gray-300 cursor-default'
+                      } ${isUserDB ? 'hover:bg-blue-50 dark:hover:bg-blue-900/10' : ''}`}
+                      title={isEditing ? undefined : (val == null ? 'NULL' : String(val))}
+                    >
+                      {isEditing ? (
+                        <div className="flex items-center">
+                          <input
+                            autoFocus
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveCell();
+                              if (e.key === 'Escape') setEditingCell(null);
+                            }}
+                            title={col}
+                            aria-label={col}
+                            className="flex-1 min-w-0 text-xs px-1.5 py-0.5 border border-blue-400 rounded-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-mono"
+                          />
+                          <button onClick={handleSaveCell} disabled={saving} title={t.dbManagement.saveRowTitle} className="p-0.5 text-green-600 hover:text-green-700 ml-0.5 shrink-0">
+                            {saving ? <IconLoader2 size={11} className="animate-spin" /> : <IconCheck size={11} />}
+                          </button>
+                          <button onClick={() => setEditingCell(null)} title={t.dbManagement.cancelEditTitle} className="p-0.5 text-gray-400 hover:text-gray-600 shrink-0">
+                            <IconX size={11} />
+                          </button>
+                        </div>
+                      ) : (
+                        val == null ? <span className="text-gray-400 italic">NULL</span> : String(val)
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-3 py-1.5 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 shrink-0">
+          <div className="flex items-center gap-1">
+            <button onClick={() => goToPage(0)} disabled={page === 0} title={t.dbManagement.pageFirst} className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30"><IconChevronsLeft size={13} /></button>
+            <button onClick={() => goToPage(Math.max(0, page - 1))} disabled={page === 0} title={t.dbManagement.pagePrev} className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30"><IconChevronLeft size={13} /></button>
+            <span className="text-xs text-gray-500 px-1">
+              {t.dbManagement.pageInfo.replace('{p}', String(page + 1)).replace('{t}', String(totalPages))}
+            </span>
+            <button onClick={() => goToPage(Math.min(totalPages - 1, page + 1))} disabled={page >= totalPages - 1} title={t.dbManagement.pageNext} className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30"><IconChevronRight size={13} /></button>
+            <button onClick={() => goToPage(totalPages - 1)} disabled={page >= totalPages - 1} title={t.dbManagement.pageLast} className="p-0.5 text-gray-400 hover:text-gray-600 disabled:opacity-30"><IconChevronsRight size={13} /></button>
+          </div>
+          <span className="text-xs text-gray-400">
+            {t.dbManagement.pageInfo.replace('{p}', String(page + 1)).replace('{t}', String(totalPages))}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ─── Import Data Dialog ───────────────────────────────────────────────────────
 
 const ImportDataDialog: React.FC<{
@@ -737,59 +1151,86 @@ const ImportDataDialog: React.FC<{
   const { t } = useI18n();
   const [mode, setMode] = useState<'direct' | 'llm'>('direct');
   const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<{ headers: string[]; rows: unknown[][] } | null>(null);
+  const [rawText, setRawText] = useState<string>('');
+  const [delimiter, setDelimiter] = useState<string>(',');
+  const [customDelimiter, setCustomDelimiter] = useState('');
+  const [preview, setPreview] = useState<{ rows: unknown[][] } | null>(null);
+  // importColumns mirrors the column definitions that the user can edit before import
+  const [importColumns, setImportColumns] = useState<Array<{ name: string; type: string }>>([]);
+  const [editingColIdx, setEditingColIdx] = useState<number | null>(null);
+  const [editingColName, setEditingColName] = useState('');
   const [tableName, setTableName] = useState('');
   const [importing, setImporting] = useState(false);
   const [progress, setProgress] = useState<{ inserted: number; total: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fileExt, setFileExt] = useState('');
 
-  const inferType = (values: unknown[]): string => {
-    const nonNull = values.filter((v) => v != null && v !== '');
-    if (!nonNull.length) return 'TEXT';
-    if (nonNull.every((v) => /^-?\d+$/.test(String(v)))) return 'INTEGER';
-    if (nonNull.every((v) => /^-?\d*\.?\d+$/.test(String(v)))) return 'REAL';
-    return 'TEXT';
-  };
+  const getDelimChar = () => delimiter === 'custom' ? (customDelimiter || ',') : delimiter;
+
+  const buildPreviewFromCSV = useCallback((text: string, delim: string) => {
+    const rows = parseCSV(text, delim);
+    if (rows.length < 1) return;
+    const headers = rows[0].map((h) => String(h).trim());
+    const dataRows = rows.slice(1, 21);
+    const allDataRows = rows.slice(1);
+    const types = headers.map((_, ci) => inferType(allDataRows.map((r) => r[ci])));
+    setImportColumns(headers.map((h, i) => ({ name: h, type: types[i] })));
+    setPreview({ rows: dataRows });
+  }, []);
+
+  useEffect(() => {
+    if (rawText && (fileExt === 'csv' || fileExt === 'tsv')) {
+      buildPreviewFromCSV(rawText, getDelimChar());
+    }
+  }, [delimiter, customDelimiter, rawText, fileExt]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
     setFile(f);
     setError(null);
+    setPreview(null);
+    setImportColumns([]);
+    const ext = f.name.split('.').pop()?.toLowerCase() ?? '';
+    setFileExt(ext);
     const name = f.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
     setTableName(name || 'imported_data');
 
-    // Parse file for preview
-    const ext = f.name.split('.').pop()?.toLowerCase();
     try {
       if (ext === 'json') {
         const text = await f.text();
         const data = JSON.parse(text);
         if (Array.isArray(data) && data.length > 0) {
           const headers = Object.keys(data[0]);
-          const rows = data.slice(0, 20).map((row: any) => headers.map((h) => row[h] ?? null));
-          setPreview({ headers, rows });
+          const allRows = data.map((row: any) => headers.map((h) => row[h] ?? null));
+          const types = headers.map((_, ci) => inferType(allRows.map((r) => r[ci])));
+          setImportColumns(headers.map((h, i) => ({ name: h, type: types[i] })));
+          setPreview({ rows: allRows.slice(0, 20) });
         }
       } else if (ext === 'csv' || ext === 'tsv') {
         const text = await f.text();
-        const sep = ext === 'tsv' ? '\t' : ',';
-        const lines = text.split('\n').filter(Boolean);
-        if (lines.length > 0) {
-          const headers = lines[0].split(sep).map((h) => h.trim().replace(/^"|"$/g, ''));
-          const rows = lines.slice(1, 21).map((l) => l.split(sep).map((v) => v.trim().replace(/^"|"$/g, '')));
-          setPreview({ headers, rows });
+        setRawText(text);
+        // Auto-detect delimiter
+        const firstLine = text.split('\n')[0] ?? '';
+        const detectedDelim = ext === 'tsv' ? '\t' : detectDelimiter(firstLine);
+        setDelimiter(detectedDelim === '\t' ? '\t' : (detectedDelim === ',' ? ',' : (detectedDelim === ';' ? ';' : (detectedDelim === '|' ? '|' : 'custom'))));
+        if (![',' , '\t', ';', '|'].includes(detectedDelim)) {
+          setCustomDelimiter(detectedDelim);
+          setDelimiter('custom');
         }
+        buildPreviewFromCSV(text, detectedDelim);
       } else if (ext === 'xlsx' || ext === 'xls') {
-        // Use main process XLSX parsing via electronAPI
         const buffer = await f.arrayBuffer();
         const XLSX = (window as any).__XLSX__ ?? await import('xlsx');
         const wb = XLSX.read(buffer, { type: 'array' });
         const ws = wb.Sheets[wb.SheetNames[0]];
         const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as unknown[][];
         if (data.length > 0) {
-          const headers = (data[0] as string[]).map(String);
-          const rows = data.slice(1, 21) as unknown[][];
-          setPreview({ headers, rows });
+          const headers = (data[0] as unknown[]).map(String);
+          const allRows = data.slice(1) as unknown[][];
+          const types = headers.map((_, ci) => inferType(allRows.map((r) => r[ci])));
+          setImportColumns(headers.map((h, i) => ({ name: h, type: types[i] })));
+          setPreview({ rows: allRows.slice(0, 20) });
         }
       }
     } catch (err) {
@@ -798,24 +1239,23 @@ const ImportDataDialog: React.FC<{
   };
 
   const handleImport = async () => {
-    if (!file || !preview) return;
+    if (!file || !preview || !importColumns.length) return;
     setImporting(true);
     setError(null);
     setProgress({ inserted: 0, total: 0 });
     try {
-      const ext = file.name.split('.').pop()?.toLowerCase();
+      const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
       let allRows: unknown[][] = [];
       if (ext === 'json') {
         const text = await file.text();
         const data = JSON.parse(text);
         if (Array.isArray(data)) {
-          allRows = data.map((row: any) => preview.headers.map((h) => row[h] ?? null));
+          const origHeaders = Object.keys(data[0] ?? {});
+          allRows = data.map((row: any) => origHeaders.map((h) => row[h] ?? null));
         }
       } else if (ext === 'csv' || ext === 'tsv') {
-        const text = await file.text();
-        const sep = ext === 'tsv' ? '\t' : ',';
-        const lines = text.split('\n').filter(Boolean).slice(1);
-        allRows = lines.map((l) => l.split(sep).map((v) => v.trim().replace(/^"|"$/g, '')));
+        const rows = parseCSV(rawText, getDelimChar());
+        allRows = rows.slice(1); // skip header row
       } else if (ext === 'xlsx' || ext === 'xls') {
         const buffer = await file.arrayBuffer();
         const XLSX = (window as any).__XLSX__ ?? await import('xlsx');
@@ -826,23 +1266,19 @@ const ImportDataDialog: React.FC<{
       }
 
       setProgress({ inserted: 0, total: allRows.length });
-
-      // Build CREATE TABLE from inferred types
-      const types = preview.headers.map((_, ci) => inferType(allRows.map((r) => r[ci])));
-      const colDefs = preview.headers.map((h, i) => `"${h.replace(/"/g, '""')}" ${types[i]}`).join(', ');
+      const colNames = importColumns.map((c) => c.name);
+      const colDefs = importColumns.map((c) => `"${c.name.replace(/"/g, '""')}" ${c.type}`).join(', ');
       const ddl = `CREATE TABLE IF NOT EXISTS "${tableName.replace(/"/g, '""')}" (${colDefs})`;
       await api().userdbCreateTable(sourceId, ddl);
 
-      // Batch insert
       const BATCH = 500;
       let inserted = 0;
       for (let i = 0; i < allRows.length; i += BATCH) {
         const chunk = allRows.slice(i, i + BATCH);
-        const res = await api().userdbBatchInsert(sourceId, tableName, preview.headers, chunk);
+        const res = await api().userdbBatchInsert(sourceId, tableName, colNames, chunk);
         inserted += res.inserted;
         setProgress({ inserted, total: allRows.length });
       }
-
       onDone();
       onClose();
     } catch (err) {
@@ -852,9 +1288,11 @@ const ImportDataDialog: React.FC<{
     }
   };
 
+  const isCsvLike = fileExt === 'csv' || fileExt === 'tsv';
+
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-[560px] max-w-[95vw] max-h-[80vh] flex flex-col">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-[680px] max-w-[95vw] max-h-[85vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 dark:border-gray-700">
           <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">{t.dbManagement.importDialogTitle}</h3>
@@ -862,68 +1300,165 @@ const ImportDataDialog: React.FC<{
         </div>
 
         {/* Mode selector */}
-        <div className="flex gap-2 px-5 py-3 border-b border-gray-100 dark:border-gray-700">
-          <button
-            onClick={() => setMode('direct')}
-            className={`px-3 py-1.5 text-xs rounded font-medium transition-colors ${mode === 'direct' ? 'bg-blue-600 text-white' : 'border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-          >
-            <IconUpload size={11} className="inline mr-1" />
-            {t.dbManagement.modeDirectBtn}
+        <div className="flex gap-2 px-5 py-2.5 border-b border-gray-100 dark:border-gray-700">
+          <button onClick={() => setMode('direct')} className={`px-3 py-1.5 text-xs rounded font-medium transition-colors ${mode === 'direct' ? 'bg-blue-600 text-white' : 'border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
+            <IconUpload size={11} className="inline mr-1" />{t.dbManagement.modeDirectBtn}
           </button>
-          <button
-            onClick={() => setMode('llm')}
-            className={`px-3 py-1.5 text-xs rounded font-medium transition-colors ${mode === 'llm' ? 'bg-purple-600 text-white' : 'border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-          >
-            <IconSearch size={11} className="inline mr-1" />
-            {t.dbManagement.modeLlmBtn}
+          <button onClick={() => setMode('llm')} className={`px-3 py-1.5 text-xs rounded font-medium transition-colors ${mode === 'llm' ? 'bg-purple-600 text-white' : 'border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
+            <IconSearch size={11} className="inline mr-1" />{t.dbManagement.modeLlmBtn}
           </button>
         </div>
 
         <div className="flex-1 overflow-auto p-5">
           {mode === 'direct' && (
-            <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">{t.dbManagement.directHint}</p>
-              <label className="block w-full border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors">
-                <IconUpload size={20} className="mx-auto mb-2 text-gray-400" />
+            <div className="space-y-3">
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t.dbManagement.directHint}</p>
+
+              {/* File picker */}
+              <label className="block w-full border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors">
+                <IconUpload size={18} className="mx-auto mb-1.5 text-gray-400" />
                 <p className="text-xs text-gray-500 dark:text-gray-400">{file ? file.name : t.dbManagement.selectFilePlaceholder}</p>
                 <input type="file" accept=".xlsx,.xls,.csv,.json,.tsv" onChange={handleFileChange} title={t.dbManagement.selectFilePlaceholder} aria-label={t.dbManagement.selectFilePlaceholder} className="sr-only" />
               </label>
 
-              {preview && (
-                <div className="mt-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <label className="text-xs font-medium text-gray-700 dark:text-gray-300">{t.dbManagement.tableNameLabel}</label>
+              {/* Delimiter config (CSV/TSV only) */}
+              {isCsvLike && file && (
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400 shrink-0">{t.dbManagement.delimiterLabel}</span>
+                  {([
+                    [',', t.dbManagement.delimiterComma],
+                    ['\t', t.dbManagement.delimiterTab],
+                    [';', t.dbManagement.delimiterSemicolon],
+                    ['|', t.dbManagement.delimiterPipe],
+                    ['custom', t.dbManagement.delimiterCustom],
+                  ] as [string, string][]).map(([val, label]) => (
+                    <label key={val} className="flex items-center gap-1 cursor-pointer">
+                      <input type="radio" name="delimiter" value={val} checked={delimiter === val}
+                        onChange={() => setDelimiter(val)}
+                        aria-label={label}
+                        className="accent-blue-500" />
+                      <span className="text-xs text-gray-600 dark:text-gray-300">{label}</span>
+                    </label>
+                  ))}
+                  {delimiter === 'custom' && (
+                    <input
+                      value={customDelimiter}
+                      onChange={(e) => setCustomDelimiter(e.target.value.slice(0, 1))}
+                      placeholder={t.dbManagement.delimiterCustomPlaceholder}
+                      title={t.dbManagement.delimiterCustomPlaceholder}
+                      aria-label={t.dbManagement.delimiterCustomPlaceholder}
+                      className="w-20 text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* Table name + column mapping */}
+              {importColumns.length > 0 && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300 shrink-0">{t.dbManagement.tableNameLabel}</span>
                     <input
                       value={tableName}
                       onChange={(e) => setTableName(e.target.value)}
                       title={t.dbManagement.tableNameLabel}
                       aria-label={t.dbManagement.tableNameLabel}
-                      placeholder={t.dbManagement.tableNameLabel}
                       className="flex-1 text-xs px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-mono"
                     />
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Preview ({preview.rows.length} rows):</div>
-                  <div className="overflow-auto max-h-48 border border-gray-200 dark:border-gray-700 rounded">
-                    <table className="w-full text-xs">
-                      <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0">
-                        <tr>
-                          {preview.headers.map((h) => (
-                            <th key={h} className="text-left px-2 py-1 font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap border-r border-gray-200 dark:border-gray-700">{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {preview.rows.map((row, ri) => (
-                          <tr key={ri} className="border-t border-gray-100 dark:border-gray-700/50">
-                            {(row as unknown[]).map((cell, ci) => (
-                              <td key={ci} className="px-2 py-0.5 text-gray-700 dark:text-gray-300 border-r border-gray-100 dark:border-gray-700/50 max-w-[120px] truncate">{cell == null ? '' : String(cell)}</td>
-                            ))}
+
+                  {/* Column mapping table */}
+                  <div>
+                    <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{t.dbManagement.columnMappingTitle}</p>
+                    <div className="border border-gray-200 dark:border-gray-700 rounded overflow-hidden">
+                      <table className="w-full text-xs">
+                        <thead className="bg-gray-50 dark:bg-gray-800">
+                          <tr>
+                            <th className="text-left px-2.5 py-1.5 font-medium text-gray-500 dark:text-gray-400 border-r border-gray-200 dark:border-gray-700">{t.dbManagement.columnNameHeader}</th>
+                            <th className="text-left px-2.5 py-1.5 font-medium text-gray-500 dark:text-gray-400 w-32">{t.dbManagement.columnTypeHeader}</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {importColumns.map((col, ci) => (
+                            <tr key={ci} className="border-t border-gray-100 dark:border-gray-700/50">
+                              <td className="px-2 py-1 border-r border-gray-100 dark:border-gray-700/50">
+                                {editingColIdx === ci ? (
+                                  <input
+                                    autoFocus
+                                    value={editingColName}
+                                    onChange={(e) => setEditingColName(e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter' || e.key === 'Tab') {
+                                        setImportColumns((cols) => cols.map((c, i) => i === ci ? { ...c, name: editingColName || c.name } : c));
+                                        setEditingColIdx(null);
+                                      }
+                                      if (e.key === 'Escape') setEditingColIdx(null);
+                                    }}
+                                    onBlur={() => {
+                                      setImportColumns((cols) => cols.map((c, i) => i === ci ? { ...c, name: editingColName || c.name } : c));
+                                      setEditingColIdx(null);
+                                    }}
+                                    title={t.dbManagement.columnNameHeader}
+                                    aria-label={t.dbManagement.columnNameHeader}
+                                    className="w-full text-xs px-1.5 py-0.5 border border-blue-400 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-mono"
+                                  />
+                                ) : (
+                                  <span
+                                    onDoubleClick={() => { setEditingColIdx(ci); setEditingColName(col.name); }}
+                                    className="font-mono text-gray-800 dark:text-gray-200 cursor-text px-0.5"
+                                    title={t.dbManagement.columnMappingTitle}
+                                  >
+                                    {col.name}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-2 py-1">
+                                <select
+                                  value={col.type}
+                                  onChange={(e) => setImportColumns((cols) => cols.map((c, i) => i === ci ? { ...c, type: e.target.value } : c))}
+                                  title={t.dbManagement.columnTypeHeader}
+                                  aria-label={t.dbManagement.columnTypeHeader}
+                                  className="w-full text-xs px-1.5 py-0.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                                >
+                                  {SQL_TYPES.map((typ) => <option key={typ} value={typ}>{typ}</option>)}
+                                </select>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                </div>
+
+                  {/* Data preview (read-only) */}
+                  {preview && preview.rows.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                        {t.dbManagement.previewRowsLabel.replace('{n}', String(preview.rows.length))}
+                      </p>
+                      <div className="overflow-auto max-h-40 border border-gray-200 dark:border-gray-700 rounded">
+                        <table className="w-full text-xs">
+                          <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0">
+                            <tr>
+                              {importColumns.map((col, ci) => (
+                                <th key={ci} className="text-left px-2 py-1 font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap border-r border-gray-200 dark:border-gray-700">{col.name}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {preview.rows.map((row, ri) => (
+                              <tr key={ri} className="border-t border-gray-100 dark:border-gray-700/50">
+                                {(row as unknown[]).map((cell, ci) => (
+                                  <td key={ci} className="px-2 py-0.5 text-gray-700 dark:text-gray-300 border-r border-gray-100 dark:border-gray-700/50 max-w-[120px] truncate">{cell == null ? '' : String(cell)}</td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
@@ -933,9 +1468,7 @@ const ImportDataDialog: React.FC<{
               <IconSearch size={28} className="mx-auto mb-2 text-purple-400 opacity-60" />
               <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t.dbManagement.llmTitle}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">{t.dbManagement.llmDesc}</p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded p-3">
-                {t.dbManagement.llmHint}
-              </p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded p-3">{t.dbManagement.llmHint}</p>
             </div>
           )}
 
@@ -952,12 +1485,8 @@ const ImportDataDialog: React.FC<{
                 <span>{t.dbManagement.progressText}</span>
                 <span>{progress.inserted} / {progress.total} rows</span>
               </div>
-              <progress
-                value={progress.inserted}
-                max={progress.total || 1}
-                aria-label={t.dbManagement.progressText}
-                className="w-full h-1.5 rounded-full overflow-hidden [&::-webkit-progress-bar]:bg-gray-200 dark:[&::-webkit-progress-bar]:bg-gray-700 [&::-webkit-progress-value]:bg-blue-500"
-              />
+              <progress value={progress.inserted} max={progress.total || 1} aria-label={t.dbManagement.progressText}
+                className="w-full h-1.5 rounded-full overflow-hidden [&::-webkit-progress-bar]:bg-gray-200 dark:[&::-webkit-progress-bar]:bg-gray-700 [&::-webkit-progress-value]:bg-blue-500" />
             </div>
           )}
         </div>
@@ -966,11 +1495,8 @@ const ImportDataDialog: React.FC<{
         <div className="flex justify-end gap-2 px-5 py-3 border-t border-gray-200 dark:border-gray-700">
           <button onClick={onClose} className="px-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">{t.dbManagement.cancelBtn}</button>
           {mode === 'direct' && (
-            <button
-              onClick={handleImport}
-              disabled={!preview || importing || !tableName.trim()}
-              className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-            >
+            <button onClick={handleImport} disabled={!importColumns.length || importing || !tableName.trim()}
+              className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
               {importing ? t.dbManagement.importingBtn : t.dbManagement.startImportBtn}
             </button>
           )}
@@ -983,7 +1509,7 @@ const ImportDataDialog: React.FC<{
 // ─── Main component ───────────────────────────────────────────────────────────
 
 const DatabaseManagementTab: React.FC = () => {
-  const { userDBs, datasources, getDatasourceSchema, getUserDBSchema } = useDatasourceStore();
+  const { userDBs, datasources, getDatasourceSchema, getUserDBSchema, loadUserDBs } = useDatasourceStore();
   const { t } = useI18n();
   const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
   const [selectedTable, setSelectedTable] = useState<string | null>(null);
@@ -1004,10 +1530,10 @@ const DatabaseManagementTab: React.FC = () => {
 
   const loadSchema = useCallback(async (id: string) => {
     setSchemaLoading(true);
-    setSchema(null);
-    setSelectedTable(null);
+    // Don't clear schema immediately (avoids flash), only set loading
     try {
-      const s = isUserDB({ ...(([...userDBs, ...datasources] as ActiveDatasource[]).find((x) => x.id === id) ?? { type: '' }) } as any)
+      const src = ([...userDBs, ...datasources] as ActiveDatasource[]).find((x) => x.id === id);
+      const s = src && isUserDB(src)
         ? await getUserDBSchema(id, { limit: 100 })
         : await getDatasourceSchema(id, { limit: 100 });
       setSchema(s);
@@ -1019,18 +1545,27 @@ const DatabaseManagementTab: React.FC = () => {
   }, [userDBs, datasources, getUserDBSchema, getDatasourceSchema]);
 
   useEffect(() => {
-    if (selectedSourceId) loadSchema(selectedSourceId);
+    if (selectedSourceId) {
+      setSchema(null);
+      setSelectedTable(null);
+      loadSchema(selectedSourceId);
+    }
   }, [selectedSourceId]);
 
+  // Bug fix: only clear and reload when source actually changes
   const handleSelectSource = (id: string) => {
-    setSelectedSourceId(id || null);
-    setSelectedTable(null);
-    setSchema(null);
+    const newId = id || null;
+    if (newId === selectedSourceId) return; // same source, do nothing
+    setSelectedSourceId(newId);
   };
 
-  const handleRefresh = () => {
-    if (selectedSourceId) loadSchema(selectedSourceId);
-  };
+  const handleRefresh = useCallback(() => {
+    if (selectedSourceId) {
+      loadSchema(selectedSourceId);
+      // Also refresh the DB list to update tableCount in left panel
+      loadUserDBs();
+    }
+  }, [selectedSourceId, loadSchema, loadUserDBs]);
 
   return (
     <div className="flex h-full overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
@@ -1060,7 +1595,7 @@ const DatabaseManagementTab: React.FC = () => {
         )}
       </div>
 
-      {/* Right: detail / console */}
+      {/* Right: detail / data / console */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {selectedSourceId ? (
           <>
@@ -1068,22 +1603,23 @@ const DatabaseManagementTab: React.FC = () => {
             <div className="flex items-center border-b border-gray-200 dark:border-gray-700 px-3 bg-gray-50 dark:bg-gray-800/50">
               <button
                 onClick={() => setRightTab('detail')}
-                className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
-                  rightTab === 'detail'
-                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                }`}
+                className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors ${rightTab === 'detail' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
               >
                 <IconColumns size={12} className="inline mr-1" />
                 {t.dbManagement.tabDetail}
               </button>
+              {selectedTable && (
+                <button
+                  onClick={() => setRightTab('data')}
+                  className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors ${rightTab === 'data' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
+                >
+                  <IconRows size={12} className="inline mr-1" />
+                  {t.dbManagement.tabData}
+                </button>
+              )}
               <button
                 onClick={() => setRightTab('console')}
-                className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
-                  rightTab === 'console'
-                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                }`}
+                className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors ${rightTab === 'console' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
               >
                 <IconPlayerPlay size={12} className="inline mr-1" />
                 {t.dbManagement.tabConsole}
@@ -1107,6 +1643,13 @@ const DatabaseManagementTab: React.FC = () => {
                     <p className="text-xs">{t.dbManagement.selectTableHint}</p>
                   </div>
                 )
+              )}
+              {rightTab === 'data' && selectedTable && selectedIsUserDB && (
+                <TableDataPreview
+                  sourceId={selectedSourceId}
+                  tableName={selectedTable}
+                  isUserDB={selectedIsUserDB}
+                />
               )}
               {rightTab === 'console' && selectedSourceId && (
                 <SQLConsole sourceId={selectedSourceId} isUserDB={selectedIsUserDB} />

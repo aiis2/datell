@@ -1102,5 +1102,53 @@ export const enUS: Locale = {
     startHint: 'Select a database to start managing',
     tableCountUnit: 'tables',
     columnCountUnit: 'columns',
+    // Table data preview tab
+    tabData: 'Data Preview',
+    dataPreviewLoading: 'Loading...',
+    dataPreviewEmpty: 'No data in table',
+    dataPreviewDblClickHint: 'Double-click a cell to edit',
+    dataPreviewRowCount: '{n} rows total',
+    dataPreviewFetchError: 'Failed to load data: ',
+    // Pagination
+    pageFirst: 'First',
+    pagePrev: 'Prev',
+    pageNext: 'Next',
+    pageLast: 'Last',
+    pageInfo: 'Page {p}/{t}',
+    rowsPerPage: 'Rows:',
+    // Table rename
+    renameTableTitle: 'Rename table',
+    renameTableLabel: 'New table name:',
+    renameTableConfirm: 'Rename',
+    renameTableError: 'Rename failed: ',
+    // Column rename
+    renameColTitle: 'Rename column',
+    renameColLabel: 'New column name:',
+    renameColConfirm: 'Rename',
+    renameColError: 'Column rename failed: ',
+    // Drop column
+    dropColTitle: 'Drop column',
+    dropColConfirmPrefix: 'Drop column "',
+    dropColConfirmSuffix: '"? This cannot be undone.',
+    dropColError: 'Drop column failed: ',
+    // Row editing
+    saveRowTitle: 'Save',
+    cancelEditTitle: 'Cancel',
+    updateRowError: 'Update failed: ',
+    // Export JSON
+    exportJsonTitle: 'Export JSON',
+    // Import - delimiter
+    delimiterLabel: 'Delimiter:',
+    delimiterComma: 'Comma (,)',
+    delimiterTab: 'Tab',
+    delimiterSemicolon: 'Semicolon (;)',
+    delimiterPipe: 'Pipe (|)',
+    delimiterCustom: 'Custom',
+    delimiterCustomPlaceholder: 'Enter delimiter char',
+    // Import - column mapping
+    columnMappingTitle: 'Column Mapping (double-click name to edit)',
+    columnNameHeader: 'Column Name',
+    columnTypeHeader: 'Type',
+    previewRowsLabel: 'Data Preview ({n} rows)',
   },
 };

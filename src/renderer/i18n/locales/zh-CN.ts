@@ -1103,6 +1103,54 @@ export const zhCN = {
     startHint: '选择数据库开始管理',
     tableCountUnit: '张表',
     columnCountUnit: '列',
+    // Table data preview tab
+    tabData: '数据预览',
+    dataPreviewLoading: '加载中...',
+    dataPreviewEmpty: '表中暂无数据',
+    dataPreviewDblClickHint: '双击单元格可编辑',
+    dataPreviewRowCount: '共 {n} 行',
+    dataPreviewFetchError: '加载数据失败: ',
+    // Pagination
+    pageFirst: '首页',
+    pagePrev: '上一页',
+    pageNext: '下一页',
+    pageLast: '末页',
+    pageInfo: '第 {p}/{t} 页',
+    rowsPerPage: '每页:',
+    // Table rename
+    renameTableTitle: '重命名表',
+    renameTableLabel: '新表名:',
+    renameTableConfirm: '重命名',
+    renameTableError: '重命名失败: ',
+    // Column rename
+    renameColTitle: '重命名列',
+    renameColLabel: '新列名:',
+    renameColConfirm: '重命名',
+    renameColError: '列重命名失败: ',
+    // Drop column
+    dropColTitle: '删除列',
+    dropColConfirmPrefix: '确定删除列 "',
+    dropColConfirmSuffix: '" ？此操作不可恢复。',
+    dropColError: '删除列失败: ',
+    // Row editing
+    saveRowTitle: '保存',
+    cancelEditTitle: '取消',
+    updateRowError: '更新失败: ',
+    // Export JSON
+    exportJsonTitle: '导出 JSON',
+    // Import - delimiter
+    delimiterLabel: '分隔符:',
+    delimiterComma: '逗号 (,)',
+    delimiterTab: '制表符',
+    delimiterSemicolon: '分号 (;)',
+    delimiterPipe: '竖线 (|)',
+    delimiterCustom: '自定义',
+    delimiterCustomPlaceholder: '输入分隔符字符',
+    // Import - column mapping
+    columnMappingTitle: '列映射（双击列名可编辑）',
+    columnNameHeader: '列名',
+    columnTypeHeader: '类型',
+    previewRowsLabel: '数据预览 ({n} 行)',
   },
 };
 

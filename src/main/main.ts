@@ -63,6 +63,10 @@ import {
   alterColumn as userDBAlterColumn,
   exportTableData as userDBExportTable,
   getUserDBTableData,
+  renameTable as userDBRenameTable,
+  renameColumn as userDBRenameColumn,
+  dropColumn as userDBDropColumn,
+  updateRow as userDBUpdateRow,
 } from './userdb';
 import {
   listCollections, createCollection, deleteCollection,
@@ -501,7 +505,21 @@ ipcMain.handle('userdb:alterColumn', (_e, id: string, tableName: string, colName
 ipcMain.handle('userdb:export', (_e, id: string, tableName: string, format: 'csv' | 'json') =>
   userDBExportTable(id, tableName, format)
 );
-ipcMain.handle('userdb:getTableData', (_e, id: string, tableName: string) => getUserDBTableData(id, tableName));
+ipcMain.handle('userdb:getTableData', (_e, id: string, tableName: string, limit?: number, offset?: number) =>
+  getUserDBTableData(id, tableName, limit, offset)
+);
+ipcMain.handle('userdb:renameTable', (_e, id: string, oldName: string, newName: string) => {
+  userDBRenameTable(id, oldName, newName);
+});
+ipcMain.handle('userdb:renameColumn', (_e, id: string, tableName: string, oldColName: string, newColName: string) => {
+  userDBRenameColumn(id, tableName, oldColName, newColName);
+});
+ipcMain.handle('userdb:dropColumn', (_e, id: string, tableName: string, colName: string) => {
+  userDBDropColumn(id, tableName, colName);
+});
+ipcMain.handle('userdb:updateRow', (_e, id: string, tableName: string, updates: Record<string, unknown>, whereCol: string, whereVal: unknown) => {
+  userDBUpdateRow(id, tableName, updates, whereCol, whereVal);
+});
 
 /* ======== System Identity IPC Handlers ======== */
 

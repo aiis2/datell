@@ -197,8 +197,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('userdb:alterColumn', id, tableName, colName, newType, newComment),
   userdbExport: (id: string, tableName: string, format: 'csv' | 'json'): Promise<string> =>
     ipcRenderer.invoke('userdb:export', id, tableName, format),
-  userdbGetTableData: (id: string, tableName: string): Promise<import('../main/userdb').UserDBTableDataResult> =>
-    ipcRenderer.invoke('userdb:getTableData', id, tableName),
+  userdbGetTableData: (id: string, tableName: string, limit?: number, offset?: number): Promise<import('../main/userdb').UserDBTableDataResult> =>
+    ipcRenderer.invoke('userdb:getTableData', id, tableName, limit, offset),
+  userdbRenameTable: (id: string, oldName: string, newName: string): Promise<void> =>
+    ipcRenderer.invoke('userdb:renameTable', id, oldName, newName),
+  userdbRenameColumn: (id: string, tableName: string, oldColName: string, newColName: string): Promise<void> =>
+    ipcRenderer.invoke('userdb:renameColumn', id, tableName, oldColName, newColName),
+  userdbDropColumn: (id: string, tableName: string, colName: string): Promise<void> =>
+    ipcRenderer.invoke('userdb:dropColumn', id, tableName, colName),
+  userdbUpdateRow: (id: string, tableName: string, updates: Record<string, unknown>, whereCol: string, whereVal: unknown): Promise<void> =>
+    ipcRenderer.invoke('userdb:updateRow', id, tableName, updates, whereCol, whereVal),
 
   // ===== File Picker =====
   fsSelectFile: (extensions: string[]): Promise<string | null> =>
