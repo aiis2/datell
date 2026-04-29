@@ -109,6 +109,65 @@
       .then(function(r) { return r.json(); })
       .then(function(coords) { window.__cityCoords = coords; })
       .catch(function() {});
+
+    // ── Region name normalization helpers ─────────────────────────────
+    // Canonical province names matching china-provinces.json properties.name (no suffix)
+    window.__chinaProvinceNames = [
+      '北京','天津','上海','重庆',
+      '河北','山西','辽宁','吉林','黑龙江','江苏','浙江','安徽','福建',
+      '江西','山东','河南','湖北','湖南','广东','海南','四川','贵州',
+      '云南','陕西','甘肃','青海',
+      '内蒙古','广西','西藏','宁夏','新疆',
+      '香港','澳门','台湾'
+    ];
+
+    /**
+     * Normalize a Chinese province/city name by stripping administrative suffixes.
+     * Handles: 上海市→上海  广东省→广东  内蒙古自治区→内蒙古
+     *          广西壮族自治区→广西  新疆维吾尔自治区→新疆
+     *          宁夏回族自治区→宁夏  香港特别行政区→香港
+     */
+    window.__normalizeRegionName = function(name) {
+      if (!name) return name;
+      var s = String(name).trim();
+      // Longer suffixes first to avoid partial stripping
+      var suffixes = [
+        '维吾尔自治区','壮族自治区','回族自治区','藏族自治区',
+        '苗族侗族自治州','自治区','特别行政区','直辖市','省','市'
+      ];
+      for (var i = 0; i < suffixes.length; i++) {
+        var suf = suffixes[i];
+        if (s.length > suf.length && s.slice(-suf.length) === suf) {
+          return s.slice(0, s.length - suf.length);
+        }
+      }
+      return s;
+    };
+
+    /**
+     * Normalize and validate an array of region objects.
+     * @param {Array}  data     Array of objects containing a region name field
+     * @param {string} nameKey  Field name holding the region name (e.g. 'name', 'province')
+     * @param {string} mapName  'china' | 'world' | 'city'
+     * @returns {{ normalized: Array, unmatched: Array }}
+     *   normalized — all items with nameKey replaced by canonical form (pass directly to ECharts)
+     *   unmatched  — items whose name could not be matched (show data-cleaning warning to user)
+     */
+    window.__checkMapData = function(data, nameKey, mapName) {
+      var pool = mapName === 'china' ? window.__chinaProvinceNames
+               : mapName === 'city' ? Object.keys(window.__cityCoords || {}) : null;
+      var normalized = [], unmatched = [];
+      (data || []).forEach(function(item) {
+        var raw  = item[nameKey];
+        var norm = window.__normalizeRegionName(raw);
+        var matched = !pool || pool.indexOf(norm) >= 0;
+        var copy = {}; for (var k in item) copy[k] = item[k];
+        copy[nameKey] = norm;
+        normalized.push(copy);
+        if (!matched) unmatched.push({ original: raw, normalized: norm });
+      });
+      return { normalized: normalized, unmatched: unmatched };
+    };
   })();
   </script>
 
@@ -534,7 +593,11 @@
       '        try { cb(); } catch(e) {}\n' +
       '      }\n' +
       '    };\n' +
-      '  } catch(e) {}\n' + +
+      '    // Region name normalization helpers (inherit from shell)\n' +
+      '    window.__chinaProvinceNames = (parent && parent.__chinaProvinceNames) ? parent.__chinaProvinceNames : [];\n' +
+      '    window.__normalizeRegionName = (parent && parent.__normalizeRegionName) ? parent.__normalizeRegionName : function(n){ return n; };\n' +
+      '    window.__checkMapData = (parent && parent.__checkMapData) ? parent.__checkMapData : function(d,k){ return { normalized: d, unmatched: [] }; };\n' +
+      '  } catch(e) {}\n' +
       '  // We always re-patch using the stored original to handle re-use of the same echarts object\n' +
       '  try {\n' +
       '    if (typeof echarts !== "undefined") {\n' +

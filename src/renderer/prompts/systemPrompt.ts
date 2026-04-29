@@ -304,7 +304,7 @@ ${isEnglish ? '6. **Language**: Respond in **English** to the user.' : '6. **语
        \`\`\`
      * **map 键名**：中国地图用 \`'china'\`，世界地图用 \`'world'\`；
      * **城市散点/飞线** 可通过 \`window.__cityCoords\`（已预加载 ~90 城市坐标 \`{ "北京": [116.4, 39.9], ... }\`）转换城市名到坐标，无需硬编码；
-     * **城市气泡图（map-city-scatter）** 示例：
+     * **城市气泡图（map-city-scatter）** 示例（按城市名称查坐标）：
        \`\`\`js
        window.__mapReady(function() {
          var coords = window.__cityCoords || {};
@@ -320,8 +320,86 @@ ${isEnglish ? '6. **Language**: Respond in **English** to the user.' : '6. **语
          });
        });
        \`\`\`
+     * **直接经纬度坐标（数据含 lat/lng 列时）**：ECharts geo 坐标格式为 \`[经度(lng), 纬度(lat), 指标值]\`，注意**经度在前、纬度在后**：
+       \`\`\`js
+       window.__mapReady(function() {
+         // 数据含 lng/lat 列时直接使用，无需查 __cityCoords
+         var rawData = [
+           { name: '门店A', lng: 116.4, lat: 39.9, sales: 520 },
+           { name: '门店B', lng: 121.5, lat: 31.2, sales: 430 }
+         ];
+         var scatterData = rawData.map(function(d) {
+           return { name: d.name, value: [d.lng, d.lat, d.sales] };
+         });
+         var chart = echarts.init(document.getElementById('geo-map'));
+         chart.setOption({
+           geo: { map: 'china', roam: true, itemStyle: { areaColor: '#e8f4fd', borderColor: '#aac8e4' } },
+           visualMap: { min: 0, max: 1000, inRange: { color: ['#93c5fd', '#1d4ed8'] } },
+           series: [{ type: 'scatter', coordinateSystem: 'geo', data: scatterData,
+             symbolSize: function(val) { return Math.max(6, Math.sqrt(val[2]) / 3); },
+             itemStyle: { opacity: 0.85 } }]
+         });
+       });
+       \`\`\`
+     * **地理热力图（heatmap-geo）经纬度示例**：同样使用 \`[lng, lat, value]\` 格式：
+       \`\`\`js
+       window.__mapReady(function() {
+         var heatData = rawPoints.map(function(d) { return [d.lng, d.lat, d.intensity]; });
+         var chart = echarts.init(document.getElementById('heat-map'));
+         chart.setOption({
+           geo: { map: 'china', roam: true },
+           visualMap: { min: 0, max: 100, inRange: { color: ['#313695','#4575b4','#74add1','#fdae61','#d73027'] } },
+           series: [{ type: 'heatmap', coordinateSystem: 'geo', data: heatData,
+             pointSize: 12, blurSize: 20 }]
+         });
+       });
+       \`\`\`
      * **飞线路线图（map-flight-route）** 使用 \`type: 'lines'\` + \`type: 'effectScatter'\`；
-     * **地理热力图（heatmap-geo）** 使用 \`type: 'heatmap'\` + \`coordinateSystem: 'geo'\`。
+     * **地理热力图（heatmap-geo）** 使用 \`type: 'heatmap'\` + \`coordinateSystem: 'geo'\`；
+     * **省份名称自动归一化**：china GeoJSON 使用**裸名**（无省/市/自治区后缀），用户数据常含后缀导致地图出现无色空白区域。
+       渲染环境已内置 \`window.__normalizeRegionName\` 和 \`window.__checkMapData\` 工具，**生成省级填色地图时必须使用**：
+       \`\`\`js
+       window.__mapReady(function() {
+         // 原始数据可能含后缀（上海市、广东省、内蒙古自治区 等）
+         var raw = [
+           { name: '广东省', value: 1280 },
+           { name: '上海市', value: 950 },
+           { name: '内蒙古自治区', value: 320 }
+         ];
+         // __checkMapData 自动归一化名称并检测不匹配项
+         var result = window.__checkMapData(raw, 'name', 'china');
+         // result.normalized — 名称已归一化，直接用于 ECharts series.data
+         // result.unmatched  — 无法识别的省份名（需要数据清洗）
+
+         var chart = echarts.init(document.getElementById('china-map'));
+         chart.setOption({
+           series: [{ type: 'map', map: 'china', data: result.normalized,
+             label: { show: false }, emphasis: { label: { show: true } } }]
+         });
+
+         // 如有不匹配项，在地图下方展示数据清洗提示
+         if (result.unmatched.length > 0) {
+           var warn = document.getElementById('data-warn');
+           if (warn) {
+             warn.style.display = 'block';
+             warn.innerHTML = '<strong>数据清洗提示</strong>：以下省份名称无法自动匹配地图，建议核查原始数据：'
+               + result.unmatched.map(function(u) {
+                   return '<span style="background:#fef3c7;padding:1px 4px;border-radius:3px;font-family:monospace">'
+                     + u.original + '</span> → 建议改为 <span style="color:#059669;font-family:monospace">'
+                     + u.normalized + '</span>';
+                 }).join('，');
+           }
+         }
+       });
+       \`\`\`
+       同时在 HTML 中添加警告容器（默认隐藏，有不匹配项时自动显示）：
+       \`\`\`html
+       <div id="data-warn" style="display:none;margin:8px 0;padding:8px 12px;
+         background:#fffbeb;border-left:4px solid #f59e0b;border-radius:4px;
+         font-size:12px;color:#92400e;line-height:1.8;"></div>
+       \`\`\`
+       中国34个省份标准名称（无后缀，与 china GeoJSON 完全一致）：
+       北京 天津 上海 重庆 | 河北 山西 辽宁 吉林 黑龙江 | 江苏 浙江 安徽 福建 江西 山东 | 河南 湖北 湖南 广东 海南 | 四川 贵州 云南 陕西 甘肃 青海 | 内蒙古 广西 西藏 宁夏 新疆 | 香港 澳门 台湾
 9. **generate_slide HTML规范（演示文稿）**：
    - 每张幻灯片使用 \`<section class="slide">\` 标签包裹，宽度 1280px，高度 720px，固定宽高比
    - 支持键盘左/右方向键和鼠标点击翻页（通过内嵌JS实现）
