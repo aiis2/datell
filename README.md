@@ -126,6 +126,20 @@ A 60-year dataset covering 200+ countries. Datell automatically explores the dat
 
 ---
 
+#### Built-in SQLite User Databases — SQL Console
+
+Create lightweight embedded SQLite databases directly inside Datell — no external DB server needed. The DB Management panel (Settings → DB Management) lets you create tables, browse schemas, import CSV/Excel data, and run arbitrary SQL queries. The SQL Console shows live query execution with a result grid.
+
+SQL executing (spinner on Run button, query in progress):
+
+![DB Management — SQL Executing](docs/screenshots/db-management-sql-executing.png)
+
+SQL results returned — 5 rows, 9ms execution, full column display with copy-to-clipboard:
+
+![DB Management — SQL Results](docs/screenshots/db-management-sql-results.png)
+
+---
+
 ### Technical Architecture
 
 - **Desktop shell**: Electron 41 packages a TypeScript main process with a React 19 + Vite renderer, keeping the app portable across Windows, macOS, and Linux.
@@ -166,6 +180,7 @@ A 60-year dataset covering 200+ countries. Datell automatically explores the dat
 
 #### Multi-Database Connectivity
 
+- **User SQLite Databases**: create lightweight embedded SQLite databases directly inside the app — schema browsing, SQL console, CSV/Excel import, all offline
 - Supports **MySQL / MariaDB / Apache Doris · PostgreSQL · Presto**
 - Built-in **SSH tunnel** — no manual port forwarding needed
 - Connection pool management, automatic schema exploration (tables / column comments)
@@ -418,6 +433,20 @@ Datell 走的是更系统化的路线。模型面对的不是一块完全空白�
 
 ---
 
+#### 内置 SQLite 用户数据库 — SQL 控制台
+
+在 Datell 内部直接创建轻量级嵌入式 SQLite 数据库，无需任何外部数据库服务器。通过设置 → DB 管理面板，可创建表、浏览表结构、导入 CSV/Excel 数据，并执行任意 SQL 查询，结果以表格实时展示。
+
+SQL 执行中（Run 按钮显示旋转动画，查询进行中）：
+
+![DB 管理 — SQL 执行中](docs/screenshots/db-management-sql-executing.png)
+
+SQL 返回结果 — 5 行数据、9ms 执行时间，完整列展示并支持一键复制：
+
+![DB 管理 — SQL 结果](docs/screenshots/db-management-sql-results.png)
+
+---
+
 ### 技术架构
 
 - **桌面外壳**：基于 Electron 41，采用 TypeScript 主进程和 React 19 + Vite 渲染层，统一打包 Windows、macOS、Linux。
@@ -457,6 +486,7 @@ Datell 走的是更系统化的路线。模型面对的不是一块完全空白�
 
 #### 多数据库连接
 
+- **用户 SQLite 数据库**：在应用内直接创建轻量嵌入式 SQLite 数据库，支持表结构浏览、SQL 控制台、CSV/Excel 导入，完全离线
 - 支持 **MySQL / MariaDB / Apache Doris · PostgreSQL · Presto**
 - 内置 SSH 隧道，无需手动端口转发
 - 连接池管理、Schema 自动探索（表结构 / 字段注释）
