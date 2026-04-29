@@ -1037,6 +1037,7 @@ export const enUS: Locale = {
     createConfirm: 'Create',
     cancelBtn: 'Cancel',
     deleteConfirm: 'Delete this user database? This action cannot be undone.',
+    duplicateName: 'A database with this name already exists. Please choose a different name.',
     // TableBrowser
     searchPlaceholder: 'Search tables...',
     noMatches: 'No matching tables',

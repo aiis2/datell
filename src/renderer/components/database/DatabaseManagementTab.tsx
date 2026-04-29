@@ -141,6 +141,7 @@ const DBSourceList: React.FC<{
   const [newName, setNewName] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [busy, setBusy] = useState(false);
+  const [createError, setCreateError] = useState('');
 
   useEffect(() => {
     loadDatasources();
@@ -149,13 +150,22 @@ const DBSourceList: React.FC<{
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
+    setCreateError('');
     setBusy(true);
     try {
       const cfg = await createUserDB(newName.trim(), newDesc.trim() || undefined);
       setCreating(false);
       setNewName('');
       setNewDesc('');
+      setCreateError('');
       onSelect(cfg.id);
+    } catch (err: any) {
+      const msg: string = err?.message ?? String(err);
+      if (msg.startsWith('duplicate_name:')) {
+        setCreateError(t.dbManagement.duplicateName);
+      } else {
+        setCreateError(msg);
+      }
     } finally {
       setBusy(false);
     }
@@ -256,11 +266,14 @@ const DBSourceList: React.FC<{
           <input
             autoFocus
             value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleCreate(); if (e.key === 'Escape') setCreating(false); }}
+            onChange={(e) => { setNewName(e.target.value); setCreateError(''); }}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleCreate(); if (e.key === 'Escape') { setCreating(false); setCreateError(''); } }}
             placeholder={t.dbManagement.namePlaceholder}
             className="w-full text-xs px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 mb-1.5"
           />
+          {createError && (
+            <p className="text-xs text-red-500 mb-1.5">{createError}</p>
+          )}
           <textarea
             value={newDesc}
             onChange={(e) => setNewDesc(e.target.value)}
@@ -278,7 +291,7 @@ const DBSourceList: React.FC<{
               {t.dbManagement.createConfirm}
             </button>
             <button
-              onClick={() => { setCreating(false); setNewName(''); setNewDesc(''); }}
+              onClick={() => { setCreating(false); setNewName(''); setNewDesc(''); setCreateError(''); }}
               className="px-2 py-1 rounded text-xs border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               {t.dbManagement.cancelBtn}

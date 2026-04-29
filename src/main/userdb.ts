@@ -123,6 +123,11 @@ export function listUserDBs(): UserDBConfig[] {
 
 export function createUserDB(name: string, description?: string): UserDBConfig {
   ensureUserdbDir();
+  const trimmed = name.trim();
+  const all = readRegistry();
+  if (all.some((c) => c.name.trim().toLowerCase() === trimmed.toLowerCase())) {
+    throw new Error(`duplicate_name:${trimmed}`);
+  }
   const id = `udb_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const dbPath = path.join(getUserdbDir(), `${id}.db`);
   const now = new Date().toISOString();
@@ -130,8 +135,7 @@ export function createUserDB(name: string, description?: string): UserDBConfig {
   const db = new Database(dbPath);
   db.pragma('journal_mode = WAL');
   db.close();
-  const cfg: UserDBConfig = { id, name, type: 'userdb', description, dbPath, createdAt: now, updatedAt: now };
-  const all = readRegistry();
+  const cfg: UserDBConfig = { id, name: trimmed, type: 'userdb', description, dbPath, createdAt: now, updatedAt: now };
   all.push(cfg);
   writeRegistry(all);
   return cfg;

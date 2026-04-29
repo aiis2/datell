@@ -1038,6 +1038,7 @@ export const zhCN = {
     createConfirm: '创建',
     cancelBtn: '取消',
     deleteConfirm: '确定要删除这个用户数据库吗？此操作不可恢复。',
+    duplicateName: '数据库名称已存在，请使用其他名称。',
     // TableBrowser
     searchPlaceholder: '搜索表...',
     noMatches: '无匹配表',
