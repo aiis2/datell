@@ -109,6 +109,7 @@
         "AppImage",
         "deb"
       ],
+      "maintainer": "Datell Contributors <mvfeng@gmail.com>",
       "icon": "build/icons/icon.png",
       "category": "Utility"
     }

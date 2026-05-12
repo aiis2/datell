@@ -18,6 +18,12 @@ assert.deepEqual(
 );
 
 assert.match(
+  packageJson.build?.linux?.maintainer ?? '',
+  /.+<[^>]+@[^>]+>/,
+  'Linux deb packaging should declare a maintainer with an email address',
+);
+
+assert.match(
   workflow,
   /release\/\*\.deb/,
   'Linux workflow should upload deb artifacts when they are produced',
