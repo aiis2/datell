@@ -61,7 +61,7 @@ That means the agent can still be creative where it matters, but the output is g
 | macOS x64 | [`Datell-1.0.6-mac-x64.dmg`](https://github.com/aiis2/datell/releases/download/v1.0.6-rebuild.3/Datell-1.0.6-mac-x64.dmg) | Intel Mac |
 | macOS arm64 | [`Datell-1.0.6-mac-arm64.dmg`](https://github.com/aiis2/datell/releases/download/v1.0.6-rebuild.3/Datell-1.0.6-mac-arm64.dmg) | Apple Silicon (M1/M2/M3) |
 | Linux x64 AppImage | [`Datell-1.0.6.AppImage`](https://github.com/aiis2/datell/releases/download/v1.0.6-rebuild.3/Datell-1.0.6.AppImage) | Portable AppImage for most distros |
-| Linux x64 deb | [`Datell-1.0.6-amd64.deb`](https://github.com/aiis2/datell/releases/download/v1.0.6-rebuild.3/Datell-1.0.6-amd64.deb) | Debian/Ubuntu package |
+| Linux x64 deb | [`datell_1.0.6_amd64.deb`](https://github.com/aiis2/datell/releases/download/v1.0.6-rebuild.3/datell_1.0.6_amd64.deb) | Debian/Ubuntu package |
 
 > **[→ View all releases](https://github.com/aiis2/datell/releases/latest)**
 
@@ -383,7 +383,7 @@ Datell 走的是更系统化的路线。模型面对的不是一块完全空白�
 | macOS x64 | [`Datell-1.0.6-mac-x64.dmg`](https://github.com/aiis2/datell/releases/download/v1.0.6-rebuild.3/Datell-1.0.6-mac-x64.dmg) | Intel Mac |
 | macOS arm64 | [`Datell-1.0.6-mac-arm64.dmg`](https://github.com/aiis2/datell/releases/download/v1.0.6-rebuild.3/Datell-1.0.6-mac-arm64.dmg) | Apple Silicon (M1/M2/M3) |
 | Linux x64 AppImage | [`Datell-1.0.6.AppImage`](https://github.com/aiis2/datell/releases/download/v1.0.6-rebuild.3/Datell-1.0.6.AppImage) | 适用于大多数发行版的便携 AppImage |
-| Linux x64 deb | [`Datell-1.0.6-amd64.deb`](https://github.com/aiis2/datell/releases/download/v1.0.6-rebuild.3/Datell-1.0.6-amd64.deb) | 适用于 Debian / Ubuntu 的安装包 |
+| Linux x64 deb | [`datell_1.0.6_amd64.deb`](https://github.com/aiis2/datell/releases/download/v1.0.6-rebuild.3/datell_1.0.6_amd64.deb) | 适用于 Debian / Ubuntu 的安装包 |
 
 > **[→ 查看所有发行版](https://github.com/aiis2/datell/releases/latest)**
 

@@ -13,7 +13,8 @@ It brings agentic analysis, interactive dashboards, and export-ready deliverable
 | Windows x64 | `Datell-{{VERSION}}-win-x64-portable.exe` | Portable, no install needed / 免安装，双击可用 |
 | macOS x64 | `Datell-{{VERSION}}-mac-x64.dmg` | Intel Mac |
 | macOS arm64 | `Datell-{{VERSION}}-mac-arm64.dmg` | Apple Silicon (M1/M2/M3) |
-| Linux x64 | `Datell-{{VERSION}}.AppImage` | Portable AppImage for most distros / 适用于大多数发行版 |
+| Linux x64 AppImage | `Datell-{{VERSION}}.AppImage` | Portable AppImage for most distros / 适用于大多数发行版 |
+| Linux x64 deb | `datell_{{VERSION}}_amd64.deb` | Debian/Ubuntu package / 适用于 Debian 与 Ubuntu |
 
 > **macOS first launch**: If blocked by Gatekeeper, right-click the app and choose "Open".
 > **macOS 首次打开**：如果被系统拦截，请右键应用并选择“打开”。
