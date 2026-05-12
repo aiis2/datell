@@ -2,7 +2,11 @@ const fs = require('fs');
 const path = require('path');
 
 const mainPath = path.join(process.cwd(), 'src', 'main', 'main.ts');
+const preloadPath = path.join(process.cwd(), 'src', 'main', 'preload.ts');
+const rendererEntryPath = path.join(process.cwd(), 'src', 'renderer', 'index.tsx');
 const source = fs.readFileSync(mainPath, 'utf8');
+const preloadSource = fs.readFileSync(preloadPath, 'utf8');
+const rendererEntrySource = fs.readFileSync(rendererEntryPath, 'utf8');
 
 const checks = [
   {
@@ -20,6 +24,18 @@ const checks = [
   {
     name: 'registers did-fail-load diagnostics',
     pass: /did-fail-load/.test(source),
+  },
+  {
+    name: 'waits for renderer-ready before showing main window',
+    pass: /app:renderer-ready/.test(source) && /readyToShowFired/.test(source) && /rendererReady/.test(source),
+  },
+  {
+    name: 'preload exposes renderer-ready bridge',
+    pass: /appRendererReady:\s*\(\)\s*:\s*void\s*=>\s*ipcRenderer\.send\('app:renderer-ready'\)/.test(preloadSource),
+  },
+  {
+    name: 'renderer entry notifies main process after mount',
+    pass: /window\.electronAPI\?\.appRendererReady\?\.\(\)/.test(rendererEntrySource),
   },
 ];
 

@@ -1,8 +1,35 @@
+const fs = require('node:fs');
 const path = require('node:path');
+
+function getWindowsPortableCandidates(releaseDir, productName) {
+  if (!fs.existsSync(releaseDir)) {
+    return [];
+  }
+
+  const portableSuffix = '-portable.exe';
+  const portablePrefix = `${productName.toLowerCase()}-`;
+
+  return fs.readdirSync(releaseDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile())
+    .map((entry) => entry.name)
+    .filter((name) => name.toLowerCase().startsWith(portablePrefix) && name.toLowerCase().endsWith(portableSuffix))
+    .map((name) => {
+      const candidatePath = path.join(releaseDir, name);
+      return {
+        path: candidatePath,
+        mtimeMs: fs.statSync(candidatePath).mtimeMs,
+      };
+    })
+    .sort((left, right) => right.mtimeMs - left.mtimeMs)
+    .map((entry) => entry.path);
+}
 
 function getPackagedExecutableCandidates({ platform, arch, releaseDir, productName }) {
   if (platform === 'win32') {
-    return [path.join(releaseDir, 'win-unpacked', `${productName}.exe`)];
+    return [
+      ...getWindowsPortableCandidates(releaseDir, productName),
+      path.join(releaseDir, 'win-unpacked', `${productName}.exe`),
+    ];
   }
 
   if (platform === 'darwin') {

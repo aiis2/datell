@@ -8,3 +8,14 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <App />
   </React.StrictMode>
 );
+
+// In packaged Electron builds, let the main process wait for the first mounted
+// React paint before showing the main window. This prevents early blank-window
+// exposure when ready-to-show fires before the UI skeleton is actually mounted.
+if (window.electronAPI?.appRendererReady) {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      window.electronAPI?.appRendererReady?.();
+    });
+  });
+}

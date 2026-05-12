@@ -1031,6 +1031,8 @@ export interface ElectronAPI {
 
   // Notify main process of current language for native dialog localisation
   appSetLanguage?: (lang: string) => void;
+  // Notify main process that the renderer root has mounted and first paint is ready.
+  appRendererReady?: () => void;
 }
 
 declare global {

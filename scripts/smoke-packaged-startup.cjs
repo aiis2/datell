@@ -59,7 +59,7 @@ function readSmokeStatus(markerFile) {
 
 async function main() {
   const repoRoot = process.cwd();
-  const releaseDir = path.join(repoRoot, 'release');
+  const releaseDir = path.resolve(repoRoot, process.env.DATELL_SMOKE_RELEASE_DIR || 'release');
   const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8'));
   const productName = packageJson.build?.productName || 'Datell';
   const markerFile = path.join(os.tmpdir(), `datell-startup-smoke-${Date.now()}-${process.pid}.json`);

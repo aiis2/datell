@@ -1,4 +1,6 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 
 const {
@@ -6,7 +8,25 @@ const {
   buildSmokeLaunchCommand,
 } = require('../scripts/startup-smoke-helpers.cjs');
 
-const releaseDir = path.join('C:', 'smoke-fixture', 'release');
+const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'startup-smoke-helpers-'));
+const releaseDir = path.join(fixtureRoot, 'release');
+const unpackedExe = path.join(releaseDir, 'win-unpacked', 'Datell.exe');
+const olderPortableExe = path.join(releaseDir, 'Datell-1.0.5-win-x64-portable.exe');
+const newerPortableExe = path.join(releaseDir, 'Datell-1.0.6-win-x64-portable.exe');
+
+fs.mkdirSync(path.dirname(unpackedExe), { recursive: true });
+fs.writeFileSync(unpackedExe, '');
+fs.writeFileSync(olderPortableExe, '');
+fs.writeFileSync(newerPortableExe, '');
+
+const olderTime = new Date('2026-05-12T10:00:00.000Z');
+const newerTime = new Date('2026-05-12T10:00:10.000Z');
+fs.utimesSync(olderPortableExe, olderTime, olderTime);
+fs.utimesSync(newerPortableExe, newerTime, newerTime);
+
+process.on('exit', () => {
+  fs.rmSync(fixtureRoot, { recursive: true, force: true });
+});
 
 assert.deepEqual(
   getPackagedExecutableCandidates({
@@ -15,8 +35,8 @@ assert.deepEqual(
     releaseDir,
     productName: 'Datell',
   }),
-  [path.join(releaseDir, 'win-unpacked', 'Datell.exe')],
-  'Windows smoke should target the unpacked EXE from the packaged release directory',
+  [newerPortableExe, olderPortableExe, unpackedExe],
+  'Windows smoke should prefer the newest portable EXE before falling back to win-unpacked',
 );
 
 assert.deepEqual(

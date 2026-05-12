@@ -1,6 +1,5 @@
-import { app, BrowserWindow, ipcMain, dialog, Menu, nativeTheme, shell, protocol, net } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, Menu, nativeTheme, shell, protocol } from 'electron';
 import path from 'path';
-import { pathToFileURL } from 'url';
 import { ENTERPRISE_BUILD } from './buildFlags';
 
 /* ======== app:// Custom Protocol (registered BEFORE app.ready) ========
@@ -158,6 +157,70 @@ const STARTUP_SMOKE_READY_MARKER = 'STARTUP_SMOKE_READY';
 const STARTUP_SMOKE_FAIL_MARKER = 'STARTUP_SMOKE_FAIL';
 const startupSmokeEnabled = process.argv.includes('--startup-smoke-test') || process.env.DATELL_STARTUP_SMOKE === '1';
 const startupSmokeStatusFile = (process.env.DATELL_STARTUP_SMOKE_FILE || '').trim();
+const STATIC_ASSET_CONTENT_TYPES: Record<string, string> = {
+  '.css': 'text/css; charset=utf-8',
+  '.gif': 'image/gif',
+  '.html': 'text/html; charset=utf-8',
+  '.ico': 'image/x-icon',
+  '.jpeg': 'image/jpeg',
+  '.jpg': 'image/jpeg',
+  '.js': 'text/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.map': 'application/json; charset=utf-8',
+  '.mjs': 'text/javascript; charset=utf-8',
+  '.pdf': 'application/pdf',
+  '.png': 'image/png',
+  '.svg': 'image/svg+xml',
+  '.ttf': 'font/ttf',
+  '.txt': 'text/plain; charset=utf-8',
+  '.wasm': 'application/wasm',
+  '.webp': 'image/webp',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.xml': 'application/xml; charset=utf-8',
+};
+
+function getStaticAssetContentType(filePath: string): string {
+  return STATIC_ASSET_CONTENT_TYPES[path.extname(filePath).toLowerCase()] ?? 'application/octet-stream';
+}
+
+async function buildAppProtocolResponse(distPath: string, requestUrl: string): Promise<Response> {
+  const distRoot = path.resolve(distPath);
+  const url = new URL(requestUrl);
+  const requestPath = decodeURIComponent(url.pathname === '/' ? 'index.html' : url.pathname.replace(/^\/+/, ''));
+  const fullPath = path.resolve(distRoot, requestPath);
+
+  if (startupSmokeEnabled) {
+    console.log(`[app://request] ${requestUrl} -> ${fullPath}`);
+  }
+
+  if (fullPath !== distRoot && !fullPath.startsWith(`${distRoot}${path.sep}`)) {
+    return new Response('Forbidden', {
+      status: 403,
+      headers: {
+        'content-type': 'text/plain; charset=utf-8',
+      },
+    });
+  }
+
+  try {
+    const fileBuffer = await fs.promises.readFile(fullPath);
+    return new Response(fileBuffer, {
+      headers: {
+        'content-type': getStaticAssetContentType(fullPath),
+      },
+    });
+  } catch (error) {
+    const detail = `[app://file-read] ${fullPath} ${error instanceof Error ? error.message : String(error)}`;
+    console.error(detail);
+    return new Response(detail, {
+      status: 404,
+      headers: {
+        'content-type': 'text/plain; charset=utf-8',
+      },
+    });
+  }
+}
 
 function writeStartupSmokeResult(status: 'ready' | 'fail', detail: string): void {
   if (!startupSmokeEnabled) {
@@ -297,7 +360,7 @@ function createWindow() {
     },
     autoHideMenuBar: true,
     backgroundColor: '#0f172a',
-    show: false,  // Hidden until ready-to-show fires (eliminates blank window flash)
+    show: false,  // Hidden until both ready-to-show and renderer-ready fire
     ...(process.platform === 'darwin'
       ? {
           titleBarStyle: 'hiddenInset' as const,
@@ -316,6 +379,9 @@ function createWindow() {
 
   let forceQuit = startupSmokeEnabled;
   let startupSmokeSettled = false;
+  let readyToShowFired = false;
+  let rendererReady = false;
+  let mainWindowShown = false;
 
   const completeStartupSmoke = (status: 'ready' | 'fail', detail: string, exitCode: number) => {
     if (!startupSmokeEnabled || startupSmokeSettled) {
@@ -344,14 +410,16 @@ function createWindow() {
     completeStartupSmoke('fail', `render-process-gone ${details.reason} ${details.exitCode}`, 1);
   });
 
-  const startupSmokeTimeout = startupSmokeEnabled
-    ? setTimeout(() => {
-        completeStartupSmoke('fail', 'ready-to-show timeout', 1);
-      }, 15000)
-    : null;
+  const maybeShowMainWindow = (detail: string) => {
+    if (mainWindowShown || win.isDestroyed()) {
+      return;
+    }
+    if (!readyToShowFired || !rendererReady) {
+      return;
+    }
 
-  // Show main window and close splash when React is ready
-  win.once('ready-to-show', () => {
+    mainWindowShown = true;
+
     if (startupSmokeTimeout) {
       clearTimeout(startupSmokeTimeout);
     }
@@ -360,7 +428,28 @@ function createWindow() {
       splashWin = null;
     }
     win.show();
-    completeStartupSmoke('ready', 'ready-to-show', 0);
+    completeStartupSmoke('ready', detail, 0);
+  };
+
+  const rendererReadyHandler = (event: Electron.IpcMainEvent) => {
+    if (event.sender !== win.webContents) {
+      return;
+    }
+    rendererReady = true;
+    maybeShowMainWindow('renderer-ready');
+  };
+  ipcMain.on('app:renderer-ready', rendererReadyHandler);
+
+  const startupSmokeTimeout = startupSmokeEnabled
+    ? setTimeout(() => {
+        completeStartupSmoke('fail', 'renderer-ready timeout', 1);
+      }, 15000)
+    : null;
+
+  // Only show the main window after Chromium can paint AND the renderer root mounted.
+  win.once('ready-to-show', () => {
+    readyToShowFired = true;
+    maybeShowMainWindow('main-window-ready');
   });
 
   // ── Confirm before quitting — prevents accidental close when settings drawer is open ──
@@ -402,6 +491,7 @@ function createWindow() {
     if (startupSmokeTimeout) {
       clearTimeout(startupSmokeTimeout);
     }
+    ipcMain.removeListener('app:renderer-ready', rendererReadyHandler);
   });
 
   // DevTools access is locked by default in production builds.
@@ -1852,13 +1942,10 @@ app.whenReady().then(async () => {
 
   // Register app:// protocol handler — maps app://localhost/* to dist/ directory
   const distPath = findRendererDistRoot(app.getAppPath(), __dirname);
-  protocol.handle('app', (request) => {
-    const url = new URL(request.url);
-    // Strip leading slash, default to index.html
-    let filePath = url.pathname === '/' ? 'index.html' : url.pathname.replace(/^\//, '');
-    const fullPath = path.join(distPath, filePath);
-    return net.fetch(pathToFileURL(fullPath).toString());
-  });
+  if (startupSmokeEnabled) {
+    console.log(`[app://dist-root] appPath=${app.getAppPath()} distPath=${distPath}`);
+  }
+  protocol.handle('app', (request) => buildAppProtocolResponse(distPath, request.url));
 
   // Show splash first, then create main window hidden
   splashWin = createSplashWindow();

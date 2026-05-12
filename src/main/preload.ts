@@ -266,4 +266,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   /** Notify main process of the current UI language so native dialogs are localised. */
   appSetLanguage: (lang: string): void =>
     ipcRenderer.send('app:set-language', lang),
+
+  // ===== Renderer first-paint handshake =====
+  /** Notify main process that the renderer root has mounted and first paint can be shown safely. */
+  appRendererReady: (): void =>
+    ipcRenderer.send('app:renderer-ready'),
 });
