@@ -47,7 +47,21 @@ jobs:
         run: npx vite build
 
       - name: Package Linux (AppImage + deb)
-        run: npx electron-builder --linux --publish=never
+        run: |
+          cache_root="${XDG_CACHE_HOME:-$HOME/.cache}"
+          for attempt in 1 2 3; do
+            echo "Linux packaging attempt ${attempt}/3"
+            if npx electron-builder --linux --publish=never; then
+              exit 0
+            fi
+
+            if [ "$attempt" -eq 3 ]; then
+              exit 1
+            fi
+
+            echo "Linux packaging failed. Clearing Electron caches before retry..."
+            rm -rf "$cache_root/electron" "$cache_root/electron-builder"
+          done
 
       - name: Smoke packaged startup
         run: node scripts/smoke-packaged-startup.cjs
