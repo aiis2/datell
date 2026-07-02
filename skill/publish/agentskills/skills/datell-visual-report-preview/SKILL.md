@@ -13,7 +13,7 @@ metadata:
 
 Use this skill when the user wants a visual report, dashboard, KPI summary page, or chart-heavy HTML deliverable.
 
-This is the primary implementation skill in the frontend-design-report repository. The separate `frontend-design-report` alias skill resolves to the same report-generation workflow for repository-name discovery and installation.
+This is the single installable skill in the frontend-design-report repository, merging the MCP-first report runtime with the standalone HTML fallback workflow.
 
 ## Decision Tree
 

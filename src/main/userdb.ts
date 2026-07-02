@@ -17,6 +17,7 @@ import Database from 'better-sqlite3';
 import * as fs from 'fs';
 import * as path from 'path';
 import { getDataDir } from './dataDir';
+import { isReadOnlyUserDBSql } from './sqlReadOnlyGuard';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -207,15 +208,13 @@ export function getUserDBSchema(id: string, opts: { limit?: number; search?: str
 
 // ─── Query execution ─────────────────────────────────────────────────────────
 
-const READ_ONLY_PREFIXES = /^\s*(SELECT|WITH|EXPLAIN|PRAGMA\s+table_info|PRAGMA\s+table_list)/i;
-
 /**
  * Execute SQL against a user DB.
- * @param readOnly  When true (chat mode), restricts to SELECT/WITH/EXPLAIN/PRAGMA.
+ * @param readOnly  When true (chat mode), restricts to single-statement read-only SQL.
  */
 export function executeUserDBSQL(id: string, sql: string, opts: { readOnly?: boolean } = {}): UserDBQueryResult {
-  if (opts.readOnly && !READ_ONLY_PREFIXES.test(sql.trim())) {
-    throw new Error('聊天模式下仅支持 SELECT/WITH/EXPLAIN 等只读查询');
+  if (opts.readOnly && !isReadOnlyUserDBSql(sql)) {
+    throw new Error('聊天模式下仅支持单条 SELECT/WITH/EXPLAIN/安全 PRAGMA 只读查询');
   }
   const db = openDB(id, false); // open RW even for readonly queries (to avoid lock issues)
   const t0 = Date.now();
