@@ -7,119 +7,235 @@
  */
 import type { AgentToolDefinition } from '../types';
 
-/** 安全执行沙箱 — 遮蔽危险全局变量后用 Function() 运行用户代码 */
-async function execSandbox(code: string, timeoutMs = 10000): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      reject(new Error('执行超时（10秒）'));
-    }, timeoutMs);
+const BLOCKED_GLOBALS = [
+  'window', 'document', 'fetch', 'XMLHttpRequest', 'WebSocket',
+  'navigator', 'location', 'history', 'localStorage', 'sessionStorage',
+  'indexedDB', 'crypto', 'performance', 'Worker', 'SharedWorker',
+  'Blob', 'File', 'FileReader', 'FormData', 'URL',
+  'require', 'process', 'global', 'module', 'exports',
+  '__dirname', '__filename', 'importScripts',
+] as const;
 
-    // Build a sandboxed wrapper: shadow dangerous globals with undefined
-    // We cannot delete globals in strict mode, but we can shadow them with
-    // local params containing undefined.
-    const BLOCKED_GLOBALS = [
-      'window', 'document', 'fetch', 'XMLHttpRequest', 'WebSocket',
-      'navigator', 'location', 'history', 'localStorage', 'sessionStorage',
-      'indexedDB', 'crypto', 'performance', 'Worker', 'SharedWorker',
-      'Blob', 'File', 'FileReader', 'FormData', 'URL',
-      'require', 'process', 'global', 'module', 'exports',
-      '__dirname', '__filename', 'importScripts',
-      // NOTE: 'eval' and 'arguments' are reserved in strict mode and cannot
-      // be used as parameter names — strict mode already restricts eval scope.
-    ] as const;
+const SANDBOX_FORBIDDEN_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
+  { pattern: /(?:^|[^\w$])constructor\s*(?:[.(\[])/i, label: 'constructor 逃逸' },
+  { pattern: /new\s+Function\s*\(/i, label: 'new Function()' },
+  { pattern: /\bFunction\s*\(/i, label: 'Function()' },
+  { pattern: /\beval\s*\(/i, label: 'eval()' },
+  { pattern: /\b(?:globalThis|window|document|self|fetch|XMLHttpRequest|WebSocket|Worker|SharedWorker|importScripts|navigator|location|localStorage|sessionStorage|indexedDB|process|require|module|exports|global)\b/i, label: '受限全局对象' },
+  { pattern: /\bwhile\s*\(\s*(?:true|1)\s*\)/i, label: '无限循环' },
+  { pattern: /\bfor\s*\(\s*;\s*;\s*\)/i, label: '无限循环' },
+];
 
-    // Allow safe math/utility globals
-    const safeGlobals: Record<string, unknown> = {
-      Math,
-      JSON,
-      parseInt,
-      parseFloat,
-      isNaN,
-      isFinite,
-      Number,
-      String,
-      Boolean,
-      Array,
-      Object,
-      Date,
-      RegExp,
-      Error,
-      console: {
-        log: (...args: unknown[]) => String(args.map((a) => JSON.stringify(a)).join(' ')),
-      },
-    };
+const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor as FunctionConstructor;
 
+export function validateSandboxCode(code: string): string | null {
+  for (const { pattern, label } of SANDBOX_FORBIDDEN_PATTERNS) {
+    if (pattern.test(code)) {
+      return `代码包含禁止模式: ${label}`;
+    }
+  }
+  return null;
+}
+
+function formatSandboxOutput(output: unknown, logs: string[]): string {
+  let resultStr = '';
+  if (output !== undefined && output !== null) {
     try {
-      // Build param names + their undefined shadow values for blocked globals
-      const blockedParams = BLOCKED_GLOBALS.join(', ');
-      const blockedUndefined = BLOCKED_GLOBALS.map(() => 'undefined').join(', ');
+      resultStr = typeof output === 'object'
+        ? JSON.stringify(output, null, 2)
+        : String(output);
+    } catch {
+      resultStr = String(output);
+    }
+  }
 
-      // Safe param names + values
-      const safeParamNames = Object.keys(safeGlobals).join(', ');
-      const safeParamValues = Object.values(safeGlobals);
+  const parts: string[] = [];
+  if (logs.length > 0) {
+    parts.push('**输出（console.log）：**\n```\n' + logs.join('\n') + '\n```');
+  }
+  if (resultStr) {
+    parts.push('**返回值：**\n```\n' + resultStr + '\n```');
+  }
+  if (parts.length === 0) {
+    parts.push('代码执行完毕，无返回值和输出。');
+  }
+  return parts.join('\n\n');
+}
 
-      // Wrap code in an async IIFE so the user can write top-level await if needed,
-      // and collect logs. The function must return something — if the last expression
-      // is assigned to `result`, we return it; otherwise we run the code and return
-      // the stdout-equivalent.
-      const logs: string[] = [];
-      const captureLog = (...args: unknown[]) => {
+function createSafeGlobals(logs: string[]): Record<string, unknown> {
+  return {
+    Math,
+    JSON,
+    parseInt,
+    parseFloat,
+    isNaN,
+    isFinite,
+    Number,
+    String,
+    Boolean,
+    Array,
+    Object,
+    Date,
+    RegExp,
+    Error,
+    console: {
+      log: (...args: unknown[]) => {
         logs.push(args.map((a) => {
           try { return typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a); }
           catch { return String(a); }
         }).join(' '));
-      };
+      },
+    },
+  };
+}
 
-      // Replace the console mock with our real capture
-      (safeGlobals.console as { log: (...args: unknown[]) => void }).log = captureLog;
+async function execSandboxInline(code: string): Promise<string> {
+  const logs: string[] = [];
+  const safeGlobals = createSafeGlobals(logs);
+  const blockedParams = BLOCKED_GLOBALS.join(', ');
 
-      // Build the final Function
-      // eslint-disable-next-line no-new-func
-      const fn = new Function(
-        ...Object.keys(safeGlobals),
-        blockedParams,
-        `"use strict";\n` +
-        `let __result__ = undefined;\n` +
-        `try {\n` +
-        code + `\n` +
-        `} catch(e) { throw e; }\n` +
-        `return typeof result !== 'undefined' ? result : __result__;`
-      );
+  // eslint-disable-next-line no-new-func
+  const fn = new AsyncFunction(
+    ...Object.keys(safeGlobals),
+    blockedParams,
+    `"use strict";\n` +
+    `let __result__ = undefined;\n` +
+    `let result = undefined;\n` +
+    `try {\n` +
+    code + `\n` +
+    `} catch(e) { throw e; }\n` +
+    `return typeof result !== 'undefined' ? result : __result__;`
+  );
 
-      const output = fn(...safeParamValues, ...BLOCKED_GLOBALS.map(() => undefined));
+  const output = await fn(...Object.values(safeGlobals), ...BLOCKED_GLOBALS.map(() => undefined));
+  return formatSandboxOutput(output, logs);
+}
 
+function canUseBrowserWorker(): boolean {
+  return typeof Worker !== 'undefined' && typeof Blob !== 'undefined' && typeof URL !== 'undefined';
+}
+
+function buildSandboxWorkerSource(): string {
+  return `
+const BLOCKED_GLOBALS = ${JSON.stringify(BLOCKED_GLOBALS)};
+const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+
+function formatValue(value) {
+  try {
+    return typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value);
+  } catch {
+    return String(value);
+  }
+}
+
+function formatOutput(output, logs) {
+  let resultStr = '';
+  if (output !== undefined && output !== null) {
+    resultStr = formatValue(output);
+  }
+  const parts = [];
+  if (logs.length > 0) {
+    parts.push('**输出（console.log）：**\\n\`\`\`\\n' + logs.join('\\n') + '\\n\`\`\`');
+  }
+  if (resultStr) {
+    parts.push('**返回值：**\\n\`\`\`\\n' + resultStr + '\\n\`\`\`');
+  }
+  if (parts.length === 0) {
+    parts.push('代码执行完毕，无返回值和输出。');
+  }
+  return parts.join('\\n\\n');
+}
+
+self.onmessage = async (event) => {
+  const code = String(event.data && event.data.code ? event.data.code : '');
+  const logs = [];
+  const safeGlobals = {
+    Math,
+    JSON,
+    parseInt,
+    parseFloat,
+    isNaN,
+    isFinite,
+    Number,
+    String,
+    Boolean,
+    Array,
+    Object,
+    Date,
+    RegExp,
+    Error,
+    console: {
+      log: (...args) => {
+        logs.push(args.map(formatValue).join(' '));
+      },
+    },
+  };
+
+  for (const name of BLOCKED_GLOBALS) {
+    try {
+      Object.defineProperty(globalThis, name, { value: undefined, writable: false, configurable: false });
+    } catch {}
+  }
+
+  try {
+    const fn = new AsyncFunction(
+      ...Object.keys(safeGlobals),
+      '"use strict";\\nlet __result__ = undefined;\\nlet result = undefined;\\ntry {\\n' +
+        code +
+        '\\n} catch(e) { throw e; }\\nreturn typeof result !== "undefined" ? result : __result__;'
+    );
+    const output = await fn(...Object.values(safeGlobals));
+    self.postMessage({ ok: true, value: formatOutput(output, logs) });
+  } catch (err) {
+    self.postMessage({ ok: false, error: err instanceof Error ? err.message : String(err) });
+  }
+};
+`;
+}
+
+async function execSandboxInWorker(code: string, timeoutMs: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const workerUrl = URL.createObjectURL(new Blob([buildSandboxWorkerSource()], { type: 'text/javascript' }));
+    const worker = new Worker(workerUrl);
+    const cleanup = () => {
+      worker.terminate();
+      URL.revokeObjectURL(workerUrl);
+    };
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error(`执行超时（${Math.round(timeoutMs / 1000)}秒）`));
+    }, timeoutMs);
+
+    worker.onmessage = (event: MessageEvent<{ ok: boolean; value?: string; error?: string }>) => {
       clearTimeout(timer);
-
-      // Format result
-      let resultStr = '';
-      if (output !== undefined && output !== null) {
-        try {
-          resultStr = typeof output === 'object'
-            ? JSON.stringify(output, null, 2)
-            : String(output);
-        } catch {
-          resultStr = String(output);
-        }
+      cleanup();
+      if (event.data?.ok) {
+        resolve(event.data.value ?? '');
+      } else {
+        reject(new Error(`执行错误：${event.data?.error ?? '未知错误'}`));
       }
-
-      const parts: string[] = [];
-      if (logs.length > 0) {
-        parts.push('**输出（console.log）：**\n```\n' + logs.join('\n') + '\n```');
-      }
-      if (resultStr) {
-        parts.push('**返回值：**\n```\n' + resultStr + '\n```');
-      }
-      if (parts.length === 0) {
-        parts.push('代码执行完毕，无返回值和输出。');
-      }
-
-      resolve(parts.join('\n\n'));
-    } catch (err: unknown) {
+    };
+    worker.onerror = (event) => {
       clearTimeout(timer);
-      const errMsg = err instanceof Error ? err.message : String(err);
-      reject(new Error(`执行错误：${errMsg}`));
-    }
+      cleanup();
+      reject(new Error(`执行错误：${event.message}`));
+    };
+    worker.postMessage({ code });
   });
+}
+
+/** 安全执行沙箱 — 浏览器中用 Worker 隔离并强制终止超时任务 */
+async function execSandbox(code: string, timeoutMs = 10000): Promise<string> {
+  const forbidden = validateSandboxCode(code);
+  if (forbidden) {
+    throw new Error(forbidden);
+  }
+
+  if (canUseBrowserWorker()) {
+    return execSandboxInWorker(code, timeoutMs);
+  }
+
+  return execSandboxInline(code);
 }
 
 export const runJsSandboxTool: AgentToolDefinition = {

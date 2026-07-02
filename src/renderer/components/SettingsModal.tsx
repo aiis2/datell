@@ -30,6 +30,7 @@ import {
   makeUniqueSkillId,
   slugifySkillId,
 } from '../skills/registryHelpers';
+import { sanitizeSvgMarkup } from '../utils/svgSanitizer';
 
 interface SettingsModalProps {
   activationStatus?: ActivationStatus | null;
@@ -1956,13 +1957,14 @@ const AssetsTab: React.FC = () => {
   const ILLUSTRATION_CATEGORIES = ['商务协作', '数据分析', '团队展示', '成功庆典', '其他'];
 
   const handleAddIllustration = () => {
-    if (!newIll.name || !newIll.svgContent) return;
+    const safeSvgContent = sanitizeSvgMarkup(newIll.svgContent ?? '');
+    if (!newIll.name || !safeSvgContent) return;
     addIllustration({
       id: uuidv4(),
       name: newIll.name ?? '',
       category: newIll.category ?? '其他',
       tags: newIll.tags ?? [],
-      svgContent: newIll.svgContent ?? '',
+      svgContent: safeSvgContent,
       builtIn: false,
       description: newIll.description ?? '',
     });
@@ -2232,7 +2234,10 @@ const AssetsTab: React.FC = () => {
                       <label className="block text-xs text-gray-500 mb-1">{t.settings.assetsIllSvgLabel}</label>
                       <textarea
                         value={newIll.svgContent ?? ''}
-                        onChange={(e) => { setNewIll((p) => ({ ...p, svgContent: e.target.value })); setSvgPreview(e.target.value); }}
+                        onChange={(e) => {
+                          setNewIll((p) => ({ ...p, svgContent: e.target.value }));
+                          setSvgPreview(sanitizeSvgMarkup(e.target.value));
+                        }}
                         rows={5}
                         placeholder="<svg viewBox='...' ...>...</svg>"
                         className="w-full px-2 py-1.5 text-xs font-mono border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-400 resize-none"
@@ -2264,7 +2269,7 @@ const AssetsTab: React.FC = () => {
                   <div className="text-xs font-medium text-gray-400 dark:text-gray-500 mb-2">{t.settings.assetsBuiltinIllTitle}</div>
                   {builtInIllustrations.map((ill) => (
                     <div key={ill.id} className="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50/50 dark:bg-gray-800/30 mb-2">
-                      <div className="w-12 h-10 flex-shrink-0 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-700 flex items-center justify-center" dangerouslySetInnerHTML={{ __html: ill.svgContent }} />
+                      <div className="w-12 h-10 flex-shrink-0 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-700 flex items-center justify-center" dangerouslySetInnerHTML={{ __html: sanitizeSvgMarkup(ill.svgContent) }} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium truncate">{ill.name}</span>
@@ -2288,7 +2293,7 @@ const AssetsTab: React.FC = () => {
 
               {customIllustrations.map((ill) => (
                 <div key={ill.id} className="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-blue-300 dark:hover:border-blue-600 transition-colors">
-                  <div className="w-12 h-10 flex-shrink-0 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-700 flex items-center justify-center" dangerouslySetInnerHTML={{ __html: ill.svgContent }} />
+                  <div className="w-12 h-10 flex-shrink-0 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-700 flex items-center justify-center" dangerouslySetInnerHTML={{ __html: sanitizeSvgMarkup(ill.svgContent) }} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium truncate">{ill.name}</span>
