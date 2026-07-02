@@ -102,6 +102,17 @@ export const BUILT_IN_SKILL_MANIFESTS: BuiltInSkillManifest[] = [
     },
   },
   {
+    id: 'template-saver',
+    toolName: 'save_report_template',
+    modulePath: 'src/renderer/tools/saveReportTemplate.ts',
+    category: { 'zh-CN': '报表工具', 'en-US': 'Report Tools' },
+    label: { 'zh-CN': '保存报表模板', 'en-US': 'Save Report Template' },
+    description: {
+      'zh-CN': '将 Agent 根据截图或当前设计生成的 HTML 保存为可复用报表模板。',
+      'en-US': 'Save Agent-generated HTML from screenshots or current designs as a reusable report template.',
+    },
+  },
+  {
     id: 'sql-query',
     toolName: 'query_database',
     modulePath: 'src/renderer/tools/queryDatabase.ts',

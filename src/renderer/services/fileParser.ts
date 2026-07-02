@@ -30,11 +30,43 @@ export async function parseUploadedFile(file: File): Promise<FileAttachment> {
 }
 
 async function parseImage(file: File): Promise<FileAttachment> {
-  return new Promise((resolve, reject) => {
+  const dataUrl = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve({ id: uuidv4(), name: file.name, type: 'image', size: file.size, data: reader.result as string });
+    reader.onload = () => resolve(reader.result as string);
     reader.onerror = () => reject(new Error('读取图片失败'));
     reader.readAsDataURL(file);
+  });
+
+  const dimensions = await readImageDimensions(dataUrl);
+  return {
+    id: uuidv4(),
+    name: file.name,
+    type: 'image',
+    size: file.size,
+    data: dataUrl,
+    mimeType: file.type || undefined,
+    ...(dimensions
+      ? {
+          width: dimensions.width,
+          height: dimensions.height,
+          aspectRatio: dimensions.width / dimensions.height,
+        }
+      : {}),
+  };
+}
+
+async function readImageDimensions(dataUrl: string): Promise<{ width: number; height: number } | null> {
+  if (typeof Image === 'undefined') return null;
+
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.onload = () => {
+      const width = image.naturalWidth || image.width;
+      const height = image.naturalHeight || image.height;
+      resolve(width > 0 && height > 0 ? { width, height } : null);
+    };
+    image.onerror = () => resolve(null);
+    image.src = dataUrl;
   });
 }
 

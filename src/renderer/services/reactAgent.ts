@@ -41,6 +41,7 @@ function getToolStatusMessage(toolName: string, isEnglish = false): string {
     run_node_subagent:         { zh: '正在汇聚子智能体结果…',       en: 'Aggregating agent results…' },
     web_fetch:                 { zh: '正在获取网页内容…',           en: 'Fetching web content…' },
     skill_creator:             { zh: '正在创建技能…',               en: 'Creating skill…' },
+    save_report_template:       { zh: '正在保存模板…',               en: 'Saving template…' },
   };
   const entry = statusMap[toolName];
   if (entry) return isEnglish ? entry.en : entry.zh;
@@ -79,7 +80,13 @@ export async function* runReactAgent(
     .filter((m) => m.attachments?.length)
     .flatMap((m) => m.attachments || [])
     .map((a) => {
-      if (a.type === 'image') return `[图片: ${a.name} (${(a.size / 1024).toFixed(0)} KB)]`;
+      if (a.type === 'image') {
+        const sizeText = `${(a.size / 1024).toFixed(0)} KB`;
+        const dimensionText = a.width && a.height
+          ? `, ${a.width}x${a.height}, aspect-ratio ${(a.aspectRatio ?? (a.width / a.height)).toFixed(4)}`
+          : '';
+        return `[图片: ${a.name} (${sizeText}${dimensionText})]`;
+      }
       const rowMatch = a.textContent?.match(/总行数:\s*(\d+)/);
       const rowInfo = rowMatch ? `, 约 ${rowMatch[1]} 行` : '';
       return `[文件: ${a.name} (${a.type}, ${(a.size / 1024).toFixed(0)} KB${rowInfo})]`;

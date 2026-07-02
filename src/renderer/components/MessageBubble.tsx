@@ -541,6 +541,7 @@ const TOOL_META: Record<string, { label: string; labelEn: string; icon: React.Re
   generate_pdf:           { label: '生成 PDF 文档',         labelEn: 'Generate PDF Document',      icon: <FileText size={11} /> },
   generate_slide:         { label: '生成演示文稿',          labelEn: 'Generate Presentation',      icon: <Presentation size={11} /> },
   generate_document:      { label: '生成专业文档',          labelEn: 'Generate Document',          icon: <ScrollText size={11} /> },
+  save_report_template:   { label: '保存报表模板',          labelEn: 'Save Report Template',       icon: <Sparkles size={11} /> },
   skill_creator:          { label: '创建扩展工具',          labelEn: 'Create Extension Tool',      icon: <Code2 size={11} /> },
   ask_user:               { label: '询问用户',              labelEn: 'Ask User',                   icon: <MessageCircle size={11} /> },
   run_subagent:           { label: '派发子任务',            labelEn: 'Dispatch Subtask',           icon: <Network size={11} /> },
@@ -570,6 +571,7 @@ function getArgSummary(tc: ToolCallInfo, isEn = false): string {
   if (name === 'generate_pdf' && args.title) return String(args.title);
   if (name === 'generate_slide' && args.title) return `"${String(args.title)}"`;
   if (name === 'generate_document' && args.title) return `"${String(args.title)}"`;
+  if (name === 'save_report_template' && args.template_name) return `"${String(args.template_name)}"`;
   if (name === 'query_database') {
     const sql = String(args.sql ?? '').replace(/\s+/g, ' ').trim();
     return sql.length > 60 ? sql.slice(0, 60) + '…' : sql;

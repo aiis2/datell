@@ -1,6 +1,6 @@
 {
   "name": "datell",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "main": "dist-electron/main/main.js",
   "scripts": {
     "dev": "concurrently \"vite\" \"wait-on tcp:5173 && tsc -p src/main/tsconfig.json && electron .\"",

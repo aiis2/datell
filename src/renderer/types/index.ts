@@ -9,6 +9,14 @@ export interface FileAttachment {
   name: string;
   type: 'image' | 'excel' | 'csv' | 'pdf' | 'unknown';
   size: number;
+  /** Original image width in pixels, when the attachment is an image. */
+  width?: number;
+  /** Original image height in pixels, when the attachment is an image. */
+  height?: number;
+  /** Original image aspect ratio (width / height), when available. */
+  aspectRatio?: number;
+  /** MIME type reported by the browser/File API, when available. */
+  mimeType?: string;
   /** base64-encoded data for images, or raw text content for text-based files */
   data: string;
   /** Extracted text summary for non-image files (e.g. Excel parsed content) */
@@ -866,6 +874,8 @@ export interface ReportTemplate {
   createdAt: number;
   templateName: string;
   templateDescription?: string;
+  templateSource?: 'user' | 'agent';
+  templateMeta?: Record<string, unknown>;
 }
 
 /* ========== LLM Streaming Events ========== */

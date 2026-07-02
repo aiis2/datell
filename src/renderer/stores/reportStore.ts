@@ -20,6 +20,16 @@ interface ReportState {
   // Templates
   loadTemplates: () => Promise<void>;
   saveAsTemplate: (reportId: string, name: string, description?: string) => Promise<void>;
+  saveGeneratedTemplate: (args: {
+    title?: string;
+    html: string;
+    templateName: string;
+    templateDescription?: string;
+    templateSource?: 'user' | 'agent';
+    templateMeta?: Record<string, unknown>;
+    selectAfterSave?: boolean;
+    previewAfterSave?: boolean;
+  }) => Promise<ReportTemplate>;
   removeTemplate: (id: string) => Promise<void>;
   setSelectedTemplate: (id: string | null) => void;
   refreshTemplates: () => Promise<void>;
@@ -38,6 +48,18 @@ function rowToReport(row: any): SandboxReport {
 
 /** Convert a DB row → ReportTemplate */
 function rowToTemplate(row: any): ReportTemplate {
+  let templateMeta: Record<string, unknown> | undefined;
+  if (row.template_meta) {
+    try {
+      const parsed = JSON.parse(row.template_meta);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        templateMeta = parsed as Record<string, unknown>;
+      }
+    } catch {
+      templateMeta = undefined;
+    }
+  }
+
   return {
     id: row.id,
     title: row.title,
@@ -45,6 +67,8 @@ function rowToTemplate(row: any): ReportTemplate {
     createdAt: row.created_at,
     templateName: row.template_name || row.title,
     templateDescription: row.template_description ?? undefined,
+    templateSource: row.template_source === 'agent' ? 'agent' : row.template_source === 'user' ? 'user' : undefined,
+    templateMeta,
   };
 }
 
@@ -78,6 +102,8 @@ export const useReportStore = create<ReportState>((set, get) => ({
       is_template: 0,
       template_name: null,
       template_description: null,
+      template_source: null,
+      template_meta: null,
     }).catch((e) => console.error('Failed to save report', e));
 
     set((s) => ({
@@ -121,6 +147,7 @@ export const useReportStore = create<ReportState>((set, get) => ({
       createdAt: Date.now(),
       templateName: name,
       templateDescription: description,
+      templateSource: 'user',
     };
     await dbAPI.saveTemplate({
       id: templateId,
@@ -131,8 +158,66 @@ export const useReportStore = create<ReportState>((set, get) => ({
       is_template: 1,
       template_name: name,
       template_description: description ?? null,
+      template_source: 'user',
+      template_meta: null,
     });
     set((s) => ({ templates: [template, ...s.templates] }));
+  },
+
+  saveGeneratedTemplate: async ({
+    title,
+    html,
+    templateName,
+    templateDescription,
+    templateSource = 'agent',
+    templateMeta,
+    selectAfterSave = true,
+    previewAfterSave = true,
+  }) => {
+    const templateId = uuidv4();
+    const createdAt = Date.now();
+    const safeTitle = title?.trim() || templateName;
+    const metaString = templateMeta ? JSON.stringify(templateMeta) : null;
+    const template: ReportTemplate = {
+      id: templateId,
+      title: safeTitle,
+      html,
+      createdAt,
+      templateName,
+      templateDescription,
+      templateSource,
+      templateMeta,
+    };
+
+    await dbAPI.saveTemplate({
+      id: templateId,
+      title: safeTitle,
+      html,
+      created_at: createdAt,
+      conversation_id: null,
+      is_template: 1,
+      template_name: templateName,
+      template_description: templateDescription ?? null,
+      template_source: templateSource,
+      template_meta: metaString,
+    });
+
+    set((s) => ({
+      templates: [template, ...s.templates.filter((t) => t.id !== templateId)],
+      selectedTemplateId: selectAfterSave ? templateId : s.selectedTemplateId,
+    }));
+
+    if (previewAfterSave) {
+      const previewReport: SandboxReport = {
+        id: uuidv4(),
+        title: safeTitle,
+        html,
+        createdAt,
+      };
+      get().addReport(previewReport);
+    }
+
+    return template;
   },
 
   removeTemplate: async (id) => {

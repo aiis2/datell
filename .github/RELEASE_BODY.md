@@ -6,6 +6,13 @@ Datell 是一款打磨完善的本地优先桌面应用，专注于 AI 驱动的
 It brings agentic analysis, interactive dashboards, and export-ready deliverables into one streamlined workflow.
 它把智能体分析、交互式仪表盘和可导出的成果整合进一条顺畅的工作流。
 
+### What's New in {{VERSION}} / {{VERSION}} 更新亮点
+
+- Agent can generate reusable report templates from uploaded screenshots / Agent 可根据上传截图生成可复用报表模板
+- Screenshot-inspired blocks can be inserted into the currently selected template without overwriting it / 截图风格区块可追加到当前模板且不覆盖原模板
+- Generated templates are saved into the user template library with Agent metadata and immediate preview / 生成模板会写入用户模板库，带 Agent 元数据并可立即预览
+- Added a lightweight compile-and-test GitHub Actions workflow for faster validation / 新增轻量编译与测试 Actions，便于快速校验
+
 ### Downloads / 下载
 
 | Platform | File | Notes |

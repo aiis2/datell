@@ -29,6 +29,8 @@ export interface ReportRow {
   is_template: number;
   template_name: string | null;
   template_description: string | null;
+  template_source?: string | null;
+  template_meta?: string | null;
 }
 
 export interface WindowsIdentityRow {
@@ -82,7 +84,9 @@ export class DatabaseService {
         conversation_id TEXT,
         is_template INTEGER DEFAULT 0,
         template_name TEXT,
-        template_description TEXT
+        template_description TEXT,
+        template_source TEXT,
+        template_meta TEXT
       );
 
       CREATE TABLE IF NOT EXISTS app_config (
@@ -166,6 +170,8 @@ export class DatabaseService {
       CREATE INDEX IF NOT EXISTS idx_kgraph_edges_tgt ON kgraph_edges(target_id);
     `);
 
+    this.ensureReportsTemplateColumns();
+
     // FTS5 virtual table — created separately to gracefully handle SQLite builds without FTS5
     try {
       this.db.exec(`
@@ -177,6 +183,18 @@ export class DatabaseService {
       `);
     } catch {
       // FTS5 not available in this SQLite build — keyword search will fall back to LIKE
+    }
+  }
+
+  private ensureReportsTemplateColumns(): void {
+    const rows = this.db.prepare('PRAGMA table_info(reports)').all() as Array<{ name: string }>;
+    const columns = new Set(rows.map((row) => row.name));
+
+    if (!columns.has('template_source')) {
+      this.db.exec('ALTER TABLE reports ADD COLUMN template_source TEXT');
+    }
+    if (!columns.has('template_meta')) {
+      this.db.exec('ALTER TABLE reports ADD COLUMN template_meta TEXT');
     }
   }
 
@@ -260,8 +278,8 @@ export class DatabaseService {
   upsertReport(report: ReportRow): void {
     this.db.prepare(`
       INSERT OR REPLACE INTO reports
-        (id, title, html, created_at, conversation_id, is_template, template_name, template_description)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        (id, title, html, created_at, conversation_id, is_template, template_name, template_description, template_source, template_meta)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       report.id,
       report.title,
@@ -271,6 +289,8 @@ export class DatabaseService {
       report.is_template,
       report.template_name ?? null,
       report.template_description ?? null,
+      report.template_source ?? null,
+      report.template_meta ?? null,
     );
   }
 

@@ -26,6 +26,7 @@ import { suggestCardCombinationsTool } from './suggestCardCombinations';
 import { validateReportTool } from './validateReport';
 import { checkDataQualityTool } from './checkDataQuality';
 import { runJsSandboxTool } from './runJsSandbox';
+import { saveReportTemplateTool } from './saveReportTemplate';
 import { mergeRuntimeToolSources } from './runtimeMerge';
 
 /**
@@ -80,6 +81,7 @@ export function getAllTools(): AgentToolDefinition[] {
     validateReportTool,
     checkDataQualityTool,
     runJsSandboxTool,
+    saveReportTemplateTool,
   ].filter((t) => !disabledBuiltIns.includes(t.name));
 
   return mergeRuntimeToolSources({

@@ -15,6 +15,7 @@ const expectedToolNames = [
   'generate_pdf',
   'generate_slide',
   'generate_document',
+  'save_report_template',
   'query_database',
   'get_database_schema',
   'check_data_quality',
@@ -36,7 +37,7 @@ const expectedToolNames = [
   'skill_creator',
 ];
 
-assert.equal(BUILT_IN_SKILL_MANIFESTS.length, 26, 'built-in manifest registry should cover all 26 built-in tools');
+assert.equal(BUILT_IN_SKILL_MANIFESTS.length, 27, 'built-in manifest registry should cover all 27 built-in tools');
 assert.deepEqual(
   BUILT_IN_SKILL_MANIFESTS.map((manifest) => manifest.toolName).sort(),
   expectedToolNames.slice().sort(),
