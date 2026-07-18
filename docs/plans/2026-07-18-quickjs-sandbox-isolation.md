@@ -6,6 +6,8 @@
 
 **Architecture:** Load one release QuickJS WASM module lazily, but create and dispose a fresh runtime and context for every tool call. The isolated context receives only a `console.log` bridge; it has no module loader or host capabilities, and its heap, stack, and execution time are bounded by the runtime.
 
+**Deferred capability:** Network access is allowed by product policy, but its bounded bridge is scheduled for the final sandbox phase. This plan closes the already-reproduced host escape without delaying higher-priority functional work.
+
 **Tech Stack:** TypeScript, Node test runner scripts, Vite, Electron renderer, `quickjs-emscripten-core`, `@jitl/quickjs-wasmfile-release-sync`.
 
 ---

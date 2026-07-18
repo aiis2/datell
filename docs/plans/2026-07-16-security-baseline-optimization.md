@@ -31,7 +31,7 @@ A browser Worker alone is also insufficient because Worker globals include netwo
 
 Security fixes have high leverage because they reduce runtime risk without changing the product surface. The mainline currently depends on vulnerable packages and lacks durable tests for previously identified security-sensitive boundaries. Tightening those areas improves maintainability, release confidence, and future auditability.
 
-The JavaScript tool is especially sensitive because its contract promises no network, file, DOM, or host-runtime access. A validator that can be bypassed with string concatenation contradicts that contract even when ordinary tests pass. Replacing host evaluation with an isolated interpreter preserves the useful calculation workflow while making the security boundary structural instead of lexical.
+The JavaScript tool is especially sensitive because a validator that can be bypassed with string concatenation is not a security boundary, even when ordinary tests pass. This phase replaces host evaluation with an isolated interpreter so calculation workflows no longer expose Electron or Node.js. Product requirements allow network access inside the sandbox, but that capability is intentionally deferred until the final sandbox-focused phase so current work can return to higher-priority user functionality.
 
 ## Chosen Design: QuickJS WASM Isolation
 
@@ -126,6 +126,7 @@ The JavaScript tool is especially sensitive because its contract promises no net
 - Do not change user-facing workflows beyond the security constraints needed to close the gaps.
 - Do not attempt to secure host `eval`, `Function`, `AsyncFunction`, or `node:vm` with a larger denylist.
 - Do not expose filesystem, network, DOM, Electron, Node.js, or module-loading capabilities to QuickJS.
+- Do not treat the absence of network in this phase as a permanent product restriction; add a bounded network bridge in the final sandbox capability phase after functional optimization.
 - Do not run full platform packaging unless implementation touches packaging-only behavior.
 
 ## Acceptance Criteria
