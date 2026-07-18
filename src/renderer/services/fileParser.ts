@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+import * as XLSX from '@e965/xlsx';
 import type { FileAttachment } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import { useConfigStore } from '../stores/configStore';
