@@ -23,6 +23,7 @@ import { GripVertical, Maximize2, Minimize2, Table2, BarChart2, CreditCard, Filt
 import { useLayoutEditorStore } from '../../stores/layoutEditorStore';
 import { generatePreviewCSS } from '../../utils/layoutCSSGenerator';
 import type { CardLayoutDescriptor } from '../../types/layout';
+import { REPORT_SHELL_ORIGIN } from '../../utils/reportShellBridge';
 
 interface Props {
   /** Ref to shell iframe for CSS injection */
@@ -157,7 +158,7 @@ const LayoutEditor: React.FC<Props> = ({ shellRef }) => {
         const css = generatePreviewCSS(updatedCards, gridColumns);
         shellRef.current?.contentWindow?.postMessage(
           { type: 'inject-custom-css', css },
-          '*',
+          REPORT_SHELL_ORIGIN,
         );
       }, 80);
     },

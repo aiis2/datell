@@ -19,22 +19,46 @@ const publicRoot = path.join(projectRoot, 'public');
 const electronPath = require('electron');
 const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'datell-report-origin-smoke-'));
 
-const reportProbe = `<!doctype html><html><body><div id="probe">probe</div><script>
+const reportProbe = `<!doctype html><html><body>
+<div class="grid-charts" style="display:grid;grid-template-columns:repeat(2,1fr)">
+  <article id="smoke-card" class="card"><h3>Smoke chart</h3><div id="probe">probe</div></article>
+</div>
+<div data-filter-id="region" data-filter-type="dropdown"><select><option>all</option></select></div>
+<script>
 (function () {
-  var observation;
-  try {
-    var apiType = typeof top.electronAPI;
-    observation = {
-      apiType: apiType,
-      sentinel: apiType === 'object' && typeof top.electronAPI.sentinel === 'function'
-        ? top.electronAPI.sentinel()
-        : null,
-      topTitle: top.document.title
-    };
-  } catch (error) {
-    observation = { apiType: 'blocked', errorName: error && error.name ? error.name : String(error) };
-  }
-  top.postMessage({ type: 'probe-result', observation: observation }, '*');
+  var sent = false;
+  window.addEventListener('message', function (event) {
+    if (!event.data || event.data.type !== 'chart-resize' || sent) return;
+    sent = true;
+    setTimeout(function () {
+      var observation;
+      try {
+        var apiType = typeof top.electronAPI;
+        observation = {
+          apiType: apiType,
+          sentinel: apiType === 'object' && typeof top.electronAPI.sentinel === 'function'
+            ? top.electronAPI.sentinel()
+            : null,
+          topTitle: top.document.title
+        };
+      } catch (error) {
+        observation = { apiType: 'blocked', errorName: error && error.name ? error.name : String(error) };
+      }
+      observation.libraries = {
+        echarts: typeof echarts === 'object',
+        apex: typeof ApexCharts === 'function',
+        vtable: typeof VTable === 'object'
+      };
+      observation.eventBus = !!window.__REPORT_EVENT_BUS__;
+      observation.filterState = !!window.__FILTER_STATE__;
+      var customStyle = document.getElementById('__custom-layout-style');
+      observation.customCss = !!customStyle && customStyle.textContent.indexOf('smoke-isolated-css') !== -1;
+      observation.resizeReceived = true;
+      top.postMessage({ type: 'probe-result', observation: observation }, '*');
+    }, 80);
+  });
+  top.postMessage({ type: 'report-runtime-ready' }, '*');
+  void VTable;
 })();
 <\/script></body></html>`;
 
@@ -52,14 +76,38 @@ const topHtml = `<!doctype html><html><head><meta charset="utf-8"><title>privile
   const shellOrigin = ${JSON.stringify(shellOrigin)};
   const reportHtml = atob(${JSON.stringify(encodedReport)});
   let renderSent = false;
+  let observation = null;
+  let layoutInspection = null;
+  function finishWhenReady() {
+    if (observation && layoutInspection) {
+      window.electronAPI.reportResult({ observation, layoutInspection });
+    }
+  }
   window.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'shell-ready' && event.source === shell.contentWindow && !renderSent) {
       renderSent = true;
       shell.contentWindow.postMessage({ type: 'render', html: reportHtml, theme: null }, shellOrigin);
       return;
     }
+    if (event.data && event.data.type === 'report-runtime-ready') {
+      shell.contentWindow.postMessage({
+        type: 'theme-update',
+        theme: { colors: ['#123456'], primary: '#123456', bodyBg: '#ffffff', cardBg: '#ffffff', textColor: '#111111', isDark: false }
+      }, shellOrigin);
+      shell.contentWindow.postMessage({ type: 'inject-custom-css', css: '.card{--smoke-isolated-css:1}' }, shellOrigin);
+      shell.contentWindow.postMessage({ type: 'inspect-layout', requestId: 'smoke-layout' }, shellOrigin);
+      shell.contentWindow.postMessage({ type: 'chart-resize' }, shellOrigin);
+      return;
+    }
     if (event.data && event.data.type === 'probe-result') {
-      window.electronAPI.reportResult(event.data.observation);
+      observation = event.data.observation;
+      finishWhenReady();
+      return;
+    }
+    if (event.data && event.data.type === 'layout-inspection' && event.data.requestId === 'smoke-layout'
+        && event.source === shell.contentWindow && event.origin === shellOrigin) {
+      layoutInspection = event.data;
+      finishWhenReady();
     }
   });
   shell.src = shellUrl;
@@ -133,9 +181,18 @@ app.whenReady().then(() => {
 
   ipcMain.on('probe-result', (event, result) => {
     if (event.sender !== win.webContents) return;
-    const exposed = result && result.apiType === 'object' && result.sentinel === 'privileged-sentinel';
-    const isolated = result && result.apiType === 'blocked' && result.errorName === 'SecurityError';
-    const pass = expectation === 'exposed' ? exposed : isolated;
+    const observation = result && result.observation ? result.observation : result;
+    const exposed = observation && observation.apiType === 'object' && observation.sentinel === 'privileged-sentinel';
+    const isolated = observation && observation.apiType === 'blocked' && observation.errorName === 'SecurityError';
+    const compatibility = !!(result && result.layoutInspection
+      && result.layoutInspection.gridColumns === 2
+      && Array.isArray(result.layoutInspection.cards)
+      && result.layoutInspection.cards.some((card) => card.cardId === 'smoke-card')
+      && observation.libraries && observation.libraries.echarts
+      && observation.libraries.apex && observation.libraries.vtable
+      && observation.eventBus && observation.filterState
+      && observation.customCss && observation.resizeReceived);
+    const pass = expectation === 'exposed' ? exposed : isolated && compatibility;
     finish(pass ? 0 : 1, { expectation, result, pass });
   });
 

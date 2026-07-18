@@ -18,6 +18,16 @@ protocol.registerSchemesAsPrivileged([
       stream: true,
     },
   },
+  {
+    scheme: 'report',
+    privileges: {
+      standard: true,
+      secure: true,
+      bypassCSP: true,
+      supportFetchAPI: true,
+      stream: true,
+    },
+  },
 ]);
 import fs from 'fs';
 import os from 'os';
@@ -1946,6 +1956,8 @@ app.whenReady().then(async () => {
     console.log(`[app://dist-root] appPath=${app.getAppPath()} distPath=${distPath}`);
   }
   protocol.handle('app', (request) => buildAppProtocolResponse(distPath, request.url));
+  const reportRoot = isDev ? path.join(app.getAppPath(), 'public') : distPath;
+  protocol.handle('report', (request) => buildAppProtocolResponse(reportRoot, request.url));
 
   // Show splash first, then create main window hidden
   splashWin = createSplashWindow();

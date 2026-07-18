@@ -1,5 +1,13 @@
 ﻿import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { buildRenderPayload, buildThemeUpdatePayload, SHELL_URL } from '../utils/reportShellBridge';
+import {
+  buildRenderPayload,
+  buildThemeUpdatePayload,
+  isLayoutInspectionPayload,
+  isTrustedShellMessage,
+  REPORT_SHELL_ORIGIN,
+  SHELL_URL,
+  type LayoutInspectionPayload,
+} from '../utils/reportShellBridge';
 import { X, Maximize2, Minimize2, ChevronDown, Download, BookmarkPlus, AlertTriangle, Palette, Globe, FileText, Image, BarChart2, Film, LayoutGrid, Pencil, Save, Undo2, Search } from 'lucide-react';
 import { useReportStore } from '../stores/reportStore';
 import { useConfigStore } from '../stores/configStore';
@@ -13,7 +21,6 @@ import { LAYOUT_MANIFEST } from '../utils/layoutManifest';
 import { useLayoutEditorStore } from '../stores/layoutEditorStore';
 import LayoutEditor from './report/LayoutEditor';
 import SaveLayoutDialog from './report/SaveLayoutDialog';
-import { extractCardsFromIframe, detectGridColumns } from '../utils/layoutExtractor';
 import { generateLayoutCSS } from '../utils/layoutCSSGenerator';
 import type { CustomLayout } from '../types/layout';
 
@@ -38,6 +45,10 @@ const ReportPreview: React.FC = () => {
   const savedWidthRef = useRef(reportPreviewWidth ?? DEFAULT_WIDTH);
   const shellRef = useRef<HTMLIFrameElement>(null);
   const shellReadyRef = useRef(false);
+  const layoutRequestsRef = useRef(new Map<string, {
+    resolve: (payload: LayoutInspectionPayload | null) => void;
+    timeoutId: number;
+  }>());
   // Track previous layout to detect layout-specific changes
   const prevLayoutIdRef = useRef<string | undefined>(reportLayoutId);
 
@@ -50,23 +61,39 @@ const ReportPreview: React.FC = () => {
   // Listen for shell-ready signal and errors from the report-shell iframe
   useEffect(() => {
     const handler = (e: MessageEvent) => {
+      const shellWindow = shellRef.current?.contentWindow ?? null;
+      if (!isTrustedShellMessage(e, shellWindow)) return;
+
       if (e.data?.type === 'shell-ready') {
         shellReadyRef.current = true;
         const { report, paletteId: pid, appTheme, layoutId } = renderDataRef.current;
         if (report?.html && shellRef.current) {
           const paletteObj = PALETTE_PRESETS.find((p) => p.id === pid);
           const payload = buildRenderPayload(report.html, paletteObj, appTheme as 'light' | 'dark', layoutId ?? undefined);
-          shellRef.current.contentWindow?.postMessage(payload, '*');
+          shellRef.current.contentWindow?.postMessage(payload, REPORT_SHELL_ORIGIN);
         }
       } else if (e.data?.type === 'report-error' && typeof e.data.message === 'string') {
         // ResizeObserver loop errors are a non-fatal browser quirk — suppress them from the UI
         if (!e.data.message.includes('ResizeObserver')) {
           setIframeError(e.data.message);
         }
+      } else if (isLayoutInspectionPayload(e.data)) {
+        const pending = layoutRequestsRef.current.get(e.data.requestId);
+        if (!pending) return;
+        window.clearTimeout(pending.timeoutId);
+        layoutRequestsRef.current.delete(e.data.requestId);
+        pending.resolve(e.data);
       }
     };
     window.addEventListener('message', handler);
-    return () => window.removeEventListener('message', handler);
+    return () => {
+      window.removeEventListener('message', handler);
+      for (const pending of layoutRequestsRef.current.values()) {
+        window.clearTimeout(pending.timeoutId);
+        pending.resolve(null);
+      }
+      layoutRequestsRef.current.clear();
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Re-render when the active report changes
@@ -74,7 +101,7 @@ const ReportPreview: React.FC = () => {
     if (!shellReadyRef.current || !activeReport?.html || !shellRef.current) return;
     const paletteObj = PALETTE_PRESETS.find((p) => p.id === paletteId);
     const payload = buildRenderPayload(activeReport.html, paletteObj, theme as 'light' | 'dark', reportLayoutId ?? undefined);
-    shellRef.current.contentWindow?.postMessage(payload, '*');
+    shellRef.current.contentWindow?.postMessage(payload, REPORT_SHELL_ORIGIN);
   }, [activeReport?.id, activeReport?.html]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Update palette/layout/theme:
@@ -92,16 +119,16 @@ const ReportPreview: React.FC = () => {
       if (report?.html) {
         const paletteForRender = PALETTE_PRESETS.find((p) => p.id === pid);
         const payload = buildRenderPayload(report.html, paletteForRender, appTheme as 'light' | 'dark', layoutId ?? undefined);
-        shellRef.current.contentWindow?.postMessage(payload, '*');
+        shellRef.current.contentWindow?.postMessage(payload, REPORT_SHELL_ORIGIN);
       } else {
         // No report yet — still send theme-update to store the layout for when render fires
         const payload = buildThemeUpdatePayload(paletteObj, theme as 'light' | 'dark', reportLayoutId ?? undefined);
-        shellRef.current.contentWindow?.postMessage(payload, '*');
+        shellRef.current.contentWindow?.postMessage(payload, REPORT_SHELL_ORIGIN);
       }
     } else {
       // Palette or dark-mode only — in-place patch (no iframe reload)
       const payload = buildThemeUpdatePayload(paletteObj, theme as 'light' | 'dark', reportLayoutId ?? undefined);
-      shellRef.current.contentWindow?.postMessage(payload, '*');
+      shellRef.current.contentWindow?.postMessage(payload, REPORT_SHELL_ORIGIN);
     }
   }, [paletteId, reportLayoutId, theme]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -140,7 +167,7 @@ const ReportPreview: React.FC = () => {
     const sendChartResize = () => {
       if (resizeTimer) clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
-        shellRef.current?.contentWindow?.postMessage({ type: 'chart-resize' }, '*');
+        shellRef.current?.contentWindow?.postMessage({ type: 'chart-resize' }, REPORT_SHELL_ORIGIN);
       }, 80);
     };
 
@@ -162,11 +189,11 @@ const ReportPreview: React.FC = () => {
       // Restore pointer events on iframe
       if (shellRef.current) shellRef.current.style.pointerEvents = '';
       // Multi-phase chart resize: immediate + delayed to cover CSS grid reflow + ApexCharts async layout
-      shellRef.current?.contentWindow?.postMessage({ type: 'chart-resize' }, '*');
+      shellRef.current?.contentWindow?.postMessage({ type: 'chart-resize' }, REPORT_SHELL_ORIGIN);
       requestAnimationFrame(() => {
-        shellRef.current?.contentWindow?.postMessage({ type: 'chart-resize' }, '*');
+        shellRef.current?.contentWindow?.postMessage({ type: 'chart-resize' }, REPORT_SHELL_ORIGIN);
         setTimeout(() => {
-          shellRef.current?.contentWindow?.postMessage({ type: 'chart-resize' }, '*');
+          shellRef.current?.contentWindow?.postMessage({ type: 'chart-resize' }, REPORT_SHELL_ORIGIN);
         }, 200);
       });
       // Full re-render after resize to ensure layout CSS + ECharts re-initialize at new container size.
@@ -176,7 +203,7 @@ const ReportPreview: React.FC = () => {
         if (shellRef.current?.contentWindow && report?.html) {
           const paletteObj = PALETTE_PRESETS.find((p) => p.id === pid);
           const payload = buildRenderPayload(report.html, paletteObj, appTheme as 'light' | 'dark', layoutId ?? undefined);
-          shellRef.current.contentWindow.postMessage(payload, '*');
+          shellRef.current.contentWindow.postMessage(payload, REPORT_SHELL_ORIGIN);
         }
       }, 400);
       // L-03: Persist the new width so it survives app restarts
@@ -200,9 +227,9 @@ const ReportPreview: React.FC = () => {
       }
       // Multi-phase chart resize after fullscreen toggle for reliable adaptation
       setTimeout(() => {
-        shellRef.current?.contentWindow?.postMessage({ type: 'chart-resize' }, '*');
+        shellRef.current?.contentWindow?.postMessage({ type: 'chart-resize' }, REPORT_SHELL_ORIGIN);
         requestAnimationFrame(() => {
-          shellRef.current?.contentWindow?.postMessage({ type: 'chart-resize' }, '*');
+          shellRef.current?.contentWindow?.postMessage({ type: 'chart-resize' }, REPORT_SHELL_ORIGIN);
         });
       }, 100);
       return next;
@@ -217,41 +244,30 @@ const ReportPreview: React.FC = () => {
     if (isEditing) cancelEdit();
   }, [isEditing, cancelEdit]);
 
-  const handleEnterEditMode = useCallback(() => {
-    try {
-      // report-shell.html uses a nested iframe: outer shell → inner #report-frame
-      // We must access the INNER frame's document for card extraction
-      const shellDoc = shellRef.current?.contentDocument;
-      const innerFrame = shellDoc?.getElementById('report-frame') as HTMLIFrameElement | null;
-      const innerDoc = innerFrame?.contentDocument ?? shellRef.current?.contentDocument;
-      if (!innerDoc) {
-        console.warn('[EditMode] Cannot access inner frame document');
-        return;
-      }
-      const cards = extractCardsFromIframe(innerDoc);
-      if (cards.length === 0) {
-        console.warn('[EditMode] No cards found in report. DOM may not have .grid-charts or .zone-content selectors.');
-        // Try a wider fallback - extract from any .card elements
-        const fallbackCards = Array.from(innerDoc.querySelectorAll('.card[data-card-id], .card-kpi, .chart-card')).map((el, i) => ({
-          cardId: el.getAttribute('data-card-id') || el.id || `card-${i}`,
-          label: (el.querySelector('h3, h4, .card-title, .kpi-title, .kpi-label') as HTMLElement)?.innerText?.trim() || `卡片 ${i + 1}`,
-          type: el.classList.contains('kpi-card') || el.classList.contains('card-kpi') ? 'kpi' as const : 'chart' as const,
-          colStart: -1 as const,
-          colSpan: 1,
-          rowSpan: 'auto' as const,
-          minHeight: 200,
-        }));
-        if (fallbackCards.length === 0) return;
-        const gridCols = detectGridColumns(innerDoc);
-        enterEditMode(fallbackCards, gridCols);
-        return;
-      }
-      const gridCols = detectGridColumns(innerDoc);
-      enterEditMode(cards, gridCols);
-    } catch (e) {
-      console.warn('[EditMode] Failed to extract cards:', e);
+  const requestLayoutInspection = useCallback((): Promise<LayoutInspectionPayload | null> => {
+    const shellWindow = shellRef.current?.contentWindow;
+    if (!shellWindow || !shellReadyRef.current) return Promise.resolve(null);
+
+    const requestId = globalThis.crypto?.randomUUID?.()
+      ?? `layout-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    return new Promise((resolve) => {
+      const timeoutId = window.setTimeout(() => {
+        layoutRequestsRef.current.delete(requestId);
+        resolve(null);
+      }, 3000);
+      layoutRequestsRef.current.set(requestId, { resolve, timeoutId });
+      shellWindow.postMessage({ type: 'inspect-layout', requestId }, REPORT_SHELL_ORIGIN);
+    });
+  }, []);
+
+  const handleEnterEditMode = useCallback(async () => {
+    const inspection = await requestLayoutInspection();
+    if (!inspection || inspection.cards.length === 0) {
+      console.warn('[EditMode] No layout snapshot received from report shell');
+      return;
     }
-  }, [enterEditMode]);
+    enterEditMode(inspection.cards, inspection.gridColumns);
+  }, [enterEditMode, requestLayoutInspection]);
 
   const handleSaveLayout = useCallback((name: string) => {
     const { cards, gridColumns } = useLayoutEditorStore.getState();
@@ -268,14 +284,14 @@ const ReportPreview: React.FC = () => {
     const css = generateLayoutCSS(layout);
     useConfigStore.getState().addCustomLayout(layout);
     // Inject CSS and exit edit mode
-    shellRef.current?.contentWindow?.postMessage({ type: 'inject-custom-css', css }, '*');
+    shellRef.current?.contentWindow?.postMessage({ type: 'inject-custom-css', css }, REPORT_SHELL_ORIGIN);
     exitEditMode();
     setShowSaveLayout(false);
   }, [reportLayoutId, exitEditMode]);
 
   const handleCancelEdit = useCallback(() => {
     // Remove injected CSS
-    shellRef.current?.contentWindow?.postMessage({ type: 'inject-custom-css', css: '' }, '*');
+    shellRef.current?.contentWindow?.postMessage({ type: 'inject-custom-css', css: '' }, REPORT_SHELL_ORIGIN);
     cancelEdit();
   }, [cancelEdit]);
 

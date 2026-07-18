@@ -7,6 +7,7 @@
  */
 
 import type { PalettePreset } from '../types';
+import type { CardLayoutDescriptor } from '../types/layout';
 
 /** CDN patterns that the shell strips automatically — kept here for reference */
 export const CDN_SCRIPT_PATTERN =
@@ -30,7 +31,54 @@ export interface ClearPayload {
   type: 'clear';
 }
 
-export type ShellCommand = RenderPayload | ThemeUpdatePayload | ClearPayload;
+export interface InspectLayoutPayload {
+  type: 'inspect-layout';
+  requestId: string;
+}
+
+export interface LayoutInspectionPayload {
+  type: 'layout-inspection';
+  requestId: string;
+  cards: CardLayoutDescriptor[];
+  gridColumns: number;
+}
+
+export type ShellCommand = RenderPayload | ThemeUpdatePayload | ClearPayload | InspectLayoutPayload;
+
+export const REPORT_SHELL_ORIGIN = 'report://localhost';
+
+export function isTrustedShellMessage(
+  event: Pick<MessageEvent, 'origin' | 'source'>,
+  expectedSource: Window | null,
+): boolean {
+  return expectedSource !== null
+    && event.source === expectedSource
+    && event.origin === REPORT_SHELL_ORIGIN;
+}
+
+export function isLayoutInspectionPayload(value: unknown): value is LayoutInspectionPayload {
+  if (!value || typeof value !== 'object') return false;
+  const payload = value as Partial<LayoutInspectionPayload>;
+  if (payload.type !== 'layout-inspection' || typeof payload.requestId !== 'string') return false;
+  if (!Number.isInteger(payload.gridColumns) || (payload.gridColumns ?? 0) < 1 || (payload.gridColumns ?? 0) > 12) {
+    return false;
+  }
+  if (!Array.isArray(payload.cards) || payload.cards.length > 200) return false;
+
+  return payload.cards.every((card) => {
+    if (!card || typeof card !== 'object') return false;
+    return typeof card.cardId === 'string'
+      && card.cardId.length > 0
+      && card.cardId.length <= 160
+      && typeof card.label === 'string'
+      && card.label.length <= 200
+      && ['kpi', 'chart', 'table', 'filter', 'custom'].includes(card.type)
+      && Number.isInteger(card.colStart)
+      && Number.isInteger(card.colSpan)
+      && (card.rowSpan === 'auto' || Number.isInteger(card.rowSpan))
+      && Number.isFinite(card.minHeight);
+  });
+}
 
 /** Palette design data safe to send over postMessage */
 export interface ReportDesignPayload {
@@ -128,14 +176,13 @@ export function buildThemeUpdatePayload(
   return { type: 'theme-update', theme: serialized };
 }
 
-function resolveShellUrl(): string {
-  if (typeof window !== 'undefined') {
-    const origin = window.location?.origin;
-    if (origin && origin !== 'null') {
-      return `${origin}/report-shell.html`;
-    }
-  }
-  return 'app://localhost/report-shell.html';
+export function resolveShellUrl(rendererOrigin?: string): string {
+  const currentOrigin = rendererOrigin
+    ?? (typeof window !== 'undefined' ? window.location?.origin : undefined);
+  const parentOrigin = currentOrigin && currentOrigin !== 'null'
+    ? currentOrigin
+    : 'app://localhost';
+  return `${REPORT_SHELL_ORIGIN}/report-shell.html?parentOrigin=${encodeURIComponent(parentOrigin)}`;
 }
 
 /** Shell URL — constant stable URL for the shell iframe */
