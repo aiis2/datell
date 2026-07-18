@@ -181,6 +181,22 @@
     var currentTheme = 'tech'; // default theme
     var pendingRender = null; // queued while shell is not ready
     var shellReady = false;
+    var parentOrigin = (function () {
+      try {
+        var raw = new URLSearchParams(window.location.search).get('parentOrigin');
+        if (!raw) return null;
+        var parsed = new URL(raw);
+        if (parsed.protocol !== 'app:' && parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+        return parsed.origin && parsed.origin !== 'null' ? parsed.origin : raw.replace(/\/$/, '');
+      } catch (e) {
+        return null;
+      }
+    })();
+
+    function sendToParent(message) {
+      if (!parentOrigin) return;
+      try { window.parent.postMessage(message, parentOrigin); } catch (e) { /* ignore */ }
+    }
 
     // ── Vendor libraries now available in this window ──────────────────
     // After inner frame loads srcdoc we transfer them into its scope.
@@ -189,7 +205,7 @@
       if (!errorEl) return;
       errorEl.style.display = 'block';
       errorEl.textContent = '⚠ 渲染错误: ' + String(msg).slice(0, 400);
-      try { window.parent.postMessage({ type: 'report-error', message: msg }, '*'); } catch (e) { /* ignore */ }
+      sendToParent({ type: 'report-error', message: msg });
     }
 
     function clearError() {
@@ -923,14 +939,14 @@
       '    if (msg && /duckdb/i.test(msg)) return;\n' +
       '    // Suppress any script marked as data-optional (e.g. dynamically loaded optional deps)\n' +
       '    if (tgt && tgt.getAttribute && tgt.getAttribute("data-optional")) return;\n' +
-      '    try { parent.postMessage({ type: "inner-error", message: msg }, "*"); } catch(ex) {}\n' +
+      '    try { parent.postMessage({ type: "inner-error", message: msg }, ' + JSON.stringify(_SHELL_ORIGIN) + '); } catch(ex) {}\n' +
       '  }, true);\n' +
       '  window.addEventListener("unhandledrejection", function(e) {\n' +
       '    var msg = e.reason && e.reason.message ? e.reason.message : String(e.reason || "Promise rejected");\n' +
       '    if (msg && msg.indexOf("ResizeObserver") !== -1) return;\n' +
       '    // Suppress DuckDB optional load failures\n' +
       '    if (msg && /duckdb/i.test(msg)) return;\n' +
-      '    try { parent.postMessage({ type: "inner-error", message: msg }, "*"); } catch(ex) {}\n' +
+      '    try { parent.postMessage({ type: "inner-error", message: msg }, ' + JSON.stringify(_SHELL_ORIGIN) + '); } catch(ex) {}\n' +
       '  });\n' +
       '  // Listen for chart-resize from shell: re-render all tracked chart instances\n' +
       '  window.addEventListener("message", function(e) {\n' +
@@ -1131,7 +1147,7 @@
               // Layout CSS changed — schedule a resize so ECharts adapts to new column widths
               (function(frameRef) {
                 setTimeout(function() {
-                  try { if (frameRef && frameRef.contentWindow) frameRef.contentWindow.postMessage({type:'chart-resize'}, '*'); } catch(e) {}
+                  try { if (frameRef && frameRef.contentWindow) frameRef.contentWindow.postMessage({type:'chart-resize'}, _SHELL_ORIGIN); } catch(e) {}
                 }, 120);
               })(frame);
             }
@@ -1145,7 +1161,7 @@
             // New layout injected — schedule resize
             (function(frameRef) {
               setTimeout(function() {
-                try { if (frameRef && frameRef.contentWindow) frameRef.contentWindow.postMessage({type:'chart-resize'}, '*'); } catch(e) {}
+                try { if (frameRef && frameRef.contentWindow) frameRef.contentWindow.postMessage({type:'chart-resize'}, _SHELL_ORIGIN); } catch(e) {}
               }, 120);
             })(frame);
           }
@@ -1154,7 +1170,7 @@
           existingLayoutLink.remove();
           (function(frameRef) {
             setTimeout(function() {
-              try { if (frameRef && frameRef.contentWindow) frameRef.contentWindow.postMessage({type:'chart-resize'}, '*'); } catch(e) {}
+              try { if (frameRef && frameRef.contentWindow) frameRef.contentWindow.postMessage({type:'chart-resize'}, _SHELL_ORIGIN); } catch(e) {}
             }, 120);
           })(frame);
         }
@@ -1297,8 +1313,94 @@
       }
     }
 
+    function inspectLayout() {
+      var innerDoc = frame.contentDocument;
+      var innerWin = frame.contentWindow;
+      if (!innerDoc || !innerWin) return { cards: [], gridColumns: 2 };
+
+      var cards = [];
+      var seen = Object.create(null);
+      function text(value, fallback, maxLength) {
+        var result = String(value || '').trim() || fallback;
+        return result.slice(0, maxLength);
+      }
+      function addCard(element, index, kind, defaults) {
+        var rawId = element.getAttribute('data-card-id') || element.id || (kind + '-' + index);
+        var cardId = text(rawId, kind + '-' + index, 160);
+        if (seen[cardId]) return;
+        seen[cardId] = true;
+        var heading = element.querySelector('h3, h4, .card-title, .kpi-title, .kpi-label, .stat-label');
+        cards.push({
+          cardId: cardId,
+          label: text(heading && heading.textContent, defaults.label + ' ' + (index + 1), 200),
+          type: defaults.type,
+          colStart: -1,
+          colSpan: defaults.colSpan,
+          rowSpan: defaults.rowSpan,
+          minHeight: defaults.minHeight,
+        });
+      }
+      function collect(selector, kind, defaults) {
+        Array.prototype.forEach.call(innerDoc.querySelectorAll(selector), function(element, index) {
+          addCard(element, index, kind, defaults);
+        });
+      }
+
+      collect('.grid-kpi > .card, .zone-kpi > .card', 'kpi', {
+        label: 'KPI', type: 'kpi', colSpan: 1, rowSpan: 1, minHeight: 80,
+      });
+      collect('.zone-filter > .card, .filter-bar', 'filter', {
+        label: '筛选控件', type: 'filter', colSpan: -1, rowSpan: 1, minHeight: 60,
+      });
+      Array.prototype.forEach.call(
+        innerDoc.querySelectorAll('.grid-charts > .card, .zone-content > .card'),
+        function(element, index) {
+          var hasTable = !!element.querySelector('table');
+          addCard(element, index, 'card', {
+            label: '卡片',
+            type: hasTable ? 'table' : 'chart',
+            colSpan: hasTable ? -1 : 1,
+            rowSpan: 'auto',
+            minHeight: hasTable ? 200 : 260,
+          });
+        }
+      );
+
+      if (cards.length === 0) {
+        Array.prototype.forEach.call(
+          innerDoc.querySelectorAll('.card[data-card-id], .card-kpi, .chart-card'),
+          function(element, index) {
+            var isKpi = element.classList.contains('kpi-card') || element.classList.contains('card-kpi');
+            addCard(element, index, 'card', {
+              label: '卡片',
+              type: isKpi ? 'kpi' : 'chart',
+              colSpan: 1,
+              rowSpan: 'auto',
+              minHeight: 200,
+            });
+          }
+        );
+      }
+
+      var gridColumns = 2;
+      var gridElement = innerDoc.querySelector('.grid-charts, .zone-content');
+      if (gridElement) {
+        var style = innerWin.getComputedStyle(gridElement);
+        var tracks = style && style.gridTemplateColumns ? style.gridTemplateColumns.trim() : '';
+        if (tracks && tracks !== 'none') {
+          var repeatMatch = tracks.match(/^repeat\(\s*(\d+)\s*,/i);
+          gridColumns = repeatMatch
+            ? Number(repeatMatch[1])
+            : tracks.split(/\s+/).filter(Boolean).length;
+        }
+      }
+      if (!Number.isInteger(gridColumns) || gridColumns < 1 || gridColumns > 12) gridColumns = 2;
+      return { cards: cards.slice(0, 200), gridColumns: gridColumns };
+    }
+
     // ── Forward inner frame errors ────────────────────────────────────────
     window.addEventListener('message', function(e) {
+      if (e.source !== frame.contentWindow) return;
       if (e.data && e.data.type === 'inner-error') {
         // Suppress non-fatal ResizeObserver loop warnings (they are browser quirks, not real errors)
         if (typeof e.data.message === 'string' && e.data.message.indexOf('ResizeObserver') !== -1) return;
@@ -1308,6 +1410,7 @@
 
     // ── Listen for commands from React parent ────────────────────────────
     window.addEventListener('message', function(e) {
+      if (e.source !== window.parent || e.origin !== parentOrigin) return;
       var data = e.data;
       if (!data || typeof data.type !== 'string') return;
 
@@ -1327,7 +1430,7 @@
         // The parent already handles timing (immediate + RAF + 200ms). Going through forwardChartResize
         // would cause the burst of signals to continuously reset the debounce timer so the inner frame
         // never actually gets resized. Only the shell's own resize observer uses forwardChartResize.
-        try { frame.contentWindow.postMessage({ type: 'chart-resize' }, '*'); } catch(e) {}
+        try { frame.contentWindow.postMessage({ type: 'chart-resize' }, _SHELL_ORIGIN); } catch(e) {}
       } else if (data.type === 'inject-custom-css') {
         // Tech-13 编辑模式: 注入自定义布局 CSS 到 iframe
         try {
@@ -1344,6 +1447,14 @@
             frame.contentWindow.dispatchEvent(new Event('resize'));
           }
         } catch (e) { console.warn('[shell] inject-custom-css error:', e); }
+      } else if (data.type === 'inspect-layout' && typeof data.requestId === 'string' && data.requestId.length <= 160) {
+        var snapshot = inspectLayout();
+        sendToParent({
+          type: 'layout-inspection',
+          requestId: data.requestId,
+          cards: snapshot.cards,
+          gridColumns: snapshot.gridColumns,
+        });
       }
     });
 
@@ -1352,7 +1463,7 @@
       shellReady = true;
       if (loadingEl) loadingEl.style.opacity = '0';
       setTimeout(function() { if (loadingEl) loadingEl.style.display = 'none'; }, 300);
-      try { window.parent.postMessage({ type: 'shell-ready' }, '*'); } catch (e) { /* ignore */ }
+      sendToParent({ type: 'shell-ready' });
     }
 
     // ── Forward resize events to inner frame (debounced) ────────────────
@@ -1364,11 +1475,11 @@
       clearTimeout(_chartResizeTimer);
       clearTimeout(_chartResizeTimer2);
       _chartResizeTimer = setTimeout(function() {
-        try { frame.contentWindow.postMessage({ type: 'chart-resize' }, '*'); } catch(e) {}
+        try { frame.contentWindow.postMessage({ type: 'chart-resize' }, _SHELL_ORIGIN); } catch(e) {}
       }, 80);
       // Second pass after CSS grid and ApexCharts async layout complete
       _chartResizeTimer2 = setTimeout(function() {
-        try { frame.contentWindow.postMessage({ type: 'chart-resize' }, '*'); } catch(e) {}
+        try { frame.contentWindow.postMessage({ type: 'chart-resize' }, _SHELL_ORIGIN); } catch(e) {}
       }, 300);
     }
     window.addEventListener('resize', forwardChartResize);
