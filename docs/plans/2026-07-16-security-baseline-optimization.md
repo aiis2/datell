@@ -27,6 +27,12 @@ execution: object
 
 A browser Worker alone is also insufficient because Worker globals include network and script-loading capabilities. The sandbox must execute in a separate JavaScript engine that has no host objects unless they are explicitly provided.
 
+### SVG and file-boundary follow-up audit
+
+The first SVG guard used regular-expression replacement. That approach leaves entity-encoded URL schemes such as `jav&#x61;script:` intact; an XML parser decodes the entity before the browser uses the `href`. It also leaves SVG animation elements such as `<animate>` and `<set>` able to mutate URL or event attributes after sanitization. SVG therefore needs structural XML parsing, an element allowlist, and decoded attribute validation rather than source-text replacement.
+
+The file guard compares lexical paths. A symlink or junction placed under the application data directory can therefore point outside the authorized tree while still passing `path.relative`. Both the configured data directory and candidate files must be compared by canonical real path.
+
 ## Optimization Reason
 
 Security fixes have high leverage because they reduce runtime risk without changing the product surface. The mainline currently depends on vulnerable packages and lacks durable tests for previously identified security-sensitive boundaries. Tightening those areas improves maintainability, release confidence, and future auditability.
@@ -76,6 +82,14 @@ The JavaScript tool is especially sensitive because a validator that can be bypa
 - Verify an infinite loop is interrupted within a bounded wall-clock interval.
 - Run the full CJS suite, renderer and main-process TypeScript checks, Vite production build, and npm audit.
 
+## Chosen Design: Structural SVG and File Authorization
+
+- Parse custom SVG as XML with `@xmldom/xmldom`; reject malformed documents, doctypes, and non-`svg` roots.
+- Retain only a compatibility-oriented allowlist of static SVG drawing, text, gradient, mask, pattern, and filter elements. Remove navigation, embedded content, animation, scripting, and external-resource elements as whole subtrees.
+- Remove event handlers and unsafe URL-bearing attributes after XML entity decoding. Permit only local fragment references such as `url(#gradient)` and `<use href="#symbol">`.
+- Preserve a small allowlist of presentation declarations from inline `style`; reject URL functions, escapes, imports, and executable legacy CSS forms.
+- Canonicalize existing files and the application data directory with `realpath` before comparing authorization boundaries. An explicitly selected file is stored by canonical path, so aliases do not widen access.
+
 ## Verification SOP
 
 ### Forward SOP
@@ -109,7 +123,7 @@ The JavaScript tool is especially sensitive because a validator that can be bypa
    - SVG sanitization before previewing or persisting custom illustrations
    - JavaScript sandbox escape, resource limits, and normal `result = ...` execution behavior
    - file read authorization for renderer-initiated text reads
-2. Implement small, reusable guard helpers and connect them to existing runtime paths.
+2. Implement small, reusable guard helpers and connect them to existing runtime paths. Use structural XML parsing for SVG and canonical filesystem paths for file authorization; do not extend either source-text denylist.
 3. Replace host JavaScript evaluation with a capability-free QuickJS WASM runtime using explicit memory, stack, and deadline limits.
 4. Replace or remove vulnerable dependencies that are unused or have safer maintained equivalents.
 5. Reconcile the Agent Skills publish metadata around the single installable skill surface.
@@ -135,6 +149,8 @@ The JavaScript tool is especially sensitive because a validator that can be bypa
 - Security regression tests fail on the current mainline and pass after the implementation.
 - Obfuscated constructor-chain code cannot observe host globals.
 - Infinite loops and excessive memory use are bounded by the runtime.
+- Entity-encoded SVG script URLs, animation-based attribute mutation, embedded content, and external resource references are removed while ordinary static SVG remains renderable.
+- Symlinks or junctions inside the application data directory cannot authorize files outside its canonical tree.
 - Ordinary synchronous calculation, `result`, and `console.log` behavior remain available.
 - Authorized database writes can be read back exactly, while rejected writes leave the persisted sentinel unchanged.
 - Forward and reverse SOP evidence is recorded in the implementation PR.

@@ -157,7 +157,63 @@ git add package.json package-lock.json src/renderer/tools/runJsSandbox.ts tests/
 git commit -m "fix: isolate sandbox execution with quickjs"
 ```
 
-### Task 5: Full Verification and PR Evidence
+### Task 5: Replace Text-Based SVG Sanitization
+
+**Files:**
+- Modify: `package.json`
+- Modify: `package-lock.json`
+- Modify: `src/renderer/utils/svgSanitizer.ts`
+- Modify: `tests/security-svg-sanitizer.test.cjs`
+
+**Step 1: Add failing encoded-protocol and animation tests**
+
+Add SVG containing `href="jav&#x61;script:..."`, `<animate attributeName="href">`, and `<set attributeName="onload">`. Assert no navigable `href`, animation element, event attribute, or executable protocol survives.
+
+Run: `node tests/security-svg-sanitizer.test.cjs`
+
+Expected: FAIL because the regular-expression sanitizer retains the entity-encoded URL and animation elements.
+
+**Step 2: Install the XML parser**
+
+Run: `npm install @xmldom/xmldom@0.8.11`
+
+Expected: `package.json` and `package-lock.json` record one maintained XML parser dependency and `npm audit` remains clean.
+
+**Step 3: Implement structural allowlist sanitization**
+
+Parse `image/svg+xml`, reject doctypes/parser errors/non-SVG roots, recursively remove elements outside the static SVG allowlist, and validate decoded attributes. Allow only fragment URL references and safe presentation style declarations. Serialize the sanitized SVG with `XMLSerializer`.
+
+**Step 4: Verify green**
+
+Run: `node tests/security-svg-sanitizer.test.cjs`
+
+Expected: PASS; ordinary static SVG remains present while encoded protocols, animation, scripts, embedded HTML, event attributes, and external references are absent.
+
+### Task 6: Canonicalize File Authorization
+
+**Files:**
+- Modify: `src/main/fileReadGuard.ts`
+- Modify: `tests/security-file-read-guard.test.cjs`
+
+**Step 1: Add a failing link-escape regression**
+
+Create a symlink or junction beneath the authorized data directory that targets a sentinel file outside it. Assert `canReadTextFile` rejects the linked path. Skip only when the platform refuses link creation.
+
+Run: `node tests/security-file-read-guard.test.cjs`
+
+Expected: FAIL on platforms that permit the link because lexical containment currently authorizes the external target.
+
+**Step 2: Compare canonical paths**
+
+Resolve existing files and the data directory with `fs.realpathSync.native`. Store explicitly selected files by canonical path and compare canonical candidate paths to the canonical data directory.
+
+**Step 3: Verify green**
+
+Run: `node tests/security-file-read-guard.test.cjs`
+
+Expected: PASS; regular data-directory files and explicitly selected files remain readable, while linked external files and unselected siblings are rejected.
+
+### Task 7: Full Verification and PR Evidence
 
 **Files:**
 - Modify: `tests/security-sql-readonly.test.cjs`
