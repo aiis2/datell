@@ -25,7 +25,9 @@ const guard = createTextFileReadGuard(dataDir);
 assert.equal(guard.canReadTextFile(pickedFile), false, 'renderer should not read arbitrary files before explicit selection');
 guard.rememberSelectedFile(pickedFile);
 assert.equal(guard.canReadTextFile(pickedFile), true, 'explicitly selected files should be readable');
+assert.equal(fs.readFileSync(pickedFile, 'utf8'), 'chosen', 'approved file contents should round-trip exactly');
 assert.equal(guard.canReadTextFile(siblingFile), false, 'selecting one file should not authorize its siblings');
+assert.equal(fs.readFileSync(siblingFile, 'utf8'), 'sibling', 'rejected sibling access must not mutate its contents');
 assert.equal(guard.canReadTextFile(dataFile), true, 'app data directory files should remain readable');
 assert.equal(guard.canReadTextFile(path.join(root, 'missing.md')), false, 'missing files should not be authorized');
 

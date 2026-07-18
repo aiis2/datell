@@ -8,48 +8,57 @@ require('ts-node').register({
 
 const assert = require('node:assert/strict');
 
-const { runJsSandboxTool, validateSandboxCode } = require('../src/renderer/tools/runJsSandbox.ts');
+const { runJsSandboxTool } = require('../src/renderer/tools/runJsSandbox.ts');
 
 (async () => {
-  assert.equal(
-    validateSandboxCode('const values = [1, 2, 3]; result = values.reduce((a, b) => a + b, 0);'),
-    null,
-    'ordinary data calculation should be accepted',
-  );
-  assert.match(
-    validateSandboxCode('result = Object.constructor("return globalThis")().fetch'),
-    /constructor|globalThis/i,
-    'constructor-based global escape should be rejected before execution',
-  );
-  assert.match(
-    validateSandboxCode('while (true) { }'),
-    /loop|循环|timeout|超时/i,
-    'obvious infinite loops should be rejected before execution',
-  );
-  assert.match(
-    validateSandboxCode('result = eval("2 + 2")'),
-    /eval/i,
-    'eval should be rejected before execution',
-  );
-
   const output = await runJsSandboxTool.execute({
-    code: 'const values = [1, 2, 3]; result = values.reduce((a, b) => a + b, 0);',
+    code: 'const values = [1, 2, 3]; console.log("sum", 6); result = { sum: values.reduce((a, b) => a + b, 0) };',
   });
-  assert.match(output, /6/, 'sandbox should support assigning the final value to result');
+  assert.match(output, /sum 6/, 'sandbox should capture console.log output');
+  assert.match(output, /"sum": 6/, 'sandbox should return JSON-compatible result values');
 
-  const obfuscatedEscape = await runJsSandboxTool.execute({
-    code: `result = Object['con' + 'structor']('return typeof pro' + 'cess')()`,
+  const isolatedEval = await runJsSandboxTool.execute({
+    code: 'result = eval("2 + 2")',
   });
-  assert.doesNotMatch(
-    obfuscatedEscape,
-    /\*\*返回值：\*\*[\s\S]*\bobject\b/i,
-    'split identifiers must not expose the host process global',
+  assert.match(isolatedEval, /\b4\b/, 'QuickJS eval should remain available inside the isolated realm');
+
+  const capabilityProbe = await runJsSandboxTool.execute({
+    code: `result = Object['con' + 'structor'](
+      'return ({["pro"+"cess"]:typeof pro'+"cess"+
+      ',["req"+"uire"]:typeof req'+"uire"+
+      ',["fe"+"tch"]:typeof fe'+"tch"+
+      ',["doc"+"ument"]:typeof doc'+"ument"+
+      ',["win"+"dow"]:typeof win'+"dow"+'})'
+    )()`,
+  });
+  for (const capability of ['process', 'require', 'fetch', 'document', 'window']) {
+    assert.match(
+      capabilityProbe,
+      new RegExp(`"${capability}": "undefined"`),
+      `${capability} must not exist in the isolated runtime`,
+    );
+  }
+
+  const startedAt = Date.now();
+  const interrupted = await runJsSandboxTool.execute({
+    code: 'for (let iterations = 0; ; iterations += 1) {}',
+    timeout_ms: 1000,
+  });
+  assert.match(interrupted, /沙箱执行失败.*(?:超时|interrupt)/i, 'infinite loops should be interrupted');
+  assert.ok(Date.now() - startedAt < 5000, 'timeout should return control within a bounded interval');
+
+  const memoryLimited = await runJsSandboxTool.execute({
+    code: `
+      const chunks = [];
+      for (;;) chunks.push(new Array(100000).fill('memory-pressure-sentinel'));
+    `,
+    timeout_ms: 5000,
+  });
+  assert.match(
+    memoryLimited,
+    /沙箱执行失败.*(?:内存|memory|allocation)/i,
+    'excessive allocation should hit the sandbox memory limit',
   );
-
-  const blocked = await runJsSandboxTool.execute({
-    code: 'result = Object.constructor("return globalThis")()',
-  });
-  assert.match(blocked, /沙箱执行失败|禁止模式|constructor/i, 'sandbox execute should reject constructor escape attempts');
 
   console.log('security run js sandbox guard ok');
 })().catch((error) => {

@@ -1,126 +1,27 @@
 /**
- * run_js_sandbox — 在安全沙箱中执行 JavaScript 代码
- *
- * 用于 AI 进行数据计算、统计分析、字符串/数组处理等计算任务。
- * 禁止访问 DOM、网络、文件系统等敏感 API。
- * 超时时间 10 秒，超时后强制终止。
+ * run_js_sandbox - execute synchronous calculations in an isolated QuickJS VM.
  */
+import type { QuickJSWASMModule } from 'quickjs-emscripten-core';
 import type { AgentToolDefinition } from '../types';
 
-const BLOCKED_GLOBALS = [
-  'window', 'document', 'fetch', 'XMLHttpRequest', 'WebSocket',
-  'navigator', 'location', 'history', 'localStorage', 'sessionStorage',
-  'indexedDB', 'crypto', 'performance', 'Worker', 'SharedWorker',
-  'Blob', 'File', 'FileReader', 'FormData', 'URL',
-  'require', 'process', 'global', 'module', 'exports',
-  '__dirname', '__filename', 'importScripts',
-] as const;
+const SANDBOX_MEMORY_LIMIT_BYTES = 16 * 1024 * 1024;
+const SANDBOX_STACK_LIMIT_BYTES = 512 * 1024;
 
-const SANDBOX_FORBIDDEN_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
-  { pattern: /(?:^|[^\w$])constructor\s*(?:[.(\[])/i, label: 'constructor 逃逸' },
-  { pattern: /new\s+Function\s*\(/i, label: 'new Function()' },
-  { pattern: /\bFunction\s*\(/i, label: 'Function()' },
-  { pattern: /\beval\s*\(/i, label: 'eval()' },
-  { pattern: /\b(?:globalThis|window|document|self|fetch|XMLHttpRequest|WebSocket|Worker|SharedWorker|importScripts|navigator|location|localStorage|sessionStorage|indexedDB|process|require|module|exports|global)\b/i, label: '受限全局对象' },
-  { pattern: /\bwhile\s*\(\s*(?:true|1)\s*\)/i, label: '无限循环' },
-  { pattern: /\bfor\s*\(\s*;\s*;\s*\)/i, label: '无限循环' },
-];
+let quickJSModulePromise: Promise<QuickJSWASMModule> | null = null;
 
-const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor as FunctionConstructor;
-
-export function validateSandboxCode(code: string): string | null {
-  for (const { pattern, label } of SANDBOX_FORBIDDEN_PATTERNS) {
-    if (pattern.test(code)) {
-      return `代码包含禁止模式: ${label}`;
-    }
+function loadQuickJS(): Promise<QuickJSWASMModule> {
+  if (!quickJSModulePromise) {
+    quickJSModulePromise = Promise.all([
+      import('quickjs-emscripten-core'),
+      import('@jitl/quickjs-wasmfile-release-sync'),
+    ]).then(([core, variant]) => core.newQuickJSWASMModuleFromVariant(variant.default));
   }
-  return null;
+  return quickJSModulePromise;
 }
 
-function formatSandboxOutput(output: unknown, logs: string[]): string {
-  let resultStr = '';
-  if (output !== undefined && output !== null) {
-    try {
-      resultStr = typeof output === 'object'
-        ? JSON.stringify(output, null, 2)
-        : String(output);
-    } catch {
-      resultStr = String(output);
-    }
-  }
-
-  const parts: string[] = [];
-  if (logs.length > 0) {
-    parts.push('**输出（console.log）：**\n```\n' + logs.join('\n') + '\n```');
-  }
-  if (resultStr) {
-    parts.push('**返回值：**\n```\n' + resultStr + '\n```');
-  }
-  if (parts.length === 0) {
-    parts.push('代码执行完毕，无返回值和输出。');
-  }
-  return parts.join('\n\n');
-}
-
-function createSafeGlobals(logs: string[]): Record<string, unknown> {
-  return {
-    Math,
-    JSON,
-    parseInt,
-    parseFloat,
-    isNaN,
-    isFinite,
-    Number,
-    String,
-    Boolean,
-    Array,
-    Object,
-    Date,
-    RegExp,
-    Error,
-    console: {
-      log: (...args: unknown[]) => {
-        logs.push(args.map((a) => {
-          try { return typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a); }
-          catch { return String(a); }
-        }).join(' '));
-      },
-    },
-  };
-}
-
-async function execSandboxInline(code: string): Promise<string> {
-  const logs: string[] = [];
-  const safeGlobals = createSafeGlobals(logs);
-  const blockedParams = BLOCKED_GLOBALS.join(', ');
-
-  // eslint-disable-next-line no-new-func
-  const fn = new AsyncFunction(
-    ...Object.keys(safeGlobals),
-    blockedParams,
-    `"use strict";\n` +
-    `let __result__ = undefined;\n` +
-    `let result = undefined;\n` +
-    `try {\n` +
-    code + `\n` +
-    `} catch(e) { throw e; }\n` +
-    `return typeof result !== 'undefined' ? result : __result__;`
-  );
-
-  const output = await fn(...Object.values(safeGlobals), ...BLOCKED_GLOBALS.map(() => undefined));
-  return formatSandboxOutput(output, logs);
-}
-
-function canUseBrowserWorker(): boolean {
-  return typeof Worker !== 'undefined' && typeof Blob !== 'undefined' && typeof URL !== 'undefined';
-}
-
-function buildSandboxWorkerSource(): string {
-  return `
-const BLOCKED_GLOBALS = ${JSON.stringify(BLOCKED_GLOBALS)};
-const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
-
-function formatValue(value) {
+function formatValue(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (value === undefined) return 'undefined';
   try {
     return typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value);
   } catch {
@@ -128,138 +29,93 @@ function formatValue(value) {
   }
 }
 
-function formatOutput(output, logs) {
-  let resultStr = '';
-  if (output !== undefined && output !== null) {
-    resultStr = formatValue(output);
-  }
-  const parts = [];
+function formatSandboxOutput(output: unknown, logs: string[]): string {
+  const parts: string[] = [];
   if (logs.length > 0) {
-    parts.push('**输出（console.log）：**\\n\`\`\`\\n' + logs.join('\\n') + '\\n\`\`\`');
+    parts.push('**输出（console.log）：**\n```\n' + logs.join('\n') + '\n```');
   }
-  if (resultStr) {
-    parts.push('**返回值：**\\n\`\`\`\\n' + resultStr + '\\n\`\`\`');
+  if (output !== undefined && output !== null) {
+    parts.push('**返回值：**\n```\n' + formatValue(output) + '\n```');
   }
   if (parts.length === 0) {
     parts.push('代码执行完毕，无返回值和输出。');
   }
-  return parts.join('\\n\\n');
+  return parts.join('\n\n');
 }
 
-self.onmessage = async (event) => {
-  const code = String(event.data && event.data.code ? event.data.code : '');
-  const logs = [];
-  const safeGlobals = {
-    Math,
-    JSON,
-    parseInt,
-    parseFloat,
-    isNaN,
-    isFinite,
-    Number,
-    String,
-    Boolean,
-    Array,
-    Object,
-    Date,
-    RegExp,
-    Error,
-    console: {
-      log: (...args) => {
-        logs.push(args.map(formatValue).join(' '));
-      },
-    },
-  };
-
-  for (const name of BLOCKED_GLOBALS) {
-    try {
-      Object.defineProperty(globalThis, name, { value: undefined, writable: false, configurable: false });
-    } catch {}
+function sandboxErrorMessage(error: unknown, timeoutMs: number): string {
+  const dumped = error && typeof error === 'object'
+    ? error as { name?: unknown; message?: unknown }
+    : null;
+  const name = dumped?.name ? String(dumped.name) : '';
+  const message = dumped?.message ? String(dumped.message) : formatValue(error);
+  if (/interrupt/i.test(`${name} ${message}`)) {
+    return `执行超时（${Math.round(timeoutMs / 1000)}秒）`;
   }
+  if (/out of memory|allocation failed/i.test(`${name} ${message}`)) {
+    return '执行超出内存限制';
+  }
+  return message || name || '未知错误';
+}
+
+async function execSandbox(code: string, timeoutMs: number): Promise<string> {
+  const quickJS = await loadQuickJS();
+  const runtime = quickJS.newRuntime();
+  const deadline = Date.now() + timeoutMs;
+  runtime.setMemoryLimit(SANDBOX_MEMORY_LIMIT_BYTES);
+  runtime.setMaxStackSize(SANDBOX_STACK_LIMIT_BYTES);
+  runtime.setInterruptHandler(() => Date.now() >= deadline);
+
+  const context = runtime.newContext();
+  const logs: string[] = [];
 
   try {
-    const fn = new AsyncFunction(
-      ...Object.keys(safeGlobals),
-      '"use strict";\\nlet __result__ = undefined;\\nlet result = undefined;\\ntry {\\n' +
-        code +
-        '\\n} catch(e) { throw e; }\\nreturn typeof result !== "undefined" ? result : __result__;'
-    );
-    const output = await fn(...Object.values(safeGlobals));
-    self.postMessage({ ok: true, value: formatOutput(output, logs) });
-  } catch (err) {
-    self.postMessage({ ok: false, error: err instanceof Error ? err.message : String(err) });
-  }
-};
-`;
-}
-
-async function execSandboxInWorker(code: string, timeoutMs: number): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const workerUrl = URL.createObjectURL(new Blob([buildSandboxWorkerSource()], { type: 'text/javascript' }));
-    const worker = new Worker(workerUrl);
-    const cleanup = () => {
-      worker.terminate();
-      URL.revokeObjectURL(workerUrl);
-    };
-    const timer = setTimeout(() => {
-      cleanup();
-      reject(new Error(`执行超时（${Math.round(timeoutMs / 1000)}秒）`));
-    }, timeoutMs);
-
-    worker.onmessage = (event: MessageEvent<{ ok: boolean; value?: string; error?: string }>) => {
-      clearTimeout(timer);
-      cleanup();
-      if (event.data?.ok) {
-        resolve(event.data.value ?? '');
-      } else {
-        reject(new Error(`执行错误：${event.data?.error ?? '未知错误'}`));
+    const consoleHandle = context.newObject();
+    try {
+      const logHandle = context.newFunction('log', (...args) => {
+        logs.push(args.map((arg) => formatValue(context.dump(arg))).join(' '));
+      });
+      try {
+        context.setProp(consoleHandle, 'log', logHandle);
+        context.setProp(context.global, 'console', consoleHandle);
+      } finally {
+        logHandle.dispose();
       }
-    };
-    worker.onerror = (event) => {
-      clearTimeout(timer);
-      cleanup();
-      reject(new Error(`执行错误：${event.message}`));
-    };
-    worker.postMessage({ code });
-  });
-}
+    } finally {
+      consoleHandle.dispose();
+    }
 
-/** 安全执行沙箱 — 浏览器中用 Worker 隔离并强制终止超时任务 */
-async function execSandbox(code: string, timeoutMs = 10000): Promise<string> {
-  const forbidden = validateSandboxCode(code);
-  if (forbidden) {
-    throw new Error(forbidden);
+    const wrappedCode = `(() => {\n"use strict";\nlet result;\n${code}\nreturn result;\n})()`;
+    const evaluated = context.evalCode(wrappedCode, 'sandbox.js', { type: 'global', strict: true });
+    if (evaluated.error) {
+      const error = evaluated.error.consume((handle) => context.dump(handle));
+      throw new Error(sandboxErrorMessage(error, timeoutMs));
+    }
+
+    const output = evaluated.value.consume((handle) => context.dump(handle));
+    return formatSandboxOutput(output, logs);
+  } finally {
+    try {
+      context.dispose();
+    } finally {
+      runtime.dispose();
+    }
   }
-
-  if (canUseBrowserWorker()) {
-    return execSandboxInWorker(code, timeoutMs);
-  }
-
-  return execSandboxInline(code);
 }
 
 export const runJsSandboxTool: AgentToolDefinition = {
   name: 'run_js_sandbox',
   description:
-    '在安全 JavaScript 沙箱中执行代码。适用于：数据计算与统计分析（均值/中位数/标准差/百分位）、' +
-    '数组/字符串处理、数值转换、临时验证计算逻辑。' +
-    '沙箱内可用：Math、JSON、Array、Object、Date、Number、String、console.log。' +
-    '禁止访问网络、文件、DOM、eval 等。超时 10 秒自动终止。' +
-    '代码最后的 return 语句 或 变量 result 的值会作为返回值输出。',
+    '在隔离的 JavaScript 运行时中执行同步计算。适用于数据统计、数组/字符串处理、数值转换和临时计算验证。' +
+    '可用标准 JavaScript 内置对象与 console.log；不提供网络、文件、DOM、Electron、Node.js 或模块加载能力。' +
+    '代码最后的 return 语句或 result 变量值会作为返回值输出。',
   parameters: [
     {
       name: 'code',
       type: 'string',
       description:
-        '要执行的 JavaScript 代码。建议将最终结果赋值给 result 变量，或用 return 返回。' +
-        '可以使用 console.log() 输出中间结果。示例：\n' +
-        '```js\n' +
-        'const data = [23, 45, 12, 67, 34];\n' +
-        'const avg = data.reduce((a, b) => a + b, 0) / data.length;\n' +
-        'const sorted = [...data].sort((a, b) => a - b);\n' +
-        'const median = sorted[Math.floor(sorted.length / 2)];\n' +
-        'result = { avg: avg.toFixed(2), median };\n' +
-        '```',
+        '要执行的同步 JavaScript 代码。建议将最终结果赋值给 result，或使用 return 返回。' +
+        '可以使用 console.log() 输出中间结果。',
       required: true,
     },
     {
@@ -279,13 +135,13 @@ export const runJsSandboxTool: AgentToolDefinition = {
 
     try {
       return await execSandbox(code, timeoutMs);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      return `[沙箱执行失败] ${msg}`;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      return `[沙箱执行失败] ${message}`;
     }
   },
 
   isConcurrencySafe: () => true,
   isReadOnly: () => true,
-  getActivityDescription: () => '在沙箱中执行 JavaScript 代码…',
+  getActivityDescription: () => '在隔离运行时中执行 JavaScript 代码…',
 };

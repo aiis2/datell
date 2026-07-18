@@ -1,6 +1,10 @@
 require('ts-node/register/transpile-only');
 
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const Database = require('better-sqlite3');
 
 const {
   isReadOnlyDatasourceSql,
@@ -38,5 +42,33 @@ assert.equal(
   false,
   'SQLite data-modifying CTEs must not pass the chat-mode read-only guard',
 );
+
+const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'datell-sql-sop-'));
+const dbPath = path.join(tempRoot, 'roundtrip.db');
+const db = new Database(dbPath);
+try {
+  db.exec('CREATE TABLE verification (id INTEGER PRIMARY KEY, value TEXT NOT NULL)');
+  db.prepare('INSERT INTO verification (id, value) VALUES (?, ?)').run(1, 'persisted-sentinel');
+
+  const guardedRead = 'SELECT value FROM verification WHERE id = 1';
+  assert.equal(isReadOnlyUserDBSql(guardedRead), true, 'forward SOP read should pass the chat guard');
+  assert.equal(
+    db.prepare(guardedRead).get().value,
+    'persisted-sentinel',
+    'authorized management write must round-trip through an allowed read',
+  );
+
+  const rejectedWrite = `UPDATE verification SET value = 'mutated' WHERE id = 1`;
+  assert.equal(isReadOnlyUserDBSql(rejectedWrite), false, 'reverse SOP write should be rejected by the chat guard');
+  if (isReadOnlyUserDBSql(rejectedWrite)) db.prepare(rejectedWrite).run();
+  assert.equal(
+    db.prepare(guardedRead).get().value,
+    'persisted-sentinel',
+    'rejected writes must leave persisted data unchanged',
+  );
+} finally {
+  db.close();
+  fs.rmSync(tempRoot, { recursive: true, force: true });
+}
 
 console.log('security sql readonly guard ok');
