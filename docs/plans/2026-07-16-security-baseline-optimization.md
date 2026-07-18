@@ -76,6 +76,32 @@ The JavaScript tool is especially sensitive because its contract promises no net
 - Verify an infinite loop is interrupted within a bounded wall-clock interval.
 - Run the full CJS suite, renderer and main-process TypeScript checks, Vite production build, and npm audit.
 
+## Verification SOP
+
+### Forward SOP
+
+1. Start from the exact `origin/master` commit recorded by the PR base.
+2. Run the new regression against that baseline and capture the expected failure or risk evidence.
+3. Apply the smallest implementation that satisfies the approved spec.
+4. Exercise the supported path end to end: create representative data, perform an authorized write, read it back through the guarded read path, and compare the persisted value.
+5. Run focused tests first, then the complete test/type/build/audit matrix.
+6. Record commands and observed results in the implementation PR before declaring the optimization complete.
+
+### Reverse SOP
+
+1. Exercise the inverse and hostile cases: mutating chat SQL, multi-statement SQL, unauthorized file reads, unsafe SVG, sandbox constructor escapes, module loading, infinite loops, and memory pressure.
+2. Assert each operation is rejected at the intended boundary with a controlled error.
+3. Read the affected data again after every rejected write and prove that the original value is unchanged.
+4. Dispose or close temporary runtimes, files, and databases, then repeat the supported read to prove cleanup did not corrupt state.
+5. Treat any bypass, state mutation, leaked capability, hang, or unverifiable result as a failed acceptance criterion.
+
+### Data Write/Read Evidence
+
+- The user database regression creates a temporary SQLite database, writes a sentinel row through the authorized management path, and reads the same row through an allowed read-only query.
+- It then attempts a mutating statement through the chat-mode guard, verifies rejection, and reads the sentinel again to prove the database was not modified.
+- File authorization tests write distinct sentinel contents to an approved file and an unapproved sibling, then verify that only the explicitly authorized path can be read.
+- Sandbox and SVG paths do not persist application data; their forward evidence is output round-trip correctness and their reverse evidence is absence of host capabilities or unsafe markup.
+
 ## Plan
 
 1. Add focused regression tests for:
@@ -109,5 +135,7 @@ The JavaScript tool is especially sensitive because its contract promises no net
 - Obfuscated constructor-chain code cannot observe host globals.
 - Infinite loops and excessive memory use are bounded by the runtime.
 - Ordinary synchronous calculation, `result`, and `console.log` behavior remain available.
+- Authorized database writes can be read back exactly, while rejected writes leave the persisted sentinel unchanged.
+- Forward and reverse SOP evidence is recorded in the implementation PR.
 - TypeScript and Vite production build pass.
 - The implementation PR links this spec and the tracking issue.

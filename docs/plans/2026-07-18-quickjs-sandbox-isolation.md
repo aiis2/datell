@@ -158,11 +158,20 @@ git commit -m "fix: isolate sandbox execution with quickjs"
 ### Task 5: Full Verification and PR Evidence
 
 **Files:**
+- Modify: `tests/security-sql-readonly.test.cjs`
 - Modify: GitHub Issue `#1`
 - Modify: GitHub Spec PR `#2`
 - Modify: GitHub Impl PR `#3`
 
-**Step 1: Run every CJS test**
+**Step 1: Add the data write/read round-trip regression**
+
+Create a temporary SQLite database, write a sentinel row through an explicitly authorized management operation, read it through SQL accepted by `isReadOnlyUserDBSql`, then attempt a rejected mutation and prove a second read returns the original sentinel unchanged. Always close the database and remove the temporary directory in `finally`.
+
+Run: `node tests/security-sql-readonly.test.cjs`
+
+Expected: PASS with `security sql readonly guard ok`.
+
+**Step 2: Run every CJS test**
 
 Run:
 
@@ -172,7 +181,7 @@ $failed=@(); Get-ChildItem tests -Filter *.test.cjs | Sort-Object Name | ForEach
 
 Expected: all tests pass and `$failed` is empty.
 
-**Step 2: Run static and build checks**
+**Step 3: Run static and build checks**
 
 Run:
 
@@ -185,13 +194,16 @@ npm audit --registry=https://registry.npmjs.org/
 
 Expected: every command exits 0 and audit reports zero vulnerabilities. Existing bundle-size warnings are recorded for the next optimization cycle rather than hidden.
 
-**Step 3: Inspect the final diff**
+**Step 4: Execute the forward and reverse SOP audit**
+
+Forward evidence must cover ordinary sandbox calculation, log output, authorized SQLite write, guarded read, and exact sentinel comparison. Reverse evidence must cover obfuscated host escape, module loading, infinite loop interruption, mutating chat SQL rejection, and a post-rejection read proving unchanged state.
+
+**Step 5: Inspect the final diff**
 
 Run: `git diff origin/master...HEAD --stat` and `git diff origin/master...HEAD -- src/renderer/tools/runJsSandbox.ts tests/security-run-js-sandbox.test.cjs package.json`.
 
 Expected: only the security baseline scope and previously documented dependency/metadata cleanup are present.
 
-**Step 4: Push and update PR evidence**
+**Step 6: Push and update PR evidence**
 
-Push `codex/impl-security-baseline`, then update Impl PR #3 with the reproduced root cause, QuickJS architecture, security properties, and exact verification output. Keep Spec PR #2 and Impl PR #3 based on `master`, the repository's authoritative remote mainline.
-
+Push `codex/impl-security-baseline`, then update Impl PR #3 with the reproduced root cause, QuickJS architecture, security properties, forward SOP, reverse SOP, data write/read evidence, and exact verification output. Keep Spec PR #2 and Impl PR #3 based on `master`, the repository's authoritative remote mainline.
