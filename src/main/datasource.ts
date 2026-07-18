@@ -18,6 +18,7 @@ import {
   getUserDBTableData,
   type UserDBConfig,
 } from './userdb';
+import { isReadOnlyDatasourceSql } from './sqlReadOnlyGuard';
 
 // ─── Types (duplicated here for main-process use) ──────────────────────────
 
@@ -396,11 +397,10 @@ export async function queryDatasource(
   const cfg = readDatasources().find((c) => c.id === id);
   if (!cfg) throw new Error(`数据源 "${id}" 不存在`);
 
-  // Safety: only allow SELECT / WITH / SHOW / DESCRIBE / EXPLAIN  (no DDL/DML)
-  const normalised = sql.trimStart().toUpperCase();
-  const allowed = ['SELECT', 'WITH', 'SHOW', 'DESCRIBE', 'DESC', 'EXPLAIN'];
-  if (!allowed.some((k) => normalised.startsWith(k))) {
-    throw new Error('仅允许 SELECT / SHOW / DESCRIBE / EXPLAIN 查询');
+  // Safety: only allow single-statement read queries. WITH is accepted only
+  // when it does not contain data-modifying CTE clauses.
+  if (!isReadOnlyDatasourceSql(sql)) {
+    throw new Error('仅允许单条 SELECT / SHOW / DESCRIBE / EXPLAIN 只读查询');
   }
 
   if (cfg.type === 'mysql' || cfg.type === 'doris' || cfg.type === 'presto') {
