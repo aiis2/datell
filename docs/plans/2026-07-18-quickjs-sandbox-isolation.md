@@ -175,9 +175,9 @@ Expected: FAIL because the regular-expression sanitizer retains the entity-encod
 
 **Step 2: Install the XML parser**
 
-Run: `npm install @xmldom/xmldom@0.8.11`
+Run: `npm install @xmldom/xmldom@0.9.10 --save-exact`
 
-Expected: `package.json` and `package-lock.json` record one maintained XML parser dependency and `npm audit` remains clean.
+Expected: `package.json` and `package-lock.json` record the patched XML parser release and `npm audit` remains clean. Do not use versions through `0.8.12`; the current advisory database marks them vulnerable to XML injection and uncontrolled recursion.
 
 **Step 3: Implement structural allowlist sanitization**
 

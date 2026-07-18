@@ -84,7 +84,7 @@ The JavaScript tool is especially sensitive because a validator that can be bypa
 
 ## Chosen Design: Structural SVG and File Authorization
 
-- Parse custom SVG as XML with `@xmldom/xmldom`; reject malformed documents, doctypes, and non-`svg` roots.
+- Parse custom SVG as XML with the patched `@xmldom/xmldom@0.9.10` release; reject malformed documents, doctypes, and non-`svg` roots. Versions through `0.8.12` are excluded because the current npm advisory set reports high-severity injection and uncontrolled-recursion flaws.
 - Retain only a compatibility-oriented allowlist of static SVG drawing, text, gradient, mask, pattern, and filter elements. Remove navigation, embedded content, animation, scripting, and external-resource elements as whole subtrees.
 - Remove event handlers and unsafe URL-bearing attributes after XML entity decoding. Permit only local fragment references such as `url(#gradient)` and `<use href="#symbol">`.
 - Preserve a small allowlist of presentation declarations from inline `style`; reject URL functions, escapes, imports, and executable legacy CSS forms.
