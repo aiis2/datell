@@ -105,4 +105,3 @@ Theme patching, custom CSS injection, chart resize, and chart-library transfer r
 - No renderer code reads the cross-origin shell document directly.
 - Red regressions fail on `origin/master` and pass on the implementation.
 - All CJS tests, both TypeScript builds, Vite build, npm audits, and an Electron isolation smoke test pass.
-

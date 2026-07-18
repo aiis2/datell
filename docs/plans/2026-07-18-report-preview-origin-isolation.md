@@ -187,4 +187,3 @@ Expected: all commands exit 0 and both audits report zero vulnerabilities.
 **Step 4: Record forward and reverse SOP evidence**
 
 Update Issue #4 and both PRs with exact red evidence, shell/renderer origins, hostile probe results, ordinary chart/theme/layout results, test counts, build output, and audit totals.
-
