@@ -39,6 +39,15 @@ const { runJsSandboxTool } = require('../src/renderer/tools/runJsSandbox.ts');
     );
   }
 
+  const moduleLoad = await runJsSandboxTool.execute({
+    code: 'result = import("sandbox-capability-probe")',
+  });
+  assert.match(
+    moduleLoad,
+    /^\[沙箱执行失败\]/,
+    'module loading must fail when no QuickJS module loader is installed',
+  );
+
   const startedAt = Date.now();
   const interrupted = await runJsSandboxTool.execute({
     code: 'for (let iterations = 0; ; iterations += 1) {}',
