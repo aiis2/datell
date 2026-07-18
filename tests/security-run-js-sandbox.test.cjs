@@ -37,6 +37,15 @@ const { runJsSandboxTool, validateSandboxCode } = require('../src/renderer/tools
   });
   assert.match(output, /6/, 'sandbox should support assigning the final value to result');
 
+  const obfuscatedEscape = await runJsSandboxTool.execute({
+    code: `result = Object['con' + 'structor']('return typeof pro' + 'cess')()`,
+  });
+  assert.doesNotMatch(
+    obfuscatedEscape,
+    /\*\*返回值：\*\*[\s\S]*\bobject\b/i,
+    'split identifiers must not expose the host process global',
+  );
+
   const blocked = await runJsSandboxTool.execute({
     code: 'result = Object.constructor("return globalThis")()',
   });
