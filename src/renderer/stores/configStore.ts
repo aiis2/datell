@@ -6,6 +6,7 @@ import { dbAPI, isElectron } from '../services/dbAPI';
 import type { CustomLayout } from '../types/layout';
 import type { LangCode } from '../i18n';
 import { detectSystemLanguage } from '../i18n';
+import { sanitizeSvgMarkup } from '../utils/svgSanitizer';
 
 /**
  * Compile-time flag injected by Vite's `define` option.
@@ -338,8 +339,12 @@ const BUILT_IN_ILLUSTRATIONS: IllustrationAsset[] = [
 
 /** Merge saved illustrations, ensuring built-ins are always present */
 function mergeWithBuiltInIllustrations(saved: IllustrationAsset[]): IllustrationAsset[] {
-  const missing = BUILT_IN_ILLUSTRATIONS.filter((d) => !saved.find((s) => s.id === d.id));
-  return [...BUILT_IN_ILLUSTRATIONS, ...saved.filter((s) => !s.builtIn), ...missing.filter((m) => !BUILT_IN_ILLUSTRATIONS.find((b) => b.id === m.id))];
+  const cleanSaved = saved
+    .filter((s) => !s.builtIn)
+    .map((s) => ({ ...s, svgContent: sanitizeSvgMarkup(s.svgContent) }))
+    .filter((s) => s.svgContent);
+  const missing = BUILT_IN_ILLUSTRATIONS.filter((d) => !cleanSaved.find((s) => s.id === d.id));
+  return [...BUILT_IN_ILLUSTRATIONS, ...cleanSaved, ...missing.filter((m) => !BUILT_IN_ILLUSTRATIONS.find((b) => b.id === m.id))];
 }
 
 function loadFromStorage(): Partial<ConfigState> {
@@ -556,9 +561,20 @@ export const useConfigStore = create<ConfigState>((set, get) => {
 
     setExternalSkills: (skills) => { set({ externalSkills: skills }); },
   setRegistrySkills: (skills) => { set({ registrySkills: skills }); },
-    addIllustration: (ill) => { set((s) => ({ illustrations: [...s.illustrations, ill] })); get().persist(); },
+    addIllustration: (ill) => {
+      const svgContent = sanitizeSvgMarkup(ill.svgContent);
+      if (!svgContent) return;
+      set((s) => ({ illustrations: [...s.illustrations, { ...ill, svgContent }] }));
+      get().persist();
+    },
     removeIllustration: (id) => { set((s) => ({ illustrations: s.illustrations.filter((i) => i.id !== id || i.builtIn) })); get().persist(); },
-    updateIllustration: (id, patch) => { set((s) => ({ illustrations: s.illustrations.map((i) => i.id === id ? { ...i, ...patch } : i) })); get().persist(); },
+    updateIllustration: (id, patch) => {
+      const cleanPatch = patch.svgContent !== undefined
+        ? { ...patch, svgContent: sanitizeSvgMarkup(patch.svgContent) }
+        : patch;
+      set((s) => ({ illustrations: s.illustrations.map((i) => i.id === id ? { ...i, ...cleanPatch } : i) }));
+      get().persist();
+    },
     addImageAsset: (asset) => { set((s) => ({ imageAssets: [...s.imageAssets, asset] })); get().persist(); },
     removeImageAsset: (id) => { set((s) => ({ imageAssets: s.imageAssets.filter((a) => a.id !== id) })); get().persist(); },
     persist: () => {
@@ -572,7 +588,11 @@ export const useConfigStore = create<ConfigState>((set, get) => {
       const lockedProModelId = proModel?.modelId !== LOCKED_PRO_DEFAULT_MODELID ? proModel?.modelId : undefined;
       const lockedBasicBaseUrl = basicModel?.baseUrl !== LOCKED_BASIC_MODEL.baseUrl ? basicModel?.baseUrl : undefined;
       const lockedBasicModelId = basicModel?.modelId !== LOCKED_BASIC_DEFAULT_MODELID ? basicModel?.modelId : undefined;
-      const data = { configVersion: CONFIG_VERSION, models: modelsToSave, activeModelId, mcpServers, installedSkills, theme, language, paletteId, reportLayoutId, reportPreviewWidth, activePresetId, dynamicToolDefs, userSystemPrompts, lockedProBaseUrl, lockedProModelId, lockedBasicBaseUrl, lockedBasicModelId, preferredChartEngine, memoryShortTermRounds, disabledBuiltInTools, illustrations: illustrations.filter((i) => !i.builtIn), imageAssets, sidebarCollapsed, reactMaxSteps, toolExecutionTimeoutMs, streamTimeoutMs, dataParsingLimits, customLayouts };
+      const safeIllustrations = illustrations
+        .filter((i) => !i.builtIn)
+        .map((i) => ({ ...i, svgContent: sanitizeSvgMarkup(i.svgContent) }))
+        .filter((i) => i.svgContent);
+      const data = { configVersion: CONFIG_VERSION, models: modelsToSave, activeModelId, mcpServers, installedSkills, theme, language, paletteId, reportLayoutId, reportPreviewWidth, activePresetId, dynamicToolDefs, userSystemPrompts, lockedProBaseUrl, lockedProModelId, lockedBasicBaseUrl, lockedBasicModelId, preferredChartEngine, memoryShortTermRounds, disabledBuiltInTools, illustrations: safeIllustrations, imageAssets, sidebarCollapsed, reactMaxSteps, toolExecutionTimeoutMs, streamTimeoutMs, dataParsingLimits, customLayouts };
       const json = JSON.stringify(data);
       // Save to both localStorage (fallback) and DB
       try { localStorage.setItem(STORAGE_KEY, json); } catch { /* ignore */ }

@@ -1234,7 +1234,7 @@ const ImportDataDialog: React.FC<{
         buildPreviewFromCSV(text, detectedDelim);
       } else if (ext === 'xlsx' || ext === 'xls') {
         const buffer = await f.arrayBuffer();
-        const XLSX = (window as any).__XLSX__ ?? await import('xlsx');
+        const XLSX = (window as any).__XLSX__ ?? await import('@e965/xlsx');
         const wb = XLSX.read(buffer, { type: 'array' });
         const ws = wb.Sheets[wb.SheetNames[0]];
         const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as unknown[][];
@@ -1271,7 +1271,7 @@ const ImportDataDialog: React.FC<{
         allRows = rows.slice(1); // skip header row
       } else if (ext === 'xlsx' || ext === 'xls') {
         const buffer = await file.arrayBuffer();
-        const XLSX = (window as any).__XLSX__ ?? await import('xlsx');
+        const XLSX = (window as any).__XLSX__ ?? await import('@e965/xlsx');
         const wb = XLSX.read(buffer, { type: 'array' });
         const ws = wb.Sheets[wb.SheetNames[0]];
         const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as unknown[][];

@@ -24,7 +24,7 @@ import os from 'os';
 import crypto from 'crypto';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
-import * as XLSX from 'xlsx';
+import * as XLSX from '@e965/xlsx';
 import {
   buildExportPaletteCss,
   buildStandaloneThemeLinks,
@@ -36,6 +36,7 @@ import {
 import { findRendererDistRoot } from './distAssetPaths';
 import { DatabaseService } from './database';
 import { getDataDir, ensureDataDirs, setDataDir } from './dataDir';
+import { createTextFileReadGuard } from './fileReadGuard';
 import { createSkillsManager, listLegacyDirectorySkills } from './skillsManager';
 import { installSkillFromUrl } from './skillsInstallFromUrl';
 import {
@@ -148,6 +149,7 @@ function _hasEnterprisePlugin(): boolean { return _enterprisePlugin !== null; }
 // Initialize data directory and database before anything else
 const DATA_DIR = getDataDir();
 ensureDataDirs(DATA_DIR);
+const textFileReadGuard = createTextFileReadGuard(DATA_DIR);
 const DB_PATH = path.join(DATA_DIR, 'app.db');
 let db: DatabaseService = new DatabaseService(DB_PATH);
 const skillsManager = createSkillsManager(DATA_DIR);
@@ -1830,13 +1832,17 @@ ipcMain.handle('fs:selectFile', async (_e, extensions: string[]): Promise<string
     filters: exts.length > 0 ? [{ name: '文件', extensions: exts }] : [{ name: '所有文件', extensions: ['*'] }],
     title: '选择文件',
   });
-  return (canceled || !filePaths.length) ? null : filePaths[0];
+  if (canceled || !filePaths.length) return null;
+  textFileReadGuard.rememberSelectedFile(filePaths[0]);
+  return filePaths[0];
 });
 
 ipcMain.handle('fs:readTextFile', async (_e, filePath: string): Promise<string | null> => {
   try {
     if (!filePath || typeof filePath !== 'string') return null;
-    return fs.readFileSync(path.resolve(filePath), 'utf-8');
+    const resolved = path.resolve(filePath);
+    if (!textFileReadGuard.canReadTextFile(resolved)) return null;
+    return fs.readFileSync(resolved, 'utf-8');
   } catch { return null; }
 });
 
@@ -1847,7 +1853,11 @@ ipcMain.handle('rag:collections:create', (_e, data: any) => createCollection(db,
 ipcMain.handle('rag:collections:delete', (_e, id: string) => { deleteCollection(db, id); });
 ipcMain.handle('rag:documents:list', (_e, cid: string) => listDocuments(db, cid));
 ipcMain.handle('rag:documents:add', async (_e, cid: string, filePath: string, modelCfg?: any, chunkOpts?: any) => {
-  const text = fs.readFileSync(path.resolve(filePath), 'utf-8');
+  const resolved = path.resolve(filePath);
+  if (!textFileReadGuard.canReadTextFile(resolved)) {
+    throw new Error('文件未通过选择器授权，无法读取');
+  }
+  const text = fs.readFileSync(resolved, 'utf-8');
   return await addDocument(db, cid, path.basename(filePath), text, modelCfg, chunkOpts);
 });
 ipcMain.handle('rag:documents:remove', (_e, id: string) => { removeDocument(db, id); });
@@ -1859,7 +1869,9 @@ ipcMain.handle('rag:chunks:update', (_e, id: string, content: string) => {
 });
 ipcMain.handle('rag:chunks:preview', async (_e, filePath: string, chunkOpts?: any) => {
   try {
-    const text = fs.readFileSync(path.resolve(filePath), 'utf-8');
+    const resolved = path.resolve(filePath);
+    if (!textFileReadGuard.canReadTextFile(resolved)) return [];
+    const text = fs.readFileSync(resolved, 'utf-8');
     const chunks = chunkTextWithOptions(text, chunkOpts);
     return chunks.slice(0, 20); // preview first 20
   } catch (e) {
