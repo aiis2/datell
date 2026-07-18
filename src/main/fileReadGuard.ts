@@ -9,9 +9,9 @@ export interface TextFileReadGuard {
 function resolveExistingFile(filePath: string): string | null {
   if (!filePath || typeof filePath !== 'string') return null;
   try {
-    const resolved = path.resolve(filePath);
-    const stat = fs.statSync(resolved);
-    return stat.isFile() ? resolved : null;
+    const canonical = fs.realpathSync.native(path.resolve(filePath));
+    const stat = fs.statSync(canonical);
+    return stat.isFile() ? canonical : null;
   } catch {
     return null;
   }
@@ -24,7 +24,7 @@ function isWithinDir(filePath: string, dirPath: string): boolean {
 
 export function createTextFileReadGuard(dataDir: string): TextFileReadGuard {
   const allowedFiles = new Set<string>();
-  const resolvedDataDir = path.resolve(dataDir);
+  const resolvedDataDir = fs.realpathSync.native(path.resolve(dataDir));
 
   return {
     rememberSelectedFile(filePath: string): void {

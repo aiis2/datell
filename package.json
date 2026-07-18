@@ -123,6 +123,7 @@
     "@e965/xlsx": "^0.20.3",
     "@jitl/quickjs-wasmfile-release-sync": "^0.32.0",
     "@types/pg": "^8.20.0",
+    "@xmldom/xmldom": "0.9.10",
     "better-sqlite3": "^12.8.0",
     "highlight.js": "^11.11.1",
     "katex": "^0.16.38",
