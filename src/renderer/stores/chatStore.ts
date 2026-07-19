@@ -221,7 +221,9 @@ async function runAgentWithModel(
     const agentEvents = runReactAgent(messagesForAgent, model, ctrl.signal, onAskUser);
 
     for await (const event of agentEvents) {
-      if (ctrl.signal.aborted) break;
+      // After Stop, keep draining the generator so settled tools can publish their
+      // terminal results; ignore any non-terminal streaming events.
+      if (ctrl.signal.aborted && event.type !== 'tool-result') continue;
 
       const updateAssistant = (updater: (msg: ChatMessage) => ChatMessage) => {
         set((s) => ({
