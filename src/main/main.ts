@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, Menu, nativeTheme, shell, protocol } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, Menu, nativeTheme, shell, protocol, session } from 'electron';
 import path from 'path';
 import { ENTERPRISE_BUILD } from './buildFlags';
 
@@ -28,6 +28,13 @@ protocol.registerSchemesAsPrivileged([
       stream: true,
     },
   },
+  {
+    scheme: 'export',
+    privileges: {
+      standard: true,
+      secure: true,
+    },
+  },
 ]);
 import fs from 'fs';
 import os from 'os';
@@ -44,6 +51,7 @@ import {
   needsInteractivityEngineRuntime,
 } from './exportHtmlBundleUtils';
 import { findRendererDistRoot } from './distAssetPaths';
+import { EXPORT_SCHEME, createExportDocumentJob, type ExportDocumentJob } from './exportDocumentStore';
 import { DatabaseService } from './database';
 import { getDataDir, ensureDataDirs, setDataDir } from './dataDir';
 import { createTextFileReadGuard } from './fileReadGuard';
@@ -165,6 +173,7 @@ let db: DatabaseService = new DatabaseService(DB_PATH);
 const skillsManager = createSkillsManager(DATA_DIR);
 
 const isDev = !app.isPackaged;
+let exportAssetRoot = '';
 const STARTUP_SMOKE_READY_MARKER = 'STARTUP_SMOKE_READY';
 const STARTUP_SMOKE_FAIL_MARKER = 'STARTUP_SMOKE_FAIL';
 const startupSmokeEnabled = process.argv.includes('--startup-smoke-test') || process.env.DATELL_STARTUP_SMOKE === '1';
@@ -232,6 +241,150 @@ async function buildAppProtocolResponse(distPath: string, requestUrl: string): P
       },
     });
   }
+}
+
+function isExportAssetPath(pathname: string): boolean {
+  try {
+    const decoded = decodeURIComponent(pathname);
+    return /^\/(?:vendor|styles)\//.test(decoded);
+  } catch {
+    return false;
+  }
+}
+
+function isAllowedExportRequest(details: Electron.OnBeforeRequestListenerDetails, job: ExportDocumentJob): boolean {
+  if (details.url === job.url && details.resourceType === 'mainFrame') {
+    return true;
+  }
+
+  let url: URL;
+  try {
+    url = new URL(details.url);
+  } catch {
+    return false;
+  }
+
+  if (
+    url.protocol === `${EXPORT_SCHEME}:`
+    && url.hostname === job.host
+    && isExportAssetPath(url.pathname)
+  ) {
+    return true;
+  }
+
+  if (details.resourceType === 'image') {
+    if (url.protocol === 'data:' || url.protocol === 'blob:') return true;
+    return job.allowedImageUrls.includes(details.url);
+  }
+
+  return false;
+}
+
+interface ExportRenderer {
+  readonly job: ExportDocumentJob;
+  readonly window: BrowserWindow;
+  dispose(): Promise<void>;
+}
+
+function createExportRenderer(
+  html: string,
+  options: { width?: number; height?: number; offscreen?: boolean } = {},
+): ExportRenderer {
+  const job = createExportDocumentJob(html);
+  const partition = `datell-export-${crypto.randomUUID()}`;
+  const exportSession = session.fromPartition(partition, { cache: false });
+  let disposed = false;
+
+  const protocolHandler = (request: Request): Response | Promise<Response> => {
+    if (request.method !== 'GET') {
+      return new Response('Method Not Allowed', { status: 405 });
+    }
+    const documentResponse = job.handle(request.url);
+    if (documentResponse) return documentResponse;
+
+    try {
+      const url = new URL(request.url);
+      if (
+        url.protocol === `${EXPORT_SCHEME}:`
+        && url.hostname === job.host
+        && isExportAssetPath(url.pathname)
+        && exportAssetRoot
+      ) {
+        return buildAppProtocolResponse(exportAssetRoot, request.url);
+      }
+    } catch {
+      // Fall through to a fail-closed response.
+    }
+    return new Response('Not Found', { status: 404 });
+  };
+
+  exportSession.protocol.handle(EXPORT_SCHEME, protocolHandler);
+
+  const requestListener = (
+    details: Electron.OnBeforeRequestListenerDetails,
+    callback: (response: Electron.CallbackResponse) => void,
+  ) => {
+    callback({ cancel: !isAllowedExportRequest(details, job) });
+  };
+  exportSession.webRequest.onBeforeRequest(
+    { urls: ['<all_urls>', `${EXPORT_SCHEME}://*/*`, 'file://*/*', 'ws://*/*', 'wss://*/*'] },
+    requestListener,
+  );
+
+  const downloadHandler = (event: Electron.Event) => event.preventDefault();
+  exportSession.on('will-download', downloadHandler);
+  exportSession.setPermissionCheckHandler(() => false);
+  exportSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
+
+  const exportWindow = new BrowserWindow({
+    show: false,
+    width: options.width ?? 1440,
+    height: options.height ?? 900,
+    webPreferences: {
+      session: exportSession,
+      ...(options.offscreen ? { offscreen: true } : {}),
+      sandbox: true,
+      webSecurity: true,
+      contextIsolation: true,
+      nodeIntegration: false,
+      nodeIntegrationInWorker: false,
+    },
+  });
+
+  const windowOpenHandler = () => ({ action: 'deny' as const });
+  const navigationHandler = (
+    event: Electron.Event<Electron.WebContentsWillNavigateEventParams>,
+    navigationUrl: string,
+  ) => {
+    if (navigationUrl !== job.url) event.preventDefault();
+  };
+  const frameNavigationHandler = (
+    details: Electron.Event<Electron.WebContentsWillFrameNavigateEventParams>,
+  ) => {
+    if (details.url !== job.url) details.preventDefault();
+  };
+  exportWindow.webContents.setWindowOpenHandler(windowOpenHandler);
+  exportWindow.webContents.on('will-navigate', navigationHandler);
+  exportWindow.webContents.on('will-frame-navigate', frameNavigationHandler);
+
+  return {
+    job,
+    window: exportWindow,
+    async dispose() {
+      if (disposed) return;
+      disposed = true;
+      exportWindow.webContents.removeListener('will-navigate', navigationHandler);
+      exportWindow.webContents.removeListener('will-frame-navigate', frameNavigationHandler);
+      exportSession.webRequest.onBeforeRequest(null);
+      exportSession.setPermissionCheckHandler(null);
+      exportSession.setPermissionRequestHandler(null);
+      exportSession.removeListener('will-download', downloadHandler);
+      try { exportSession.protocol.unhandle(EXPORT_SCHEME); } catch { /* already unhandled */ }
+      job.dispose();
+      if (!exportWindow.isDestroyed()) exportWindow.destroy();
+      try { await exportSession.clearStorageData(); } catch { /* best effort for ephemeral session */ }
+    },
+  };
 }
 
 function writeStartupSmokeResult(status: 'ready' | 'fail', detail: string): void {
@@ -789,16 +942,10 @@ ipcMain.handle('fs:openDataDir', () => {
 
 // Export HTML tables to Excel
 ipcMain.handle('fs:exportExcel', async (_event, html: string, title: string) => {
-  const tmpPath = path.join(app.getPath('temp'), `excel_${Date.now()}.html`);
-  fs.writeFileSync(tmpPath, html, 'utf-8');
-  const hiddenWin = new BrowserWindow({
-    show: false,
-    width: 1200,
-    height: 800,
-    webPreferences: { contextIsolation: false, nodeIntegration: false },
-  });
+  const renderer = createExportRenderer(html, { width: 1200, height: 800 });
+  const hiddenWin = renderer.window;
   try {
-    await hiddenWin.loadFile(tmpPath);
+    await hiddenWin.loadURL(renderer.job.url);
     await new Promise((r) => setTimeout(r, 1500));
 
     const tablesData = await hiddenWin.webContents.executeJavaScript(`
@@ -847,8 +994,7 @@ ipcMain.handle('fs:exportExcel', async (_event, html: string, title: string) => 
     }
     return { ok: false, message: tr('已取消', 'Cancelled') };
   } finally {
-    hiddenWin.destroy();
-    try { fs.unlinkSync(tmpPath); } catch { /* ignore */ }
+    await renderer.dispose();
   }
 });
 
@@ -966,17 +1112,14 @@ ipcMain.handle('save-pdf', async (_event, htmlOrArgs: string | { html: string; t
   const themeId = typeof htmlOrArgs === 'object' ? (htmlOrArgs.themeId ?? 'business') : 'business';
   const layoutId = typeof htmlOrArgs === 'object' ? (htmlOrArgs.layoutId ?? 'default') : 'default';
   const palette = typeof htmlOrArgs === 'object' ? htmlOrArgs.palette : undefined;
-  const tmpPath = path.join(app.getPath('temp'), `report_pdf_${Date.now()}.html`);
   // buildPrintModeHtml: inlines vendor JS + injects CSS/JS to disable interactivity & animations
-  fs.writeFileSync(tmpPath, buildPrintModeHtml(html, themeId, layoutId, palette), 'utf-8');
-  const hiddenWin = new BrowserWindow({
-    show: false,
-    width: 1440,
-    height: 900,
-    webPreferences: { offscreen: true, contextIsolation: true, nodeIntegration: false },
-  });
+  const renderer = createExportRenderer(
+    buildPrintModeHtml(html, themeId, layoutId, palette),
+    { offscreen: true },
+  );
+  const hiddenWin = renderer.window;
   try {
-    await hiddenWin.loadFile(tmpPath);
+    await hiddenWin.loadURL(renderer.job.url);
     // EXP-06 FIX: Wait for ECharts 'finished' event (public API) instead of private _zr.animation.getClip
     // which was removed/changed in ECharts 5.4+. ApexCharts check via animationEnded is unchanged.
     await Promise.race([
@@ -1035,8 +1178,7 @@ ipcMain.handle('save-pdf', async (_event, htmlOrArgs: string | { html: string; t
     }
     return false;
   } finally {
-    hiddenWin.destroy();
-    try { fs.unlinkSync(tmpPath); } catch { /* ignore */ }
+    await renderer.dispose();
   }
 });
 
@@ -1048,17 +1190,11 @@ ipcMain.handle('capture-report', async (_event, htmlOrArgs: string | { html: str
   const themeId  = typeof htmlOrArgs === 'object' ? (htmlOrArgs.themeId  ?? 'business') : 'business';
   const layoutId = typeof htmlOrArgs === 'object' ? (htmlOrArgs.layoutId ?? 'default')  : 'default';
   const palette  = typeof htmlOrArgs === 'object' ? htmlOrArgs.palette : undefined;
-  const tmpPath = path.join(app.getPath('temp'), `report_capture_${Date.now()}.html`);
   // buildPrintModeHtml: inlines vendor JS + disables interactivity for clean screenshot
-  fs.writeFileSync(tmpPath, buildPrintModeHtml(html, themeId, layoutId, palette), 'utf-8');
-  const hiddenWin = new BrowserWindow({
-    show: false,
-    width: 1440,
-    height: 900,
-    webPreferences: { contextIsolation: true, nodeIntegration: false },
-  });
+  const renderer = createExportRenderer(buildPrintModeHtml(html, themeId, layoutId, palette));
+  const hiddenWin = renderer.window;
   try {
-    await hiddenWin.loadFile(tmpPath);
+    await hiddenWin.loadURL(renderer.job.url);
     // P3-A: Wait for both ECharts and ApexCharts rendering to complete (up to 8s)
     await Promise.race([
       hiddenWin.webContents.executeJavaScript(`
@@ -1109,8 +1245,7 @@ ipcMain.handle('capture-report', async (_event, htmlOrArgs: string | { html: str
     }
     return false;
   } finally {
-    hiddenWin.destroy();
-    try { fs.unlinkSync(tmpPath); } catch { /* ignore */ }
+    await renderer.dispose();
   }
 });
 
@@ -1969,6 +2104,7 @@ app.whenReady().then(async () => {
   }
   protocol.handle('app', (request) => buildAppProtocolResponse(distPath, request.url));
   const reportRoot = isDev ? path.join(app.getAppPath(), 'public') : distPath;
+  exportAssetRoot = reportRoot;
   protocol.handle('report', (request) => buildAppProtocolResponse(reportRoot, request.url));
 
   // Show splash first, then create main window hidden

@@ -47,13 +47,22 @@ const reportHtml = `<!doctype html><html><head>
     xhr.onerror = function () { resolve({ ok: false, name: 'error' }); };
     try { xhr.send(); } catch (error) { resolve({ ok: false, name: error.name }); }
   });
-  window.__workerProbe = Promise.resolve().then(function () {
+  window.__workerProbe = new Promise(function (resolve) {
     try {
       var worker = new Worker(URL.createObjectURL(new Blob(['self.postMessage(1)'], { type: 'text/javascript' })));
-      worker.terminate();
-      return { ok: true };
-    } catch (error) { return { ok: false, name: error.name }; }
+      worker.onmessage = function () { worker.terminate(); resolve({ ok: true }); };
+      worker.onerror = function (error) { worker.terminate(); resolve({ ok: false, name: error && error.error ? error.error.name : 'error' }); };
+      setTimeout(function () { worker.terminate(); resolve({ ok: false, name: 'timeout' }); }, 500);
+    } catch (error) { resolve({ ok: false, name: error.name }); }
   });
+  window.__popupAttempt = Promise.resolve().then(function () {
+    try { window.open(${JSON.stringify(fileUrl)}, '_blank'); return true; }
+    catch (error) { return false; }
+  });
+  var escapeFrame = document.createElement('iframe');
+  escapeFrame.src = ${JSON.stringify(fileUrl)};
+  escapeFrame.id = 'escape-frame';
+  document.body.appendChild(escapeFrame);
   window.__tableProbe = Promise.resolve().then(function () {
     var table = document.createElement('table');
     table.id = 'generated-table';
@@ -141,6 +150,7 @@ app.whenReady().then(async () => {
       window.__fileProbe,
       window.__xhrProbe,
       window.__workerProbe,
+      window.__popupAttempt,
       window.__tableProbe,
       window.__apexProbe || false,
       Promise.resolve({
@@ -153,13 +163,13 @@ app.whenReady().then(async () => {
         secretPath: ${JSON.stringify(secretPath)},
       }),
     ])\`);
-    const [fileProbe, xhrProbe, workerProbe, tableRows, apexRendered, meta] = result;
+    const [fileProbe, xhrProbe, workerProbe, popupAttempt, tableRows, apexRendered, meta] = result;
     const isolated = expectation === 'isolated';
     const pass = isolated
       ? meta.protocol === 'export:' && !fileProbe.ok && !xhrProbe.ok && !workerProbe.ok && tableRows === 2
         && meta.inlineRan && meta.echarts && meta.apex && apexRendered && meta.tableText === 'safe-table' && popupCount === 0
       : meta.protocol === 'file:' && fileProbe.ok && fileProbe.text === 'export-local-secret-sentinel';
-    finish(pass ? 0 : 1, { expectation, result: { fileProbe, xhrProbe, workerProbe, tableRows, apexRendered, meta }, popupCount, navigationCount, requestLog, pass });
+    finish(pass ? 0 : 1, { expectation, result: { fileProbe, xhrProbe, workerProbe, popupAttempt, tableRows, apexRendered, meta }, popupCount, navigationCount, requestLog, pass });
   });
   await win.loadURL(expectation === 'isolated' ? documentUrl : 'file://' + path.join(fixtureRoot, 'report.html'));
   await win.webContents.executeJavaScript('window.exportProbeApi.report({ ready: true })');

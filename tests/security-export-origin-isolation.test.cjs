@@ -16,8 +16,10 @@ const check = (condition, message) => {
 };
 
 check(/scheme:\s*['"]export['"]/.test(mainSource), 'main must register a dedicated export scheme');
-check(/protocol\.handle\(['"]export['"]/.test(mainSource) || /\.protocol\.handle\(['"]export['"]/.test(mainSource), 'main must install an export protocol handler');
+check(/protocol\.handle\(['"]export['"]/.test(mainSource) || /\.protocol\.handle\(['"]export['"]/.test(mainSource) || /protocol\.handle\(EXPORT_SCHEME/.test(mainSource), 'main must install an export protocol handler');
 check(/createExportDocumentJob/.test(mainSource), 'all export handlers must use the in-memory export document job');
+check((mainSource.match(/createExportRenderer\(/g) || []).length >= 4, 'Excel, PDF, and PNG handlers must each create an isolated renderer');
+check((mainSource.match(/loadURL\(renderer\.job\.url\)/g) || []).length >= 3, 'all three export handlers must load the active export URL');
 check(/session\.fromPartition/.test(mainSource), 'each export must use a non-persistent session');
 check(/sandbox:\s*true/.test(mainSource), 'export windows must explicitly enable Chromium sandboxing');
 check(/webSecurity:\s*true/.test(mainSource), 'export windows must explicitly enable web security');
@@ -28,7 +30,7 @@ check(/will-frame-navigate/.test(mainSource), 'export windows must restrict fram
 check(/setPermission(Check|Request)Handler/.test(mainSource), 'export sessions must deny permission requests');
 check(/onBeforeRequest/.test(mainSource), 'export sessions must enforce a request allowlist');
 check(/connect-src\s+'none'/.test(storeSource), 'export documents must deny arbitrary network connections');
-check(/file:\/\//.test(storeSource), 'export policy must explicitly account for file URLs');
+check(/file:\/\//.test(mainSource + storeSource), 'export policy must explicitly account for file URLs');
 check(!/fs\.writeFileSync\(tmpPath[\s\S]{0,180}loadFile\(tmpPath/.test(mainSource), 'transient export HTML must not be written then loaded with file://');
 check(!/await hiddenWin\.loadFile\(tmpPath\)/.test(mainSource), 'PDF/PNG/Excel hidden windows must use loadURL on export origin');
 
