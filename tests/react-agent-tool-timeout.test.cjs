@@ -131,6 +131,7 @@ test('does not let a timed-out mutator outlive its tool result or the agent', as
 
 test('waits for the active tool but skips later calls after parent cancellation', async () => {
   const events = [];
+  const results = new Map();
   let laterToolExecutions = 0;
   let streamCall = 0;
   const parent = new AbortController();
@@ -186,12 +187,92 @@ test('waits for the active tool but skips later calls after parent cancellation'
       { provider: 'openai', modelId: 'm' },
       parent.signal,
     )) {
-      if (event.type === 'tool-result') events.push(`result:${event.callId}`);
+      if (event.type === 'tool-result') {
+        events.push(`result:${event.callId}`);
+        results.set(event.callId, event.result);
+      }
     }
     events.push('agent-returned');
 
     assert.equal(laterToolExecutions, 0);
-    assert.deepEqual(events, ['active-tool-settled', 'agent-returned']);
+    assert.deepEqual(events, [
+      'active-tool-settled',
+      'result:tc-1',
+      'result:tc-2',
+      'agent-returned',
+    ]);
+    assert.match(results.get('tc-1'), /用户停止.*实际完成/);
+    assert.match(results.get('tc-1'), /settled/);
+    assert.match(results.get('tc-2'), /未执行.*用户.*停止/);
+  } finally {
+    harness.restore();
+  }
+});
+
+test('records cooperative cancellation and marks later tools as not executed', async () => {
+  const results = new Map();
+  let laterToolExecutions = 0;
+  let streamCall = 0;
+  const parent = new AbortController();
+
+  async function* streamChat() {
+    streamCall += 1;
+    if (streamCall === 1) {
+      yield { type: 'tool-call', id: 'tc-1', name: 'cooperative_tool', args: {} };
+      yield { type: 'tool-call', id: 'tc-2', name: 'later_mutator', args: {} };
+    }
+  }
+
+  const configState = {
+    language: 'zh-CN',
+    reactMaxSteps: 5,
+    toolExecutionTimeoutMs: 1000,
+    userSystemPrompts: [],
+    preferredChartEngine: 'echarts',
+    reportLayoutId: undefined,
+    activePresetId: undefined,
+  };
+
+  const harness = loadReactAgent({
+    streamChat,
+    configState,
+    tools: [
+      {
+        name: 'cooperative_tool',
+        description: '',
+        parameters: [],
+        execute: (_args, signal) => new Promise((resolve, reject) => {
+          setTimeout(() => parent.abort(), 5);
+          signal.addEventListener('abort', () => {
+            reject(new DOMException('stopped by user', 'AbortError'));
+          }, { once: true });
+        }),
+      },
+      {
+        name: 'later_mutator',
+        description: '',
+        parameters: [],
+        execute: async () => {
+          laterToolExecutions += 1;
+          return 'unexpected';
+        },
+      },
+    ],
+  });
+
+  try {
+    for await (const event of harness.runReactAgent(
+      [{ id: 'u', role: 'user', content: 'go', timestamp: 0 }],
+      { provider: 'openai', modelId: 'm' },
+      parent.signal,
+    )) {
+      if (event.type === 'tool-result') results.set(event.callId, event.result);
+    }
+
+    assert.equal(laterToolExecutions, 0);
+    assert.match(results.get('tc-1'), /用户.*停止/);
+    assert.match(results.get('tc-1'), /stopped by user/);
+    assert.match(results.get('tc-2'), /未执行.*用户.*停止/);
   } finally {
     harness.restore();
   }

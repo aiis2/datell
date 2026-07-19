@@ -487,6 +487,12 @@ export async function* runReactAgent(
 
         if (outcome.status === 'rejected') {
           const errorMessage = outcome.reason instanceof Error ? outcome.reason.message : '未知错误';
+          if (outcome.parentAborted) {
+            return {
+              id: tc.id,
+              result: `工具执行错误: 用户已停止当前响应，取消请求后工具已停止: ${errorMessage}`,
+            };
+          }
           if (outcome.deadlineExceeded) {
             return {
               id: tc.id,
@@ -496,9 +502,11 @@ export async function* runReactAgent(
           return { id: tc.id, result: `工具执行错误: ${errorMessage}` };
         }
 
-        let result = outcome.deadlineExceeded
-          ? `⚠️ 工具执行超时（${toolTimeoutMs / 1000}秒），取消请求后仍实际完成。请勿重复执行。\n\n${outcome.value}`
-          : outcome.value;
+        let result = outcome.parentAborted
+          ? `⚠️ 用户停止当前响应后，工具仍实际完成。请勿重复执行。\n\n${outcome.value}`
+          : outcome.deadlineExceeded
+            ? `⚠️ 工具执行超时（${toolTimeoutMs / 1000}秒），取消请求后仍实际完成。请勿重复执行。\n\n${outcome.value}`
+            : outcome.value;
 
         // Truncate oversized results to avoid flooding the context window
         const limit = tool.maxResultSizeChars;
@@ -511,8 +519,15 @@ export async function* runReactAgent(
       }
     }
 
+    const skippedAfterStopResult = '工具执行错误: 工具未执行，因为用户已停止当前响应';
+    let stoppedByUser = false;
+
     // Handle ask_user calls sequentially first
     for (const tc of askUserCalls) {
+      if (signal?.aborted) {
+        stoppedByUser = true;
+        break;
+      }
       const question = String(tc.args.question ?? '');
       const context = tc.args.context ? String(tc.args.context) : undefined;
       const options = Array.isArray(tc.args.options) ? (tc.args.options as string[]) : undefined;
@@ -528,28 +543,48 @@ export async function* runReactAgent(
       } else {
         result = '(ask_user 未配置回调，跳过交互)';
       }
-      // If the user stopped streaming, bail out immediately
-      if (result === '__ABORT__' || signal?.aborted) return;
+      if (result === '__ABORT__' || signal?.aborted) {
+        results.set(tc.id, '工具执行错误: 用户已停止当前响应');
+        stoppedByUser = true;
+        break;
+      }
       results.set(tc.id, result);
     }
 
     // Execute serial (state-modifying) tools one by one in call order
-    for (const tc of serialCalls) {
-      if (signal?.aborted) return;
-      const { id, result } = await executeTool(tc);
-      if (signal?.aborted) return;
-      results.set(id, result);
+    if (!stoppedByUser) {
+      for (const tc of serialCalls) {
+        if (signal?.aborted) {
+          stoppedByUser = true;
+          break;
+        }
+        const { id, result } = await executeTool(tc);
+        results.set(id, result);
+        if (signal?.aborted) {
+          stoppedByUser = true;
+          break;
+        }
+      }
     }
 
     // Execute concurrency-safe tools in parallel
-    if (safeCalls.length > 0) {
-      if (signal?.aborted) return;
-      const settled = await Promise.allSettled(safeCalls.map((tc) => executeTool(tc)));
-      if (signal?.aborted) return;
-      for (const outcome of settled) {
-        if (outcome.status === 'fulfilled') {
-          results.set(outcome.value.id, outcome.value.result);
+    if (!stoppedByUser && safeCalls.length > 0) {
+      if (signal?.aborted) {
+        stoppedByUser = true;
+      } else {
+        const settled = await Promise.allSettled(safeCalls.map((tc) => executeTool(tc)));
+        for (const outcome of settled) {
+          if (outcome.status === 'fulfilled') {
+            results.set(outcome.value.id, outcome.value.result);
+          }
         }
+        stoppedByUser = signal?.aborted ?? false;
+      }
+    }
+
+    if (stoppedByUser) {
+      for (const tc of pendingToolCalls) {
+        if (!results.has(tc.id)) results.set(tc.id, skippedAfterStopResult);
       }
     }
 
@@ -563,6 +598,8 @@ export async function* runReactAgent(
         tool_call_id: tc.id,
       });
     }
+
+    if (stoppedByUser || signal?.aborted) return;
 
     // D-05: Framework-level post-hook — after a successful chart generation,
     // run validate_report silently. suggest_card_combinations is now called by AI
