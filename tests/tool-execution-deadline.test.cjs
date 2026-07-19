@@ -128,6 +128,44 @@ test('propagates parent cancellation to the per-call signal', async () => {
   assert.equal(outcome.parentAborted, true);
 });
 
+test('keeps parent cancellation as the sole cause when its timer would expire later', async () => {
+  const parent = new AbortController();
+  const pending = executeWithDeadline({
+    timeoutMs: 15,
+    parentSignal: parent.signal,
+    execute: async () => {
+      await sleep(30);
+      return 'settled';
+    },
+  });
+
+  setTimeout(() => parent.abort(), 5);
+  const outcome = await pending;
+
+  assert.equal(outcome.status, 'fulfilled');
+  assert.equal(outcome.parentAborted, true);
+  assert.equal(outcome.deadlineExceeded, false);
+});
+
+test('keeps the deadline as the sole cause when the parent aborts later', async () => {
+  const parent = new AbortController();
+  const pending = executeWithDeadline({
+    timeoutMs: 5,
+    parentSignal: parent.signal,
+    execute: async () => {
+      await sleep(30);
+      return 'settled';
+    },
+  });
+
+  setTimeout(() => parent.abort(), 15);
+  const outcome = await pending;
+
+  assert.equal(outcome.status, 'fulfilled');
+  assert.equal(outcome.deadlineExceeded, true);
+  assert.equal(outcome.parentAborted, false);
+});
+
 test('does not start execution when the parent is already aborted', async () => {
   const parent = new AbortController();
   parent.abort(new DOMException('stopped', 'AbortError'));

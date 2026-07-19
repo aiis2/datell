@@ -28,6 +28,7 @@ export async function executeWithDeadline<T>({
   let parentAborted = parentSignal?.aborted ?? false;
 
   const abortFromParent = () => {
+    if (controller.signal.aborted) return;
     parentAborted = true;
     controller.abort(parentSignal?.reason);
   };
@@ -49,6 +50,7 @@ export async function executeWithDeadline<T>({
 
   const deadlineTimer = timeoutMs > 0
     ? setTimeout(() => {
+        if (controller.signal.aborted) return;
         deadlineExceeded = true;
         controller.abort(new DOMException('Tool execution deadline exceeded', 'TimeoutError'));
       }, timeoutMs)
