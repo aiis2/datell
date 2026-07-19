@@ -10,6 +10,7 @@ import { buildMemoryContext } from './memoryService';
 import { retrieveSystemComponents, formatSystemComponentsPrompt } from './systemRagService';
 import { BUILT_IN_PRESETS } from '../types/reportPresets';
 import { activePlanTaskIds } from '../tools/planTasks';
+import { executeWithDeadline } from './toolExecutionDeadline';
 
 const MAX_TOOL_STEPS = 20; // legacy fallback — actual limit read from configStore at runtime
 
@@ -478,16 +479,27 @@ export async function* runReactAgent(
       }
 
       try {
-        const execPromise = tool.execute(tc.args, signal);
-        let result: string;
-        if (toolTimeoutMs > 0) {
-          const timeoutPromise = new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error(`\u5de5\u5177\u6267\u884c\u8d85\u65f6\uff08${toolTimeoutMs / 1000}\u79d2\uff09\uff0c\u5df2\u81ea\u52a8\u53d6\u6d88`)), toolTimeoutMs)
-          );
-          result = await Promise.race([execPromise, timeoutPromise]);
-        } else {
-          result = await execPromise;
+        const outcome = await executeWithDeadline({
+          timeoutMs: toolTimeoutMs,
+          parentSignal: signal,
+          execute: (toolSignal) => tool.execute(tc.args, toolSignal),
+        });
+
+        if (outcome.status === 'rejected') {
+          const errorMessage = outcome.reason instanceof Error ? outcome.reason.message : '未知错误';
+          if (outcome.deadlineExceeded) {
+            return {
+              id: tc.id,
+              result: `工具执行错误: 工具执行超时（${toolTimeoutMs / 1000}秒），取消请求后已停止: ${errorMessage}`,
+            };
+          }
+          return { id: tc.id, result: `工具执行错误: ${errorMessage}` };
         }
+
+        let result = outcome.deadlineExceeded
+          ? `⚠️ 工具执行超时（${toolTimeoutMs / 1000}秒），取消请求后仍实际完成。请勿重复执行。\n\n${outcome.value}`
+          : outcome.value;
+
         // Truncate oversized results to avoid flooding the context window
         const limit = tool.maxResultSizeChars;
         if (limit && result.length > limit) {
@@ -523,13 +535,17 @@ export async function* runReactAgent(
 
     // Execute serial (state-modifying) tools one by one in call order
     for (const tc of serialCalls) {
+      if (signal?.aborted) return;
       const { id, result } = await executeTool(tc);
+      if (signal?.aborted) return;
       results.set(id, result);
     }
 
     // Execute concurrency-safe tools in parallel
     if (safeCalls.length > 0) {
+      if (signal?.aborted) return;
       const settled = await Promise.allSettled(safeCalls.map((tc) => executeTool(tc)));
+      if (signal?.aborted) return;
       for (const outcome of settled) {
         if (outcome.status === 'fulfilled') {
           results.set(outcome.value.id, outcome.value.result);

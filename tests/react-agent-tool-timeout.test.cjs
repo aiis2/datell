@@ -5,14 +5,14 @@ const path = require('node:path');
 const test = require('node:test');
 const ts = require('typescript');
 
-const reactAgentPath = path.join(__dirname, '..', 'src', 'renderer', 'services', 'reactAgent.ts');
+const sourceRoot = process.env.DATELL_SOURCE_ROOT
+  ? path.resolve(process.env.DATELL_SOURCE_ROOT)
+  : path.join(__dirname, '..');
+const reactAgentPath = path.join(sourceRoot, 'src', 'renderer', 'services', 'reactAgent.ts');
 
-test('does not let a timed-out mutator outlive its tool result or the agent', async () => {
+function loadReactAgent({ streamChat, tools, configState }) {
   const originalTsLoader = require.extensions['.ts'];
   const originalLoad = Module._load;
-  const events = [];
-  let streamCall = 0;
-  let sideEffects = 0;
 
   require.extensions['.ts'] = (mod, filename) => {
     const source = fs.readFileSync(filename, 'utf8');
@@ -25,6 +25,46 @@ test('does not let a timed-out mutator outlive its tool result or the agent', as
     }).outputText;
     mod._compile(output, filename);
   };
+
+  const mocks = {
+    './llmService': { streamChat, toolsToJsonSchema: (value) => value },
+    '../prompts/systemPrompt': { buildSystemPrompt: () => 'system' },
+    '../tools': { getAllTools: () => tools },
+    '../tools/suggestCardCombinations': { suggestCardCombinationsTool: {} },
+    '../stores/configStore': { useConfigStore: { getState: () => configState } },
+    '../stores/reportStore': { useReportStore: { getState: () => ({ selectedTemplateId: null, templates: [] }) } },
+    '../stores/datasourceStore': { useDatasourceStore: { getState: () => ({ activeDatasourceId: null, allDatasources: () => [] }) } },
+    './memoryService': { buildMemoryContext: async () => '' },
+    './systemRagService': { retrieveSystemComponents: async () => ({ cards: [], layouts: [] }), formatSystemComponentsPrompt: () => '' },
+    '../types/reportPresets': { BUILT_IN_PRESETS: [] },
+    '../tools/planTasks': { activePlanTaskIds: new Set() },
+  };
+
+  Module._load = function loadWithMocks(request, parent, isMain) {
+    if (parent?.filename === reactAgentPath && Object.hasOwn(mocks, request)) {
+      return mocks[request];
+    }
+    return originalLoad.call(this, request, parent, isMain);
+  };
+
+  delete require.cache[reactAgentPath];
+  const { runReactAgent } = require(reactAgentPath);
+
+  return {
+    runReactAgent,
+    restore() {
+      delete require.cache[reactAgentPath];
+      Module._load = originalLoad;
+      if (originalTsLoader) require.extensions['.ts'] = originalTsLoader;
+      else delete require.extensions['.ts'];
+    },
+  };
+}
+
+test('does not let a timed-out mutator outlive its tool result or the agent', async () => {
+  const events = [];
+  let streamCall = 0;
+  let sideEffects = 0;
 
   async function* streamChat() {
     streamCall += 1;
@@ -45,45 +85,26 @@ test('does not let a timed-out mutator outlive its tool result or the agent', as
     activePresetId: undefined,
   };
 
-  const mocks = {
-    './llmService': { streamChat, toolsToJsonSchema: (value) => value },
-    '../prompts/systemPrompt': { buildSystemPrompt: () => 'system' },
-    '../tools': {
-      getAllTools: () => [{
-        name: 'mutator',
-        description: '',
-        parameters: [],
-        execute: async () => {
-          await new Promise((resolve) => setTimeout(resolve, 50));
-          sideEffects += 1;
-          events.push('mutation-settled');
-          return 'mutation committed';
-        },
-      }],
-    },
-    '../tools/suggestCardCombinations': { suggestCardCombinationsTool: {} },
-    '../stores/configStore': { useConfigStore: { getState: () => configState } },
-    '../stores/reportStore': { useReportStore: { getState: () => ({ selectedTemplateId: null, templates: [] }) } },
-    '../stores/datasourceStore': { useDatasourceStore: { getState: () => ({ activeDatasourceId: null, allDatasources: () => [] }) } },
-    './memoryService': { buildMemoryContext: async () => '' },
-    './systemRagService': { retrieveSystemComponents: async () => ({ cards: [], layouts: [] }), formatSystemComponentsPrompt: () => '' },
-    '../types/reportPresets': { BUILT_IN_PRESETS: [] },
-    '../tools/planTasks': { activePlanTaskIds: new Set() },
-  };
-
-  Module._load = function loadWithMocks(request, parent, isMain) {
-    if (parent?.filename === reactAgentPath && Object.hasOwn(mocks, request)) {
-      return mocks[request];
-    }
-    return originalLoad.call(this, request, parent, isMain);
-  };
+  const harness = loadReactAgent({
+    streamChat,
+    configState,
+    tools: [{
+      name: 'mutator',
+      description: '',
+      parameters: [],
+      execute: async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        sideEffects += 1;
+        events.push('mutation-settled');
+        return 'mutation committed';
+      },
+    }],
+  });
 
   try {
-    delete require.cache[reactAgentPath];
-    const { runReactAgent } = require(reactAgentPath);
     const emitted = [];
 
-    for await (const event of runReactAgent(
+    for await (const event of harness.runReactAgent(
       [{ id: 'u', role: 'user', content: 'go', timestamp: 0 }],
       { provider: 'openai', modelId: 'm' },
       undefined,
@@ -104,10 +125,74 @@ test('does not let a timed-out mutator outlive its tool result or the agent', as
     await new Promise((resolve) => setTimeout(resolve, 70));
     assert.equal(sideEffects, 1, 'no detached mutation may occur after agent completion');
   } finally {
-    delete require.cache[reactAgentPath];
-    Module._load = originalLoad;
-    if (originalTsLoader) require.extensions['.ts'] = originalTsLoader;
-    else delete require.extensions['.ts'];
+    harness.restore();
   }
 });
 
+test('waits for the active tool but skips later calls after parent cancellation', async () => {
+  const events = [];
+  let laterToolExecutions = 0;
+  let streamCall = 0;
+  const parent = new AbortController();
+
+  async function* streamChat() {
+    streamCall += 1;
+    if (streamCall === 1) {
+      yield { type: 'tool-call', id: 'tc-1', name: 'slow_mutator', args: {} };
+      yield { type: 'tool-call', id: 'tc-2', name: 'later_mutator', args: {} };
+    }
+  }
+
+  const configState = {
+    language: 'zh-CN',
+    reactMaxSteps: 5,
+    toolExecutionTimeoutMs: 1000,
+    userSystemPrompts: [],
+    preferredChartEngine: 'echarts',
+    reportLayoutId: undefined,
+    activePresetId: undefined,
+  };
+
+  const harness = loadReactAgent({
+    streamChat,
+    configState,
+    tools: [
+      {
+        name: 'slow_mutator',
+        description: '',
+        parameters: [],
+        execute: async () => {
+          setTimeout(() => parent.abort(), 5);
+          await new Promise((resolve) => setTimeout(resolve, 25));
+          events.push('active-tool-settled');
+          return 'settled';
+        },
+      },
+      {
+        name: 'later_mutator',
+        description: '',
+        parameters: [],
+        execute: async () => {
+          laterToolExecutions += 1;
+          return 'unexpected';
+        },
+      },
+    ],
+  });
+
+  try {
+    for await (const event of harness.runReactAgent(
+      [{ id: 'u', role: 'user', content: 'go', timestamp: 0 }],
+      { provider: 'openai', modelId: 'm' },
+      parent.signal,
+    )) {
+      if (event.type === 'tool-result') events.push(`result:${event.callId}`);
+    }
+    events.push('agent-returned');
+
+    assert.equal(laterToolExecutions, 0);
+    assert.deepEqual(events, ['active-tool-settled', 'agent-returned']);
+  } finally {
+    harness.restore();
+  }
+});
