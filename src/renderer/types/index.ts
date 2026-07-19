@@ -937,6 +937,19 @@ export interface DatasourceConfigPublic {
   updatedAt: string;
 }
 
+export type UserDBRowLocator =
+  | { kind: 'rowid'; value: string }
+  | { kind: 'primary-key'; values: Record<string, unknown> };
+
+export interface UserDBTableDataResult {
+  columns: string[];
+  rows: unknown[][];
+  rowLocators: Array<UserDBRowLocator | null>;
+  editable: boolean;
+  rowCount: number;
+  totalCount: number;
+}
+
 export interface ElectronAPI {
   savePdf: (args: { html: string; title: string; themeId?: string; layoutId?: string; palette?: { primary: string; colors: string[]; bodyBg: string; cardBg: string; textColor: string; subTextColor?: string; isDark: boolean } }) => Promise<boolean>;
   captureReport: (args: { html: string; title: string; themeId?: string; layoutId?: string; palette?: { primary: string; colors: string[]; bodyBg: string; cardBg: string; textColor: string; subTextColor?: string; isDark: boolean } }) => Promise<boolean>;
@@ -1019,6 +1032,10 @@ export interface ElectronAPI {
   datasourceTest: (id: string) => Promise<{ ok: boolean; message: string }>;
   datasourceQuery: (id: string, sql: string, params?: unknown[]) => Promise<{ columns: string[]; rows: unknown[][]; rowCount: number; executionMs: number }>;
   datasourceGetSchema: (id: string) => Promise<{ tables: Array<{ name: string; columns: Array<{ name: string; type: string; nullable: boolean; comment?: string }> }> }>;
+
+  // User database table editing
+  userdbGetTableData: (id: string, tableName: string, limit?: number, offset?: number) => Promise<UserDBTableDataResult>;
+  userdbUpdateRow: (id: string, tableName: string, locator: UserDBRowLocator, updates: Record<string, unknown>) => Promise<{ changes: 1 }>;
 
   // Vendor file reader (for inlining chart libs into exported HTML)
   readVendorFile: (filename: string) => Promise<string | null>;

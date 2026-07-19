@@ -1108,6 +1108,7 @@ export const enUS: Locale = {
     dataPreviewLoading: 'Loading...',
     dataPreviewEmpty: 'No data in table',
     dataPreviewDblClickHint: 'Double-click a cell to edit',
+    dataPreviewReadOnlyHint: 'Read-only: no stable row identity',
     dataPreviewRowCount: '{n} rows total',
     dataPreviewFetchError: 'Failed to load data: ',
     // Pagination

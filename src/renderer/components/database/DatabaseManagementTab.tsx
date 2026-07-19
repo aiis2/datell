@@ -49,6 +49,7 @@ const IconRows = RowsIcon ?? Table2;
 const IconPenLine = PenLine ?? Pencil;
 import { useDatasourceStore } from '../../stores/datasourceStore';
 import type { UserDBConfig, DatasourceConfig, ActiveDatasource, SchemaInfo } from '../../stores/datasourceStore';
+import type { UserDBTableDataResult } from '../../types';
 import { useI18n } from '../../i18n';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -976,7 +977,7 @@ const TableDataPreview: React.FC<{
   isUserDB: boolean;
 }> = ({ sourceId, tableName, isUserDB }) => {
   const { t } = useI18n();
-  const [data, setData] = useState<{ columns: string[]; rows: unknown[][]; totalCount: number } | null>(null);
+  const [data, setData] = useState<UserDBTableDataResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
@@ -1003,29 +1004,19 @@ const TableDataPreview: React.FC<{
   }, [sourceId, tableName]);
 
   const handleCellDblClick = (rowIdx: number, colName: string, value: unknown) => {
-    if (!isUserDB) return;
+    if (!isUserDB || !data?.editable || !data.rowLocators[rowIdx]) return;
     setEditingCell({ row: rowIdx, col: colName });
     setEditValue(value == null ? '' : String(value));
   };
 
   const handleSaveCell = async () => {
     if (!editingCell || !data) return;
-    const row = data.rows[editingCell.row];
-    const colIdx = data.columns.indexOf(editingCell.col);
-    // Use rowid as the WHERE clause anchor (first column as fallback)
-    const pkCol = data.columns[0];
-    const pkVal = row[0];
+    const locator = data.rowLocators[editingCell.row];
+    if (!data.editable || !locator) return;
     setSaving(true);
     try {
-      await api().userdbUpdateRow(sourceId, tableName, { [editingCell.col]: editValue }, pkCol, pkVal);
-      // Update local state
-      const newRows = data.rows.map((r, ri) => {
-        if (ri !== editingCell.row) return r;
-        const newRow = [...(r as unknown[])];
-        newRow[colIdx] = editValue;
-        return newRow;
-      });
-      setData({ ...data, rows: newRows });
+      await api().userdbUpdateRow(sourceId, tableName, locator, { [editingCell.col]: editValue });
+      await fetchData(page);
       setEditingCell(null);
     } catch (err) {
       alert(t.dbManagement.updateRowError + (err instanceof Error ? err.message : String(err)));
@@ -1071,7 +1062,11 @@ const TableDataPreview: React.FC<{
           {t.dbManagement.dataPreviewRowCount.replace('{n}', String(data.totalCount))}
         </span>
         {isUserDB && (
-          <span className="text-xs text-gray-400 italic">{t.dbManagement.dataPreviewDblClickHint}</span>
+          <span className="text-xs text-gray-400 italic">
+            {data.editable
+              ? t.dbManagement.dataPreviewDblClickHint
+              : t.dbManagement.dataPreviewReadOnlyHint}
+          </span>
         )}
       </div>
       {/* Table */}
@@ -1092,13 +1087,14 @@ const TableDataPreview: React.FC<{
                 {data.columns.map((col, ci) => {
                   const val = (row as unknown[])[ci];
                   const isEditing = editingCell?.row === ri && editingCell?.col === col;
+                  const rowEditable = isUserDB && data.editable && Boolean(data.rowLocators[ri]);
                   return (
                     <td
                       key={ci}
                       onDoubleClick={() => handleCellDblClick(ri, col, val)}
                       className={`px-3 py-1 border-r border-gray-100 dark:border-gray-700/50 max-w-[200px] font-mono ${
                         isEditing ? 'p-0' : 'truncate text-gray-700 dark:text-gray-300 cursor-default'
-                      } ${isUserDB ? 'hover:bg-blue-50 dark:hover:bg-blue-900/10' : ''}`}
+                      } ${rowEditable ? 'hover:bg-blue-50 dark:hover:bg-blue-900/10' : ''}`}
                       title={isEditing ? undefined : (val == null ? 'NULL' : String(val))}
                     >
                       {isEditing ? (
