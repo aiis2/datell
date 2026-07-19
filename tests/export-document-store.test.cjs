@@ -4,9 +4,15 @@ const assert = require('node:assert/strict');
 const {
   EXPORT_CSP,
   createExportDocumentJob,
+  extractExportImageUrls,
 } = require('../src/main/exportDocumentStore.ts');
 
 const html = '<!doctype html><script>window.inlineRan = true;</script><table></table>';
+assert.deepEqual(
+  extractExportImageUrls('<img src="https://cdn.undraw.co/illustration/bar_chart.svg?color=123456"><img src="https://evil.test/a.svg">'),
+  ['https://cdn.undraw.co/illustration/bar_chart.svg?color=123456'],
+  'only documented unDraw image URLs should enter the pre-execution allowlist',
+);
 const job = createExportDocumentJob(html, [
   'https://cdn.undraw.co/illustration/bar_chart.svg?color=123456',
 ]);
