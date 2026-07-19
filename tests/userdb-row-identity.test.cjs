@@ -98,9 +98,98 @@ withUserDB('keeps row identity hidden when a user column shadows rowid', (userdb
   assert.deepEqual(userdb.getUserDBTableData(id, 'shadowed').rows, [['same', 1], ['same', 7]]);
 });
 
+withUserDB('keeps hidden identity separate from a colliding user column', (userdb, id) => {
+  userdb.createTable(id, 'CREATE TABLE alias_collision(__datell_internal_rowid__ TEXT, value TEXT)');
+  userdb.batchInsert(id, 'alias_collision', ['__datell_internal_rowid__', 'value'], [['user value', 'one']]);
+
+  const data = userdb.getUserDBTableData(id, 'alias_collision');
+  assert.deepEqual(data.columns, ['__datell_internal_rowid__', 'value']);
+  assert.deepEqual(data.rows, [['user value', 'one']]);
+  assert.deepEqual(data.rowLocators, [{ kind: 'rowid', value: '1' }]);
+});
+
+withUserDB('preserves signed 64-bit rowids without numeric rounding', (userdb, id) => {
+  userdb.createTable(id, 'CREATE TABLE wide_identity(value TEXT)');
+  userdb.executeUserDBSQL(id, "INSERT INTO wide_identity(rowid, value) VALUES (9223372036854775807, 'max')");
+
+  const data = userdb.getUserDBTableData(id, 'wide_identity');
+  assert.deepEqual(data.rowLocators, [{ kind: 'rowid', value: '9223372036854775807' }]);
+  userdb.updateRow(id, 'wide_identity', data.rowLocators[0], { value: 'changed' });
+  assert.deepEqual(userdb.getUserDBTableData(id, 'wide_identity').rows, [['changed']]);
+});
+
+withUserDB('reports an empty table with stable identity as editable', (userdb, id) => {
+  userdb.createTable(id, 'CREATE TABLE empty_table(value TEXT)');
+
+  const data = userdb.getUserDBTableData(id, 'empty_table');
+  assert.equal(data.editable, true);
+  assert.deepEqual(data.rows, []);
+  assert.deepEqual(data.rowLocators, []);
+});
+
+withUserDB('keeps generated columns aligned with their visible values', (userdb, id) => {
+  userdb.createTable(
+    id,
+    'CREATE TABLE generated_values(base TEXT, upper_base TEXT GENERATED ALWAYS AS (upper(base)) STORED)',
+  );
+  userdb.batchInsert(id, 'generated_values', ['base'], [['one']]);
+
+  const data = userdb.getUserDBTableData(id, 'generated_values');
+  assert.deepEqual(data.columns, ['base', 'upper_base']);
+  assert.deepEqual(data.rows, [['one', 'ONE']]);
+  assert.throws(
+    () => userdb.updateRow(id, 'generated_values', data.rowLocators[0], { upper_base: 'forged' }),
+    /generated|read.only|column/i,
+  );
+});
+
+withUserDB('falls back to an explicit primary key when every rowid alias is shadowed', (userdb, id) => {
+  userdb.createTable(id, 'CREATE TABLE explicit_key(rowid TEXT, _rowid_ TEXT, oid TEXT, id TEXT PRIMARY KEY, value TEXT)');
+  userdb.batchInsert(id, 'explicit_key', ['rowid', '_rowid_', 'oid', 'id', 'value'], [
+    ['r', 'u', 'o', 'first', 'one'],
+    ['r', 'u', 'o', 'second', 'two'],
+  ]);
+
+  const data = userdb.getUserDBTableData(id, 'explicit_key');
+  assert.deepEqual(data.rowLocators, [
+    { kind: 'primary-key', values: { id: 'first' } },
+    { kind: 'primary-key', values: { id: 'second' } },
+  ]);
+
+  userdb.updateRow(id, 'explicit_key', data.rowLocators[1], { value: 'changed' });
+  assert.deepEqual(userdb.getUserDBTableData(id, 'explicit_key').rows, [
+    ['r', 'u', 'o', 'first', 'one'],
+    ['r', 'u', 'o', 'second', 'changed'],
+  ]);
+});
+
+withUserDB('preserves special JavaScript property names in primary-key locators', (userdb, id) => {
+  userdb.createTable(
+    id,
+    'CREATE TABLE special_key(rowid TEXT, _rowid_ TEXT, oid TEXT, "__proto__" TEXT PRIMARY KEY, value TEXT)',
+  );
+  userdb.batchInsert(
+    id,
+    'special_key',
+    ['rowid', '_rowid_', 'oid', '__proto__', 'value'],
+    [['r', 'u', 'o', 'stable', 'one']],
+  );
+
+  const data = userdb.getUserDBTableData(id, 'special_key');
+  const locator = data.rowLocators[0];
+  assert.equal(Object.prototype.hasOwnProperty.call(locator.values, '__proto__'), true);
+  assert.equal(locator.values.__proto__, 'stable');
+
+  userdb.updateRow(id, 'special_key', locator, { value: 'changed' });
+  assert.deepEqual(userdb.getUserDBTableData(id, 'special_key').rows[0], ['r', 'u', 'o', 'stable', 'changed']);
+});
+
 withUserDB('supports ordered composite primary-key locators', (userdb, id) => {
-  userdb.createTable(id, 'CREATE TABLE composite(a TEXT, b INTEGER, value TEXT, PRIMARY KEY (a, b))');
-  userdb.batchInsert(id, 'composite', ['a', 'b', 'value'], [['x', 1, 'first'], ['x', 2, 'second']]);
+  userdb.createTable(id, 'CREATE TABLE composite(rowid TEXT, _rowid_ TEXT, oid TEXT, a TEXT, b INTEGER, value TEXT, PRIMARY KEY (a, b))');
+  userdb.batchInsert(id, 'composite', ['rowid', '_rowid_', 'oid', 'a', 'b', 'value'], [
+    ['r', 'u', 'o', 'x', 1, 'first'],
+    ['r', 'u', 'o', 'x', 2, 'second'],
+  ]);
 
   const data = userdb.getUserDBTableData(id, 'composite');
   assert.equal(data.editable, true);
@@ -111,8 +200,8 @@ withUserDB('supports ordered composite primary-key locators', (userdb, id) => {
 
   userdb.updateRow(id, 'composite', data.rowLocators[1], { value: 'changed' });
   assert.deepEqual(userdb.getUserDBTableData(id, 'composite').rows, [
-    ['x', 1, 'first'],
-    ['x', 2, 'changed'],
+    ['r', 'u', 'o', 'x', 1, 'first'],
+    ['r', 'u', 'o', 'x', 2, 'changed'],
   ]);
 });
 
@@ -155,6 +244,17 @@ withUserDB('rejects stale and malformed locators or update columns', (userdb, id
     () => userdb.updateRow(id, 'guarded', data.rowLocators[0], {}),
     /empty|update/i,
   );
+
+  userdb.createTable(id, 'CREATE TABLE rowid_guard(value TEXT)');
+  userdb.batchInsert(id, 'rowid_guard', ['value'], [['one']]);
+  assert.throws(
+    () => userdb.updateRow(id, 'rowid_guard', { kind: 'rowid', value: 1 }, { value: 'changed' }),
+    /rowid|locator|malformed/i,
+  );
+  assert.throws(
+    () => userdb.updateRow(id, 'rowid_guard', null, { value: 'changed' }),
+    /locator/i,
+  );
 });
 
 withUserDB('marks views without stable identity read-only', (userdb, id) => {
@@ -166,4 +266,3 @@ withUserDB('marks views without stable identity read-only', (userdb, id) => {
   assert.equal(data.editable, false);
   assert.deepEqual(data.rowLocators, [null, null]);
 });
-
