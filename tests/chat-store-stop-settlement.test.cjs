@@ -162,4 +162,3 @@ test('persists terminal tool results emitted after Stop', async () => {
     global.localStorage = originalLocalStorage;
   }
 });
-
