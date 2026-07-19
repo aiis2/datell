@@ -36,6 +36,16 @@ const reportHtml = `<!doctype html><html><head>
 <script>
 (function () {
   window.__inlineRan = true;
+  window.__cspViolations = [];
+  window.addEventListener('securitypolicyviolation', function (event) {
+    window.__cspViolations.push(event.effectiveDirective || event.violatedDirective || 'unknown');
+  });
+  window.__networkProbe = fetch('http://127.0.0.1:1/network-probe')
+    .then(function () { return { ok: true }; })
+    .catch(function (error) { return { ok: false, name: error.name }; });
+  window.__policyProbe = new Promise(function (resolve) {
+    setTimeout(function () { resolve(window.__cspViolations.slice()); }, 100);
+  });
   window.__fileProbe = fetch(${JSON.stringify(fileUrl)})
     .then(function (r) { return r.text(); })
     .then(function (text) { return { ok: true, text: text }; })
@@ -149,6 +159,8 @@ app.whenReady().then(async () => {
     const result = await win.webContents.executeJavaScript(\`Promise.all([
       window.__fileProbe,
       window.__xhrProbe,
+      window.__networkProbe,
+      window.__policyProbe,
       window.__workerProbe,
       window.__popupAttempt,
       window.__tableProbe,
@@ -163,13 +175,14 @@ app.whenReady().then(async () => {
         secretPath: ${JSON.stringify(secretPath)},
       }),
     ])\`);
-    const [fileProbe, xhrProbe, workerProbe, popupAttempt, tableRows, apexRendered, meta] = result;
+    const [fileProbe, xhrProbe, networkProbe, policyProbe, workerProbe, popupAttempt, tableRows, apexRendered, meta] = result;
     const isolated = expectation === 'isolated';
     const pass = isolated
-      ? meta.protocol === 'export:' && !fileProbe.ok && !xhrProbe.ok && !workerProbe.ok && tableRows === 2
+      ? meta.protocol === 'export:' && !fileProbe.ok && !xhrProbe.ok && !networkProbe.ok && policyProbe.includes('connect-src')
+        && !workerProbe.ok && tableRows === 2
         && meta.inlineRan && meta.echarts && meta.apex && apexRendered && meta.tableText === 'safe-table' && popupCount === 0
       : meta.protocol === 'file:' && fileProbe.ok && fileProbe.text === 'export-local-secret-sentinel';
-    finish(pass ? 0 : 1, { expectation, result: { fileProbe, xhrProbe, workerProbe, popupAttempt, tableRows, apexRendered, meta }, popupCount, navigationCount, requestLog, pass });
+    finish(pass ? 0 : 1, { expectation, result: { fileProbe, xhrProbe, networkProbe, policyProbe, workerProbe, popupAttempt, tableRows, apexRendered, meta }, popupCount, navigationCount, requestLog, pass });
   });
   await win.loadURL(expectation === 'isolated' ? documentUrl : 'file://' + path.join(fixtureRoot, 'report.html'));
   await win.webContents.executeJavaScript('window.exportProbeApi.report({ ready: true })');
