@@ -22,4 +22,3 @@ test('carries typed userdb row locators through IPC', () => {
   assert.match(rendererTypes, /userdbGetTableData:[\s\S]{0,250}UserDBTableDataResult/);
   assert.match(rendererTypes, /userdbUpdateRow:[\s\S]{0,300}UserDBRowLocator/);
 });
-

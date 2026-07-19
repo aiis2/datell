@@ -17,4 +17,3 @@ test('table preview edits by the locator returned for the displayed row', () => 
   assert.doesNotMatch(source, /const\s+pkCol\s*=\s*data\.columns\[0\]/);
   assert.doesNotMatch(source, /const\s+pkVal\s*=\s*row\[0\]/);
 });
-
