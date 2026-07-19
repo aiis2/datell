@@ -52,6 +52,7 @@ import {
 } from './exportHtmlBundleUtils';
 import { findRendererDistRoot } from './distAssetPaths';
 import { EXPORT_SCHEME, createExportDocumentJob, type ExportDocumentJob } from './exportDocumentStore';
+import { inlineBuiltInRuntimes, needsVTableRuntime } from './exportRuntime';
 import { DatabaseService } from './database';
 import { getDataDir, ensureDataDirs, setDataDir } from './dataDir';
 import { createTextFileReadGuard } from './fileReadGuard';
@@ -822,11 +823,8 @@ function readStyleCss(filename: string): string {
   return '';
 }
 
-/** CDN script patterns to strip when inlining vendor JS for standalone export */
-const CDN_SCRIPT_RE = /<script[^>]+src=["'][^"']*(?:cdn\.jsdelivr\.net|unpkg\.com|cdn\.bootcdn\.net|cdnjs\.cloudflare\.com|staticfile\.org|echarts\.apache\.org)[^"']*["'][^>]*><\/script>/gi;
-
 /**
- * Injects theme CSS + ECharts + ApexCharts as inline blocks into exported HTML so that
+ * Injects theme CSS + packaged chart/table runtimes into exported HTML so that
  * charts render correctly outside the app:// shell (file:// or blob: context).
  * Also strips CDN script tags for chart libs since they are now inlined.
  *
@@ -837,6 +835,7 @@ const CDN_SCRIPT_RE = /<script[^>]+src=["'][^"']*(?:cdn\.jsdelivr\.net|unpkg\.co
 function injectVendorLibs(html: string, themeId = 'business', layoutId = 'default', palette?: ExportPalette): string {
   const echartsJs = readVendorJs('echarts.min.js');
   const apexchartsJs = readVendorJs('apexcharts.min.js');
+  const vtableJs = needsVTableRuntime(html) ? readVendorJs('vtable.min.js') : '';
   const themeBaseCss = readStyleCss('themes/theme-base.css') || readStyleCss('theme-base.css');
   // Use the requested theme, falling back to business
   const themeVarCss = readStyleCss(`themes/theme-${themeId}.css`)
@@ -850,8 +849,13 @@ function injectVendorLibs(html: string, themeId = 'business', layoutId = 'defaul
                    || readStyleCss(`layouts/${layoutId}.css`)
                    || '';
 
-  // Strip CDN script tags — vendor is now inlined so duplicate loading is avoided
-  let result = html.replace(CDN_SCRIPT_RE, () => '<!-- [export] CDN script replaced by inline vendor -->');
+  // Strip known CDN tags and embed only trusted packaged runtimes. Export CSP
+  // continues to reject arbitrary external scripts.
+  let result = inlineBuiltInRuntimes(html, {
+    echarts: echartsJs,
+    apexcharts: apexchartsJs,
+    vtable: vtableJs,
+  });
 
   const cssBlock = [
     themeBaseCss ? `<style id="__export-theme-base">\n${themeBaseCss}\n</style>` : '',
@@ -862,12 +866,7 @@ function injectVendorLibs(html: string, themeId = 'business', layoutId = 'defaul
     // Palette override must come AFTER theme CSS to win the cascade.
     buildExportPaletteCss(palette),
   ].filter(Boolean).join('\n');
-  const jsBlock = [
-    echartsJs    ? `<script>${echartsJs}</script>`    : '',
-    apexchartsJs ? `<script>${apexchartsJs}</script>` : '',
-  ].filter(Boolean).join('\n');
-
-  const blocks = [cssBlock, jsBlock].filter(Boolean).join('\n');
+  const blocks = cssBlock;
   if (!blocks) return result;
   if (result.includes('</head>')) return result.replace('</head>', () => `${blocks}\n</head>`);
   if (result.includes('<body'))   return result.replace('<body', () => `${blocks}\n<body`);
@@ -942,7 +941,7 @@ ipcMain.handle('fs:openDataDir', () => {
 
 // Export HTML tables to Excel
 ipcMain.handle('fs:exportExcel', async (_event, html: string, title: string) => {
-  const renderer = createExportRenderer(html, { width: 1200, height: 800 });
+  const renderer = createExportRenderer(injectVendorLibs(html), { width: 1200, height: 800 });
   const hiddenWin = renderer.window;
   try {
     await hiddenWin.loadURL(renderer.job.url);
