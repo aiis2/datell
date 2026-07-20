@@ -595,8 +595,176 @@ function extractSingleCreateTableSql(ddl: string): string {
   return statement;
 }
 
+/**
+ * Validate table/column identifiers in a single CREATE TABLE statement.
+ * Rejects empty/blank names that SQLite would otherwise accept when quoted.
+ */
+function validateCreateTableIdentifiers(statement: string): void {
+  const header = statement.match(
+    /^CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(.+)$/is,
+  );
+  if (!header) {
+    throw new Error('createTable accepts only CREATE TABLE DDL');
+  }
+  let rest = header[1]!.trimStart();
+  if (!rest) throw new Error('Table name cannot be empty or blank');
+
+  let tableName: string;
+  if (rest[0] === '"') {
+    let i = 1;
+    let name = '';
+    while (i < rest.length) {
+      if (rest[i] === '"' && rest[i + 1] === '"') {
+        name += '"';
+        i += 2;
+        continue;
+      }
+      if (rest[i] === '"') {
+        i += 1;
+        break;
+      }
+      name += rest[i];
+      i += 1;
+    }
+    tableName = name;
+    rest = rest.slice(i).trimStart();
+  } else {
+    const m = rest.match(/^([^\s(]+)([\s\S]*)$/);
+    if (!m) throw new Error('Table name cannot be empty or blank');
+    tableName = m[1]!;
+    rest = m[2]!.trimStart();
+  }
+
+  if (tableName.trim().length === 0) {
+    throw new Error('Table name cannot be empty or blank');
+  }
+  if (/^sqlite_/i.test(tableName) || tableName === '__col_comments') {
+    throw new Error(`Invalid reserved table name: ${tableName}`);
+  }
+
+  if (!rest.startsWith('(')) {
+    throw new Error('CREATE TABLE requires a column list');
+  }
+
+  // Extract top-level column-list body (balanced parentheses after the opening '(').
+  let depth = 0;
+  let bodyStart = -1;
+  let bodyEnd = -1;
+  let inSingle = false;
+  let inDouble = false;
+  for (let i = 0; i < rest.length; i++) {
+    const ch = rest[i]!;
+    const next = rest[i + 1];
+    if (inSingle) {
+      if (ch === "'" && next === "'") { i += 1; continue; }
+      if (ch === "'") inSingle = false;
+      continue;
+    }
+    if (inDouble) {
+      if (ch === '"' && next === '"') { i += 1; continue; }
+      if (ch === '"') inDouble = false;
+      continue;
+    }
+    if (ch === "'") { inSingle = true; continue; }
+    if (ch === '"') { inDouble = true; continue; }
+    if (ch === '(') {
+      depth += 1;
+      if (depth === 1) bodyStart = i + 1;
+      continue;
+    }
+    if (ch === ')') {
+      depth -= 1;
+      if (depth === 0) {
+        bodyEnd = i;
+        break;
+      }
+    }
+  }
+  if (bodyStart < 0 || bodyEnd < 0) {
+    throw new Error('CREATE TABLE requires a column list');
+  }
+  const body = rest.slice(bodyStart, bodyEnd);
+
+  // Split top-level comma-separated definitions.
+  const defs: string[] = [];
+  {
+    let start = 0;
+    let d = 0;
+    inSingle = false;
+    inDouble = false;
+    for (let i = 0; i < body.length; i++) {
+      const ch = body[i]!;
+      const next = body[i + 1];
+      if (inSingle) {
+        if (ch === "'" && next === "'") { i += 1; continue; }
+        if (ch === "'") inSingle = false;
+        continue;
+      }
+      if (inDouble) {
+        if (ch === '"' && next === '"') { i += 1; continue; }
+        if (ch === '"') inDouble = false;
+        continue;
+      }
+      if (ch === "'") { inSingle = true; continue; }
+      if (ch === '"') { inDouble = true; continue; }
+      if (ch === '(') { d += 1; continue; }
+      if (ch === ')') { d -= 1; continue; }
+      if (ch === ',' && d === 0) {
+        defs.push(body.slice(start, i));
+        start = i + 1;
+      }
+    }
+    defs.push(body.slice(start));
+  }
+
+  const TABLE_CONSTRAINT = /^(PRIMARY|UNIQUE|CHECK|FOREIGN|CONSTRAINT)\b/i;
+  const seen = new Set<string>();
+  let columnCount = 0;
+  for (const rawDef of defs) {
+    const def = rawDef.trim();
+    if (!def) continue;
+    if (TABLE_CONSTRAINT.test(def)) continue;
+
+    let colName: string;
+    if (def[0] === '"') {
+      let i = 1;
+      let name = '';
+      while (i < def.length) {
+        if (def[i] === '"' && def[i + 1] === '"') {
+          name += '"';
+          i += 2;
+          continue;
+        }
+        if (def[i] === '"') break;
+        name += def[i];
+        i += 1;
+      }
+      colName = name;
+    } else {
+      const m = def.match(/^([^\s(,]+)/);
+      if (!m) throw new Error('Column name cannot be empty or blank');
+      colName = m[1]!;
+    }
+
+    if (colName.trim().length === 0) {
+      throw new Error('Column name cannot be empty or blank');
+    }
+    const key = colName.toLowerCase();
+    if (seen.has(key)) {
+      throw new Error(`Duplicate column name: ${colName}`);
+    }
+    seen.add(key);
+    columnCount += 1;
+  }
+
+  if (columnCount === 0) {
+    throw new Error('CREATE TABLE requires at least one column');
+  }
+}
+
 export function createTable(id: string, ddl: string): void {
   const statement = extractSingleCreateTableSql(ddl);
+  validateCreateTableIdentifiers(statement);
   const db = openDB(id, false);
   try {
     db.prepare(statement).run();
