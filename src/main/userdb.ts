@@ -1161,22 +1161,49 @@ export function batchInsert(
 
 export function exportTableData(id: string, tableName: string, format: 'csv' | 'json'): string {
   const db = openDB(id, true);
-  const safe = (s: string) => s.replace(/"/g, '""');
   try {
-    const rows = db.prepare(`SELECT * FROM "${safe(tableName)}" LIMIT 100000`).all() as Record<string, unknown>[];
-    if (!rows.length) return format === 'csv' ? '' : '[]';
-    const columns = Object.keys(rows[0]);
-    if (format === 'json') {
-      return JSON.stringify(rows, null, 2);
+    if (!tableName || typeof tableName !== 'string' || /^sqlite_/i.test(tableName) || tableName === '__col_comments') {
+      throw new Error(`Unknown table: ${tableName}`);
     }
-    // CSV
+    const object = db.prepare(
+      `SELECT name, type FROM sqlite_master WHERE name = ? COLLATE NOCASE AND type IN ('table', 'view')`
+    ).get(tableName) as { name: string; type: 'table' | 'view' } | undefined;
+    if (!object) throw new Error(`Unknown table: ${tableName}`);
+
+    const colInfo = db.pragma(`table_info(${quoteIdentifier(object.name)})`) as Array<{ name: string }>;
+    const columns = colInfo.map((c) => c.name);
+    const rows = db.prepare(
+      `SELECT * FROM ${quoteIdentifier(object.name)}`
+    ).all() as Record<string, unknown>[];
+
+    if (format === 'json') {
+      if (!rows.length) return '[]';
+      // Prefer schema column order for stable export.
+      return JSON.stringify(
+        rows.map((row) => {
+          const ordered: Record<string, unknown> = {};
+          for (const col of columns) ordered[col] = row[col] ?? null;
+          return ordered;
+        }),
+        null,
+        2,
+      );
+    }
+
     const escape = (v: unknown) => {
       if (v == null) return '';
       const s = String(v);
-      if (s.includes(',') || s.includes('"') || s.includes('\n')) return `"${s.replace(/"/g, '""')}"`;
+      if (s.includes(',') || s.includes('"') || s.includes('\n') || s.includes('\r')) {
+        return `"${s.replace(/"/g, '""')}"`;
+      }
       return s;
     };
-    const lines = [columns.join(','), ...rows.map((r) => columns.map((c) => escape(r[c])).join(','))];
+    const header = columns.join(',');
+    if (!rows.length) return header;
+    const lines = [
+      header,
+      ...rows.map((r) => columns.map((c) => escape(r[c])).join(',')),
+    ];
     return lines.join('\n');
   } finally {
     db.close();
