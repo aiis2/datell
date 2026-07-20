@@ -448,11 +448,16 @@ export function executeUserDBSQL(id: string, sql: string, opts: { readOnly?: boo
     // (WITH … INSERT and assignment PRAGMAs are writers with reader === false).
     const stmt = db.prepare(sql);
     if (stmt.reader) {
-      const rows = stmt.all() as Record<string, unknown>[];
+      // safeIntegers + normalize: same fidelity as table preview / export.
+      const rows = stmt.safeIntegers(true).all() as Record<string, unknown>[];
       const columns = rows.length > 0 ? Object.keys(rows[0]) : (stmt.columns?.() ?? []).map((c: { name: string }) => c.name);
       return {
         columns,
-        rows: rows.map((r) => columns.map((col) => r[col] ?? null)),
+        rows: rows.map((r) => columns.map((col) => {
+          const value = r[col];
+          if (value === undefined) return null;
+          return normalizeVisibleInteger(value);
+        })),
         rowCount: rows.length,
         executionMs: Date.now() - t0,
       };
