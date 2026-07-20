@@ -1492,17 +1492,42 @@ export function batchInsert(
   rows: unknown[][],
 ): { inserted: number } {
   if (!rows.length) return { inserted: 0 };
+  if (!Array.isArray(columns) || columns.length === 0) {
+    throw new Error('batchInsert requires at least one column');
+  }
   const db = openDB(id, false);
   try {
-    const safe = (s: string) => s.replace(/"/g, '""');
-    const colList = columns.map((c) => `"${safe(c)}"`).join(', ');
-    const placeholders = columns.map(() => '?').join(', ');
-    const stmt = db.prepare(`INSERT INTO "${safe(tableName)}" (${colList}) VALUES (${placeholders})`);
+    const identity = inspectTableIdentity(db, tableName);
+    if (identity.objectType !== 'table') {
+      throw new Error(`Cannot batch insert into view: ${tableName}`);
+    }
+    const resolvedColumns: UserDBTableColumnInfo[] = columns.map((name) => {
+      if (typeof name !== 'string' || name.trim().length === 0) {
+        throw new Error('Column name cannot be empty or blank');
+      }
+      const live = identity.columns.find((column) => identifiersEqual(column.name, name));
+      if (!live) throw new Error(`Unknown column: ${name}`);
+      if (live.hidden !== 0) throw new Error(`Generated column is read-only: ${live.name}`);
+      return live;
+    });
+    // Prefer live column names for SQL so case matches schema.
+    const colList = resolvedColumns.map((column) => quoteIdentifier(column.name)).join(', ');
+    const placeholders = resolvedColumns.map(() => '?').join(', ');
+    const tableIdent = quoteIdentifier(
+      (db.prepare(
+        `SELECT name FROM sqlite_master WHERE name = ? COLLATE NOCASE AND type = 'table'`,
+      ).get(tableName) as { name: string }).name,
+    );
+    const stmt = db.prepare(`INSERT INTO ${tableIdent} (${colList}) VALUES (${placeholders})`);
     // One outer transaction for the entire payload: partial success is not allowed.
     const runAll = db.transaction((allRows: unknown[][]) => {
       let inserted = 0;
       for (const row of allRows) {
-        stmt.run(row as any[]);
+        if (!Array.isArray(row) || row.length !== resolvedColumns.length) {
+          throw new Error('Row width does not match column count');
+        }
+        const bound = row.map((value, index) => coerceUpdateValue(resolvedColumns[index]!, value));
+        stmt.run(bound as any[]);
         inserted += 1;
       }
       return { inserted };
