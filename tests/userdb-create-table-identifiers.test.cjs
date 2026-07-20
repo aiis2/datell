@@ -88,6 +88,23 @@ withUserDB('rejects empty or blank quoted table names without creating a table',
     () => userdb.createTable(id, 'CREATE TABLE "  " (a TEXT)'),
     /table name|empty|blank/i,
   );
+  // SQLite also accepts empty names via [] and `` quoting.
+  assert.throws(
+    () => userdb.createTable(id, 'CREATE TABLE [] (a TEXT)'),
+    /table name|empty|blank/i,
+  );
+  assert.throws(
+    () => userdb.createTable(id, 'CREATE TABLE [  ] (a TEXT)'),
+    /table name|empty|blank/i,
+  );
+  assert.throws(
+    () => userdb.createTable(id, 'CREATE TABLE `` (a TEXT)'),
+    /table name|empty|blank/i,
+  );
+  assert.throws(
+    () => userdb.createTable(id, 'CREATE TABLE `  ` (a TEXT)'),
+    /table name|empty|blank/i,
+  );
   assert.deepEqual(userTables(tempRoot, id), []);
 });
 
@@ -100,6 +117,18 @@ withUserDB('rejects empty or blank column names without creating a table', (user
     () => userdb.createTable(id, 'CREATE TABLE t2 ("  " TEXT, b TEXT)'),
     /column name|empty|blank/i,
   );
+  assert.throws(
+    () => userdb.createTable(id, 'CREATE TABLE t3 ([] TEXT)'),
+    /column name|empty|blank/i,
+  );
+  assert.throws(
+    () => userdb.createTable(id, 'CREATE TABLE t4 (`` TEXT)'),
+    /column name|empty|blank/i,
+  );
+  assert.throws(
+    () => userdb.createTable(id, 'CREATE TABLE t5 ([  ] TEXT)'),
+    /column name|empty|blank/i,
+  );
   assert.deepEqual(userTables(tempRoot, id), []);
 });
 
@@ -107,12 +136,16 @@ withUserDB('accepts valid CREATE TABLE and IF NOT EXISTS', (userdb, id, tempRoot
   userdb.createTable(id, 'CREATE TABLE sales (region TEXT, amount INTEGER)');
   userdb.createTable(id, 'CREATE TABLE IF NOT EXISTS sales (region TEXT, amount INTEGER)');
   userdb.createTable(id, 'CREATE TABLE "Quoted Name" ("Col A" TEXT)');
+  userdb.createTable(id, 'CREATE TABLE [Bracket Name] ([Col B] TEXT)');
+  userdb.createTable(id, 'CREATE TABLE `Tick Name` (`Col C` TEXT)');
 
-  assert.deepEqual(userTables(tempRoot, id), ['Quoted Name', 'sales']);
+  assert.deepEqual(userTables(tempRoot, id), ['Bracket Name', 'Quoted Name', 'Tick Name', 'sales']);
   const db = new Database(path.join(tempRoot, 'userdb', `${id}.db`));
   try {
     assert.deepEqual(db.pragma('table_info(sales)').map((c) => c.name), ['region', 'amount']);
     assert.deepEqual(db.pragma('table_info("Quoted Name")').map((c) => c.name), ['Col A']);
+    assert.deepEqual(db.pragma('table_info([Bracket Name])').map((c) => c.name), ['Col B']);
+    assert.deepEqual(db.pragma('table_info(`Tick Name`)').map((c) => c.name), ['Col C']);
   } finally {
     db.close();
   }
