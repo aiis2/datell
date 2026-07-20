@@ -158,6 +158,112 @@ function normalizePrimaryKeyValue(value: unknown): unknown {
   return Number.isSafeInteger(numberValue) ? numberValue : value;
 }
 
+type ColumnAffinity = 'integer' | 'real' | 'numeric' | 'text';
+
+function columnAffinity(typeDecl: string): ColumnAffinity {
+  const t = (typeDecl || '').toUpperCase();
+  // SQLite affinity rules (simplified, order matters): INT → INTEGER; then REAL/FLOA/DOUB; then NUM; else TEXT.
+  if (t.includes('INT')) return 'integer';
+  if (t.includes('REAL') || t.includes('FLOA') || t.includes('DOUB')) return 'real';
+  if (t.includes('NUM')) return 'numeric';
+  return 'text';
+}
+
+function isColumnNotNull(column: UserDBTableColumnInfo): boolean {
+  return column.notnull === 1 || column.pk > 0;
+}
+
+/**
+ * Coerce a cell-edit value for binding into UPDATE, using declared column type + nullability.
+ * Empty strings from the editor become SQL NULL on nullable columns.
+ */
+function coerceUpdateValue(column: UserDBTableColumnInfo, value: unknown): unknown {
+  const affinity = columnAffinity(column.type || '');
+  const required = isColumnNotNull(column);
+
+  if (value === undefined || value === null) {
+    if (required) throw new Error(`Cannot set NOT NULL column to null: ${column.name}`);
+    return null;
+  }
+
+  if (typeof value === 'string') {
+    if (value === '') {
+      if (affinity === 'integer' || affinity === 'real' || affinity === 'numeric') {
+        if (required) {
+          throw new Error(`Cannot set NOT NULL numeric column to empty: ${column.name}`);
+        }
+        return null;
+      }
+      // TEXT-like
+      if (required) return '';
+      return null;
+    }
+
+    if (affinity === 'integer') {
+      if (!/^-?\d+$/.test(value)) {
+        throw new Error(`Invalid integer value for column ${column.name}`);
+      }
+      // Prefer Number when safe; otherwise BigInt so large ints stay exact.
+      try {
+        const asBig = BigInt(value);
+        if (asBig >= Number.MIN_SAFE_INTEGER && asBig <= Number.MAX_SAFE_INTEGER) {
+          return Number(asBig);
+        }
+        return asBig;
+      } catch {
+        throw new Error(`Invalid integer value for column ${column.name}`);
+      }
+    }
+
+    if (affinity === 'real' || affinity === 'numeric') {
+      const trimmed = value.trim();
+      if (!/^-?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?$/.test(trimmed)) {
+        throw new Error(`Invalid numeric value for column ${column.name}`);
+      }
+      if (affinity === 'numeric' && /^-?\d+$/.test(trimmed)) {
+        const asBig = BigInt(trimmed);
+        if (asBig >= Number.MIN_SAFE_INTEGER && asBig <= Number.MAX_SAFE_INTEGER) {
+          return Number(asBig);
+        }
+        return asBig;
+      }
+      const n = Number(trimmed);
+      if (!Number.isFinite(n)) {
+        throw new Error(`Invalid numeric value for column ${column.name}`);
+      }
+      return n;
+    }
+
+    return value;
+  }
+
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) {
+      throw new Error(`Invalid numeric value for column ${column.name}`);
+    }
+    if (affinity === 'integer' && !Number.isInteger(value)) {
+      throw new Error(`Invalid integer value for column ${column.name}`);
+    }
+    return value;
+  }
+
+  if (typeof value === 'bigint') {
+    if (affinity === 'text') return value.toString();
+    return value;
+  }
+
+  if (typeof value === 'boolean') {
+    if (affinity === 'integer' || affinity === 'numeric') return value ? 1 : 0;
+    return value ? '1' : '0';
+  }
+
+  // Buffers / other: pass through for BLOB-ish use; reject plain objects.
+  if (typeof value === 'object') {
+    throw new Error(`Unsupported value type for column ${column.name}`);
+  }
+  return value;
+}
+
 function inspectTableIdentity(db: Database.Database, tableName: string): UserDBTableIdentity {
   const object = db.prepare(
     `SELECT name, type FROM sqlite_master WHERE name = ? COLLATE NOCASE AND type IN ('table', 'view')`
@@ -1430,10 +1536,12 @@ export function updateRow(
     if (identity.objectType !== 'table') throw new Error(`Table is not editable: ${tableName}`);
 
     const columnByName = new Map(identity.columns.map((column) => [column.name, column]));
-    for (const [columnName] of updateEntries) {
+    const coercedValues: unknown[] = [];
+    for (const [columnName, rawValue] of updateEntries) {
       const column = columnByName.get(columnName);
       if (!column) throw new Error(`Unknown column: ${columnName}`);
       if (column.hidden !== 0) throw new Error(`Generated column is read-only: ${columnName}`);
+      coercedValues.push(coerceUpdateValue(column, rawValue));
     }
 
     let whereClause: string;
@@ -1473,7 +1581,7 @@ export function updateRow(
       `UPDATE ${quoteIdentifier(tableName)} SET ${setClauses} WHERE ${whereClause}`
     );
     const runUpdate = db.transaction(() => {
-      const result = statement.run(...([...updateEntries.map(([, value]) => value), ...whereValues] as any[]));
+      const result = statement.run(...([...coercedValues, ...whereValues] as any[]));
       if (result.changes !== 1) {
         throw new Error(`Stale or ambiguous row locator: expected exactly one row, changed ${result.changes}`);
       }
