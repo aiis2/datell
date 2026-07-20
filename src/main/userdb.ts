@@ -78,6 +78,12 @@ interface UserDBTableIdentity {
   rowidAlias: 'rowid' | '_rowid_' | 'oid' | null;
 }
 
+interface UserDBTableListEntry {
+  schema: string;
+  name: string;
+  wr: number;
+}
+
 // ─── Registry helpers ────────────────────────────────────────────────────────
 
 function getUserdbDir(): string {
@@ -127,19 +133,37 @@ function openDB(id: string, readonly = false): Database.Database {
 
 const quoteIdentifier = (identifier: string): string => `"${identifier.replace(/"/g, '""')}"`;
 
+const SQLITE_ROWID_MIN = BigInt('-9223372036854775808');
+const SQLITE_ROWID_MAX = BigInt('9223372036854775807');
+
+function normalizeVisibleInteger(value: unknown): unknown {
+  if (typeof value !== 'bigint') return value;
+  const numberValue = Number(value);
+  return Number.isSafeInteger(numberValue) ? numberValue : value.toString();
+}
+
+function normalizePrimaryKeyValue(value: unknown): unknown {
+  if (typeof value !== 'bigint') return value;
+  const numberValue = Number(value);
+  return Number.isSafeInteger(numberValue) ? numberValue : value;
+}
+
 function inspectTableIdentity(db: Database.Database, tableName: string): UserDBTableIdentity {
   const object = db.prepare(
-    `SELECT type, sql FROM sqlite_master WHERE name = ? AND type IN ('table', 'view')`
-  ).get(tableName) as { type: 'table' | 'view'; sql: string | null } | undefined;
+    `SELECT name, type FROM sqlite_master WHERE name = ? COLLATE NOCASE AND type IN ('table', 'view')`
+  ).get(tableName) as { name: string; type: 'table' | 'view' } | undefined;
   if (!object) throw new Error(`Unknown table: ${tableName}`);
 
-  const allColumns = db.pragma(`table_xinfo(${quoteIdentifier(tableName)})`) as UserDBTableColumnInfo[];
+  const allColumns = db.pragma(`table_xinfo(${quoteIdentifier(object.name)})`) as UserDBTableColumnInfo[];
   const columns = allColumns.filter((column) => column.hidden !== 1);
   const primaryKeyColumns = columns
     .filter((column) => column.pk > 0)
     .sort((a, b) => a.pk - b.pk);
   const columnNames = new Set(columns.map((column) => column.name.toLowerCase()));
-  const withoutRowid = object.type !== 'table' || /\bWITHOUT\s+ROWID\b/i.test(object.sql ?? '');
+  const tableListEntry = (db.pragma('table_list') as UserDBTableListEntry[])
+    .find((entry) => entry.schema === 'main' && entry.name === object.name);
+  if (!tableListEntry) throw new Error(`Unable to inspect table identity: ${tableName}`);
+  const withoutRowid = object.type !== 'table' || tableListEntry.wr === 1;
   const rowidAlias = withoutRowid
     ? null
     : (['rowid', '_rowid_', 'oid'] as const).find((alias) => !columnNames.has(alias)) ?? null;
@@ -449,16 +473,16 @@ export function getUserDBTableData(id: string, tableName: string, limit = 200, o
     const totalRow = db.prepare(
       `SELECT COUNT(*) AS cnt FROM ${quoteIdentifier(tableName)}`
     ).get() as { cnt: number };
-    const rowidSelection = identity.rowidAlias
-      ? `CAST(${quoteIdentifier(identity.rowidAlias)} AS TEXT), `
-      : '';
+    const identityColumns = identity.rowidAlias
+      ? [`CAST(${quoteIdentifier(identity.rowidAlias)} AS TEXT)`]
+      : identity.primaryKeyColumns.map((column) => quoteIdentifier(column.name));
+    const identitySelection = identityColumns.length > 0 ? `${identityColumns.join(', ')}, ` : '';
     const selectedRows = db.prepare(
-      `SELECT ${rowidSelection}* FROM ${quoteIdentifier(tableName)} LIMIT ? OFFSET ?`
-    ).raw(true).all(limit, offset) as unknown[][];
+      `SELECT ${identitySelection}* FROM ${quoteIdentifier(tableName)} LIMIT ? OFFSET ?`
+    ).safeIntegers(true).raw(true).all(limit, offset) as unknown[][];
     const columns = identity.columns.map((column) => column.name);
-    const identityOffset = identity.rowidAlias ? 1 : 0;
-    const rows = selectedRows.map((row) => row.slice(identityOffset));
-    const columnIndex = new Map(columns.map((column, index) => [column, index]));
+    const identityOffset = identityColumns.length;
+    const rows = selectedRows.map((row) => row.slice(identityOffset).map(normalizeVisibleInteger));
     const rowLocators = selectedRows.map((selectedRow): UserDBRowLocator | null => {
       if (identity.rowidAlias) {
         const value = selectedRow[0];
@@ -466,11 +490,10 @@ export function getUserDBTableData(id: string, tableName: string, limit = 200, o
       }
       if (identity.primaryKeyColumns.length > 0) {
         const entries: Array<[string, unknown]> = [];
-        for (const column of identity.primaryKeyColumns) {
-          const index = columnIndex.get(column.name);
-          const value = index === undefined ? undefined : selectedRow[index];
+        for (const [index, column] of identity.primaryKeyColumns.entries()) {
+          const value = selectedRow[index];
           if (value === undefined || value === null) return null;
-          entries.push([column.name, value]);
+          entries.push([column.name, normalizePrimaryKeyValue(value)]);
         }
         return { kind: 'primary-key', values: Object.fromEntries(entries) };
       }
@@ -554,11 +577,15 @@ export function updateRow(
     let whereValues: unknown[];
     if (locator.kind === 'rowid') {
       if (!identity.rowidAlias) throw new Error('Rowid locator is not valid for this table');
-      if (typeof locator.value !== 'string' || !/^-?\d+$/.test(locator.value)) {
+      if (typeof locator.value !== 'string' || locator.value.length > 20 || !/^-?\d+$/.test(locator.value)) {
+        throw new Error('Malformed rowid locator');
+      }
+      const rowidValue = BigInt(locator.value);
+      if (rowidValue < SQLITE_ROWID_MIN || rowidValue > SQLITE_ROWID_MAX) {
         throw new Error('Malformed rowid locator');
       }
       whereClause = `${quoteIdentifier(identity.rowidAlias)} = ?`;
-      whereValues = [BigInt(locator.value)];
+      whereValues = [rowidValue];
     } else if (locator.kind === 'primary-key') {
       if (!locator.values || typeof locator.values !== 'object' || Array.isArray(locator.values)) {
         throw new Error('Malformed primary key locator');

@@ -127,6 +127,47 @@ withUserDB('reports an empty table with stable identity as editable', (userdb, i
   assert.deepEqual(data.rowLocators, []);
 });
 
+withUserDB('uses rowid metadata instead of matching WITHOUT ROWID text in a column name', (userdb, id) => {
+  userdb.createTable(id, 'CREATE TABLE literal_without_rowid("WITHOUT ROWID" TEXT, value TEXT)');
+  userdb.batchInsert(id, 'literal_without_rowid', ['WITHOUT ROWID', 'value'], [['literal', 'one']]);
+
+  const data = userdb.getUserDBTableData(id, 'literal_without_rowid');
+  assert.equal(data.editable, true);
+  assert.deepEqual(data.rowLocators, [{ kind: 'rowid', value: '1' }]);
+  userdb.updateRow(id, 'literal_without_rowid', data.rowLocators[0], { value: 'changed' });
+  assert.deepEqual(userdb.getUserDBTableData(id, 'literal_without_rowid').rows, [['literal', 'changed']]);
+});
+
+withUserDB('recognizes commented WITHOUT ROWID declarations', (userdb, id) => {
+  userdb.createTable(id, 'CREATE TABLE commented_without_rowid(id TEXT PRIMARY KEY, value TEXT) WITHOUT /* keep */ ROWID');
+  userdb.batchInsert(id, 'commented_without_rowid', ['id', 'value'], [['a', 'one']]);
+
+  const data = userdb.getUserDBTableData(id, 'commented_without_rowid');
+  assert.deepEqual(data.rowLocators, [{ kind: 'primary-key', values: { id: 'a' } }]);
+  userdb.updateRow(id, 'commented_without_rowid', data.rowLocators[0], { value: 'changed' });
+  assert.deepEqual(userdb.getUserDBTableData(id, 'commented_without_rowid').rows, [['a', 'changed']]);
+});
+
+withUserDB('keeps adjacent unsafe integer primary keys distinct', (userdb, id) => {
+  userdb.createTable(id, 'CREATE TABLE wide_primary(rowid TEXT, _rowid_ TEXT, oid TEXT, id INTEGER PRIMARY KEY, value TEXT)');
+  userdb.executeUserDBSQL(id, "INSERT INTO wide_primary(rowid, _rowid_, oid, id, value) VALUES ('r', 'u', 'o', 9007199254740992, 'first')");
+  userdb.executeUserDBSQL(id, "INSERT INTO wide_primary(rowid, _rowid_, oid, id, value) VALUES ('r', 'u', 'o', 9007199254740993, 'second')");
+
+  const data = userdb.getUserDBTableData(id, 'wide_primary');
+  assert.equal(typeof data.rowLocators[0].values.id, 'bigint');
+  assert.deepEqual(data.rowLocators.map((locator) => String(locator.values.id)), [
+    '9007199254740992',
+    '9007199254740993',
+  ]);
+
+  userdb.updateRow(id, 'wide_primary', data.rowLocators[1], { value: 'changed' });
+  const after = userdb.getUserDBTableData(id, 'wide_primary');
+  assert.deepEqual(after.rows.map((row) => [String(row[3]), row[4]]), [
+    ['9007199254740992', 'first'],
+    ['9007199254740993', 'changed'],
+  ]);
+});
+
 withUserDB('keeps generated columns aligned with their visible values', (userdb, id) => {
   userdb.createTable(
     id,
@@ -249,6 +290,10 @@ withUserDB('rejects stale and malformed locators or update columns', (userdb, id
   userdb.batchInsert(id, 'rowid_guard', ['value'], [['one']]);
   assert.throws(
     () => userdb.updateRow(id, 'rowid_guard', { kind: 'rowid', value: 1 }, { value: 'changed' }),
+    /rowid|locator|malformed/i,
+  );
+  assert.throws(
+    () => userdb.updateRow(id, 'rowid_guard', { kind: 'rowid', value: '9223372036854775808' }, { value: 'changed' }),
     /rowid|locator|malformed/i,
   );
   assert.throws(
