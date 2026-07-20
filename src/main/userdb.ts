@@ -183,6 +183,8 @@ function inspectTableIdentity(db: Database.Database, tableName: string): UserDBT
 
 // ─── CRUD ─────────────────────────────────────────────────────────────────
 
+const USER_TABLE_FILTER = `type='table' AND name NOT LIKE 'sqlite_%' AND name != '__col_comments'`;
+
 export function listUserDBs(): UserDBConfig[] {
   const configs = readRegistry();
   // Attach live table counts
@@ -191,7 +193,7 @@ export function listUserDBs(): UserDBConfig[] {
     try {
       const db = new Database(cfg.dbPath, { readonly: true });
       const row = db.prepare(
-        `SELECT COUNT(*) AS cnt FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'`
+        `SELECT COUNT(*) AS cnt FROM sqlite_master WHERE ${USER_TABLE_FILTER}`
       ).get() as { cnt: number };
       db.close();
       return { ...cfg, tableCount: row?.cnt ?? 0 };
@@ -253,18 +255,33 @@ export function getUserDBSchema(id: string, opts: { limit?: number; search?: str
     let tableRows: { name: string }[];
     if (search) {
       tableRows = db.prepare(
-        `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name LIKE ? ORDER BY name LIMIT ?`
+        `SELECT name FROM sqlite_master WHERE ${USER_TABLE_FILTER} AND name LIKE ? ORDER BY name LIMIT ?`
       ).all(`%${search}%`, limit) as { name: string }[];
     } else {
       tableRows = db.prepare(
-        `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name LIMIT ?`
+        `SELECT name FROM sqlite_master WHERE ${USER_TABLE_FILTER} ORDER BY name LIMIT ?`
       ).all(limit) as { name: string }[];
     }
     const total = (db.prepare(
       search
-        ? `SELECT COUNT(*) AS cnt FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name LIKE ?`
-        : `SELECT COUNT(*) AS cnt FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'`
+        ? `SELECT COUNT(*) AS cnt FROM sqlite_master WHERE ${USER_TABLE_FILTER} AND name LIKE ?`
+        : `SELECT COUNT(*) AS cnt FROM sqlite_master WHERE ${USER_TABLE_FILTER}`
     ).get(search ? [`%${search}%`] : []) as { cnt: number }).cnt;
+
+    // Load column comments once if the meta table exists.
+    const commentMap = new Map<string, string>();
+    const hasComments = db.prepare(
+      `SELECT 1 AS ok FROM sqlite_master WHERE type='table' AND name='__col_comments' LIMIT 1`
+    ).get() as { ok: number } | undefined;
+    if (hasComments) {
+      const commentRows = db.prepare(
+        `SELECT table_name, col_name, comment FROM __col_comments`
+      ).all() as Array<{ table_name: string; col_name: string; comment: string }>;
+      for (const row of commentRows) {
+        const key = `${row.table_name.toLowerCase()}\0${row.col_name.toLowerCase()}`;
+        commentMap.set(key, row.comment ?? '');
+      }
+    }
 
     const tables = tableRows.map(({ name }) => {
       const cols = db.pragma(`table_info("${name.replace(/"/g, '""')}")`) as Array<{
@@ -272,11 +289,15 @@ export function getUserDBSchema(id: string, opts: { limit?: number; search?: str
       }>;
       return {
         name,
-        columns: cols.map((c) => ({
-          name: c.name,
-          type: c.type || 'TEXT',
-          nullable: c.notnull === 0 && c.pk === 0,
-        })),
+        columns: cols.map((c) => {
+          const comment = commentMap.get(`${name.toLowerCase()}\0${c.name.toLowerCase()}`);
+          return {
+            name: c.name,
+            type: c.type || 'TEXT',
+            nullable: c.notnull === 0 && c.pk === 0,
+            ...(comment !== undefined ? { comment } : {}),
+          };
+        }),
       };
     });
     return { tables, total };
