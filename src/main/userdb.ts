@@ -546,6 +546,153 @@ function rewriteCreateTableSql(
   return `${header}(${rewrittenParts.join(',')})${suffix}`;
 }
 
+function sqlReferencesIdentifier(sql: string, identifier: string): boolean {
+  let i = 0;
+  while (i < sql.length) {
+    const ch = sql[i]!;
+    if (ch === "'" ) {
+      i += 1;
+      while (i < sql.length) {
+        if (sql[i] === "'" && sql[i + 1] === "'") {
+          i += 2;
+          continue;
+        }
+        if (sql[i] === "'") {
+          i += 1;
+          break;
+        }
+        i += 1;
+      }
+      continue;
+    }
+    if (ch === '"') {
+      let j = i + 1;
+      let name = '';
+      while (j < sql.length) {
+        if (sql[j] === '"' && sql[j + 1] === '"') {
+          name += '"';
+          j += 2;
+          continue;
+        }
+        if (sql[j] === '"') {
+          j += 1;
+          break;
+        }
+        name += sql[j];
+        j += 1;
+      }
+      if (identifiersEqual(name, identifier)) return true;
+      i = j;
+      continue;
+    }
+    if (ch === '[') {
+      const end = sql.indexOf(']', i + 1);
+      if (end < 0) break;
+      const name = sql.slice(i + 1, end);
+      if (identifiersEqual(name, identifier)) return true;
+      i = end + 1;
+      continue;
+    }
+    if (ch === '`') {
+      const end = sql.indexOf('`', i + 1);
+      if (end < 0) break;
+      const name = sql.slice(i + 1, end);
+      if (identifiersEqual(name, identifier)) return true;
+      i = end + 1;
+      continue;
+    }
+    if (/[A-Za-z_]/.test(ch)) {
+      let j = i + 1;
+      while (j < sql.length && /[A-Za-z0-9_$]/.test(sql[j]!)) j += 1;
+      const name = sql.slice(i, j);
+      if (identifiersEqual(name, identifier)) return true;
+      i = j;
+      continue;
+    }
+    i += 1;
+  }
+  return false;
+}
+
+function tableConstraintReferencesColumn(clause: string, columnName: string): boolean {
+  return sqlReferencesIdentifier(clause, columnName);
+}
+
+function removeColumnFromCreateTableSql(
+  createSql: string,
+  columnName: string,
+  tempTableName: string,
+): string {
+  const openParen = createSql.indexOf('(');
+  if (openParen < 0) throw new Error('Malformed CREATE TABLE statement');
+  let depth = 0;
+  let closeParen = -1;
+  let inSingle = false;
+  let inDouble = false;
+  for (let i = openParen; i < createSql.length; i++) {
+    const ch = createSql[i]!;
+    if (inDouble) {
+      if (ch === '"' && createSql[i + 1] === '"') {
+        i += 1;
+        continue;
+      }
+      if (ch === '"') inDouble = false;
+      continue;
+    }
+    if (inSingle) {
+      if (ch === "'" && createSql[i + 1] === "'") {
+        i += 1;
+        continue;
+      }
+      if (ch === "'") inSingle = false;
+      continue;
+    }
+    if (ch === '"') {
+      inDouble = true;
+      continue;
+    }
+    if (ch === "'") {
+      inSingle = true;
+      continue;
+    }
+    if (ch === '(') depth += 1;
+    else if (ch === ')') {
+      depth -= 1;
+      if (depth === 0) {
+        closeParen = i;
+        break;
+      }
+    }
+  }
+  if (closeParen < 0) throw new Error('Malformed CREATE TABLE statement');
+
+  const header = createSql.slice(0, openParen).replace(
+    /^(\s*CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:(?:"[^"]+"|\[[^\]]+\]|`[^`]+`|\w+)\s*\.\s*)?)(?:"[^"]+"|\[[^\]]+\]|`[^`]+`|\w+)/i,
+    `$1${quoteIdentifier(tempTableName)}`,
+  );
+  const body = createSql.slice(openParen + 1, closeParen);
+  const suffix = createSql.slice(closeParen + 1);
+  const parts = splitTopLevelCsv(body);
+  let found = false;
+  const rewrittenParts = parts.filter((part) => {
+    if (isTableConstraintClause(part)) {
+      // Drop table-level constraints that still name the removed column.
+      return !tableConstraintReferencesColumn(part, columnName);
+    }
+    const ident = extractLeadingIdentifier(part);
+    if (ident && identifiersEqual(ident.name, columnName)) {
+      found = true;
+      return false;
+    }
+    return true;
+  });
+  if (!found) throw new Error(`Unknown column: ${columnName}`);
+  if (rewrittenParts.length === 0) {
+    throw new Error(`Cannot drop the last column from table`);
+  }
+  return `${header}(${rewrittenParts.join(',')})${suffix}`;
+}
+
 /**
  * Modify a column definition. SQLite doesn't support ALTER COLUMN so we
  * rebuild the table inside a transaction while preserving the original DDL
@@ -770,10 +917,81 @@ export function renameColumn(id: string, tableName: string, oldColName: string, 
 
 export function dropColumn(id: string, tableName: string, colName: string): void {
   const db = openDB(id, false);
-  const safe = (s: string) => s.replace(/"/g, '""');
   try {
-    // SQLite 3.35.0+ supports DROP COLUMN
-    db.prepare(`ALTER TABLE "${safe(tableName)}" DROP COLUMN "${safe(colName)}"`).run();
+    if (!tableName || /^sqlite_/i.test(tableName) || tableName === '__col_comments') {
+      throw new Error(`Unknown table: ${tableName}`);
+    }
+
+    const object = db.prepare(
+      `SELECT name, type, sql FROM sqlite_master WHERE name = ? COLLATE NOCASE AND type IN ('table', 'view')`
+    ).get(tableName) as { name: string; type: 'table' | 'view'; sql: string | null } | undefined;
+    if (!object || object.type !== 'table' || !object.sql) {
+      throw new Error(`Unknown table: ${tableName}`);
+    }
+
+    const cols = db.pragma(`table_info(${quoteIdentifier(object.name)})`) as Array<{
+      name: string; type: string; notnull: number; dflt_value: unknown; pk: number;
+    }>;
+    const targetCol = cols.find((column) => identifiersEqual(column.name, colName));
+    if (!targetCol) throw new Error(`Unknown column: ${colName}`);
+    if (cols.length <= 1) {
+      throw new Error('Cannot drop the last column from table');
+    }
+
+    const indexes = db.prepare(
+      `SELECT name, sql FROM sqlite_master WHERE type = 'index' AND tbl_name = ? AND sql IS NOT NULL`
+    ).all(object.name) as Array<{ name: string; sql: string }>;
+    const triggers = db.prepare(
+      `SELECT sql FROM sqlite_master WHERE type = 'trigger' AND tbl_name = ? AND sql IS NOT NULL`
+    ).all(object.name) as Array<{ sql: string }>;
+
+    const dependentIndexes = indexes.filter((index) => sqlReferencesIdentifier(index.sql, targetCol.name));
+    const retainedIndexes = indexes.filter((index) => !sqlReferencesIdentifier(index.sql, targetCol.name));
+    const retainedTriggers = triggers.filter((trigger) => !sqlReferencesIdentifier(trigger.sql, targetCol.name));
+
+    const tryNativeDrop = db.transaction(() => {
+      for (const index of dependentIndexes) {
+        db.exec(`DROP INDEX IF EXISTS ${quoteIdentifier(index.name)}`);
+      }
+      db.prepare(
+        `ALTER TABLE ${quoteIdentifier(object.name)} DROP COLUMN ${quoteIdentifier(targetCol.name)}`
+      ).run();
+    });
+
+    try {
+      tryNativeDrop();
+      return;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      // Residual CHECK / generated-column / constraint dependencies need a rebuild.
+      if (!/CHECK|generated|constraint|dependency|references|error in/i.test(message)
+        && !/no such column|cannot drop/i.test(message)) {
+        throw error;
+      }
+    }
+
+    const tmpName = `__tmp_${object.name}_${Date.now()}`;
+    const rewrittenDdl = removeColumnFromCreateTableSql(object.sql, targetCol.name, tmpName);
+    const remainingCols = cols
+      .filter((column) => !identifiersEqual(column.name, targetCol.name))
+      .map((column) => quoteIdentifier(column.name))
+      .join(', ');
+
+    const rebuild = db.transaction(() => {
+      // Dependent indexes may already have been dropped by the native attempt; recreate only retained ones.
+      for (const index of dependentIndexes) {
+        db.exec(`DROP INDEX IF EXISTS ${quoteIdentifier(index.name)}`);
+      }
+      db.exec(rewrittenDdl);
+      db.exec(
+        `INSERT INTO ${quoteIdentifier(tmpName)} (${remainingCols}) SELECT ${remainingCols} FROM ${quoteIdentifier(object.name)}`
+      );
+      db.exec(`DROP TABLE ${quoteIdentifier(object.name)}`);
+      db.exec(`ALTER TABLE ${quoteIdentifier(tmpName)} RENAME TO ${quoteIdentifier(object.name)}`);
+      for (const index of retainedIndexes) db.exec(index.sql);
+      for (const trigger of retainedTriggers) db.exec(trigger.sql);
+    });
+    rebuild();
   } finally {
     db.close();
   }
