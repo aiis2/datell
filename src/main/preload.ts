@@ -189,6 +189,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('userdb:batchInsert', id, tableName, columns, rows),
   userdbCreateTable: (id: string, ddl: string): Promise<void> =>
     ipcRenderer.invoke('userdb:createTable', id, ddl),
+  userdbImportTable: (
+    id: string,
+    tableName: string,
+    columns: Array<{ name: string; type: string }>,
+    rows: unknown[][],
+    options?: { ifExists?: 'error' | 'replace' },
+  ): Promise<{ inserted: number }> =>
+    ipcRenderer.invoke('userdb:importTable', id, tableName, columns, rows, options),
   userdbDropTable: (id: string, tableName: string): Promise<void> =>
     ipcRenderer.invoke('userdb:dropTable', id, tableName),
   userdbAddColumn: (id: string, tableName: string, colName: string, colType: string): Promise<void> =>

@@ -1035,6 +1035,13 @@ export interface ElectronAPI {
 
   // User database table editing
   userdbGetTableData: (id: string, tableName: string, limit?: number, offset?: number) => Promise<UserDBTableDataResult>;
+  userdbImportTable: (
+    id: string,
+    tableName: string,
+    columns: Array<{ name: string; type: string }>,
+    rows: unknown[][],
+    options?: { ifExists?: 'error' | 'replace' },
+  ) => Promise<{ inserted: number }>;
   userdbUpdateRow: (id: string, tableName: string, locator: UserDBRowLocator, updates: Record<string, unknown>) => Promise<{ changes: 1 }>;
 
   // Vendor file reader (for inlining chart libs into exported HTML)

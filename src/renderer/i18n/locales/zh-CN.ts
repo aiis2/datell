@@ -1093,6 +1093,8 @@ export const zhCN = {
     importingBtn: '导入中...',
     parseError: '文件解析失败: ',
     importError: '导入失败: ',
+    importTableExistsError: '目标表已存在。请先重命名导入表名，或删除已有表后再导入: ',
+    importValidationError: '导入校验失败: ',
     llmTitle: 'AI 智能解析',
     llmDesc: '上传任意文本文件，AI 将自动识别数据结构并导入',
     llmHint: '在聊天窗口选择此用户数据库，上传文本文件并输入：“请将此文件的数据结构化到当前用户数据库”，AI 将自动完成 LLM 流式解析导入。',

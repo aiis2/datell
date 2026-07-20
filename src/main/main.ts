@@ -77,6 +77,7 @@ import {
   executeUserDBSQL,
   batchInsert as userDBBatchInsert,
   createTable as userDBCreateTable,
+  importTable as userDBImportTable,
   dropTable as userDBDropTable,
   addColumn as userDBAddColumn,
   alterColumn as userDBAlterColumn,
@@ -752,6 +753,17 @@ ipcMain.handle('userdb:batchInsert', (_e, id: string, tableName: string, columns
   userDBBatchInsert(id, tableName, columns, rows)
 );
 ipcMain.handle('userdb:createTable', (_e, id: string, ddl: string) => { userDBCreateTable(id, ddl); });
+ipcMain.handle(
+  'userdb:importTable',
+  (
+    _e,
+    id: string,
+    tableName: string,
+    columns: Array<{ name: string; type: string }>,
+    rows: unknown[][],
+    options?: { ifExists?: 'error' | 'replace' },
+  ) => userDBImportTable(id, tableName, columns, rows, options),
+);
 ipcMain.handle('userdb:dropTable', (_e, id: string, tableName: string) => { userDBDropTable(id, tableName); });
 ipcMain.handle('userdb:addColumn', (_e, id: string, tableName: string, colName: string, colType: string) => {
   userDBAddColumn(id, tableName, colName, colType);
