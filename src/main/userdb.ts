@@ -317,9 +317,136 @@ export function executeUserDBSQL(id: string, sql: string, opts: { readOnly?: boo
 
 // ─── Table management ─────────────────────────────────────────────────────────
 
+function extractSingleCreateTableSql(ddl: string): string {
+  if (typeof ddl !== 'string' || ddl.trim().length === 0) {
+    throw new Error('Empty CREATE TABLE statement');
+  }
+
+  let i = 0;
+  const len = ddl.length;
+
+  const skipWhitespaceAndComments = () => {
+    while (i < len) {
+      const ch = ddl[i]!;
+      if (/\s/.test(ch)) {
+        i += 1;
+        continue;
+      }
+      if (ch === '-' && ddl[i + 1] === '-') {
+        i += 2;
+        while (i < len && ddl[i] !== '\n' && ddl[i] !== '\r') i += 1;
+        continue;
+      }
+      if (ch === '/' && ddl[i + 1] === '*') {
+        i += 2;
+        while (i < len && !(ddl[i] === '*' && ddl[i + 1] === '/')) i += 1;
+        if (i < len) i += 2;
+        continue;
+      }
+      break;
+    }
+  };
+
+  skipWhitespaceAndComments();
+  if (i >= len) throw new Error('Empty CREATE TABLE statement');
+
+  const start = i;
+  let inSingle = false;
+  let inDouble = false;
+  let inLineComment = false;
+  let inBlockComment = false;
+  let statementEnd = -1;
+
+  while (i < len) {
+    const ch = ddl[i]!;
+    const next = ddl[i + 1];
+
+    if (inLineComment) {
+      if (ch === '\n' || ch === '\r') inLineComment = false;
+      i += 1;
+      continue;
+    }
+    if (inBlockComment) {
+      if (ch === '*' && next === '/') {
+        inBlockComment = false;
+        i += 2;
+        continue;
+      }
+      i += 1;
+      continue;
+    }
+    if (inSingle) {
+      if (ch === "'" && next === "'") {
+        i += 2;
+        continue;
+      }
+      if (ch === "'") inSingle = false;
+      i += 1;
+      continue;
+    }
+    if (inDouble) {
+      if (ch === '"' && next === '"') {
+        i += 2;
+        continue;
+      }
+      if (ch === '"') inDouble = false;
+      i += 1;
+      continue;
+    }
+
+    if (ch === '-' && next === '-') {
+      inLineComment = true;
+      i += 2;
+      continue;
+    }
+    if (ch === '/' && next === '*') {
+      inBlockComment = true;
+      i += 2;
+      continue;
+    }
+    if (ch === "'") {
+      inSingle = true;
+      i += 1;
+      continue;
+    }
+    if (ch === '"') {
+      inDouble = true;
+      i += 1;
+      continue;
+    }
+    if (ch === ';') {
+      statementEnd = i;
+      i += 1;
+      break;
+    }
+    i += 1;
+  }
+
+  const end = statementEnd >= 0 ? statementEnd : len;
+  const statement = ddl.slice(start, end).trim();
+  if (!statement) throw new Error('Empty CREATE TABLE statement');
+
+  if (!/^CREATE\s+TABLE\b/i.test(statement)) {
+    throw new Error('createTable accepts only CREATE TABLE DDL');
+  }
+
+  // After the first statement, only whitespace/comments are allowed.
+  skipWhitespaceAndComments();
+  if (i < len) {
+    throw new Error('Only a single CREATE TABLE statement is allowed');
+  }
+
+  return statement;
+}
+
 export function createTable(id: string, ddl: string): void {
+  const statement = extractSingleCreateTableSql(ddl);
   const db = openDB(id, false);
-  try { db.exec(ddl); } finally { db.close(); }
+  try {
+    db.prepare(statement).run();
+  } finally {
+    db.close();
+  }
 }
 
 export function dropTable(id: string, tableName: string): void {
