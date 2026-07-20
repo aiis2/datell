@@ -230,8 +230,24 @@ export function updateUserDB(id: string, patch: Partial<Pick<UserDBConfig, 'name
   const all = readRegistry();
   const idx = all.findIndex((c) => c.id === id);
   if (idx < 0) throw new Error(`User DB not found: ${id}`);
-  const now = new Date().toISOString();
-  all[idx] = { ...all[idx], ...patch, updatedAt: now };
+
+  const next: UserDBConfig = { ...all[idx] };
+  if (Object.prototype.hasOwnProperty.call(patch, 'name')) {
+    const name = patch.name;
+    if (typeof name !== 'string' || name.trim().length === 0) {
+      throw new Error('User DB name cannot be empty or blank');
+    }
+    const trimmed = name.trim();
+    if (all.some((c) => c.id !== id && c.name.trim().toLowerCase() === trimmed.toLowerCase())) {
+      throw new Error(`duplicate_name:${trimmed}`);
+    }
+    next.name = trimmed;
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, 'description')) {
+    next.description = patch.description;
+  }
+  next.updatedAt = new Date().toISOString();
+  all[idx] = next;
   writeRegistry(all);
   return all[idx];
 }
