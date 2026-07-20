@@ -205,6 +205,9 @@ export function listUserDBs(): UserDBConfig[] {
 
 export function createUserDB(name: string, description?: string): UserDBConfig {
   ensureUserdbDir();
+  if (typeof name !== 'string' || name.trim().length === 0) {
+    throw new Error('User DB name cannot be empty or blank');
+  }
   const trimmed = name.trim();
   const all = readRegistry();
   if (all.some((c) => c.name.trim().toLowerCase() === trimmed.toLowerCase())) {
@@ -1258,7 +1261,19 @@ export function getUserDBTableData(id: string, tableName: string, limit = 200, o
 
 // ─── Table / Column DDL ───────────────────────────────────────────────────────
 
+function validateUserObjectName(name: string, kind: 'table' | 'column'): string {
+  if (typeof name !== 'string' || name.trim().length === 0) {
+    throw new Error(`${kind === 'table' ? 'Table' : 'Column'} name cannot be empty or blank`);
+  }
+  const trimmed = name.trim();
+  if (kind === 'table' && (/^sqlite_/i.test(trimmed) || trimmed === '__col_comments')) {
+    throw new Error(`Invalid reserved table name: ${trimmed}`);
+  }
+  return trimmed;
+}
+
 export function renameTable(id: string, oldName: string, newName: string): void {
+  const resolvedNew = validateUserObjectName(newName, 'table');
   const db = openDB(id, false);
   try {
     const object = db.prepare(
@@ -1266,15 +1281,16 @@ export function renameTable(id: string, oldName: string, newName: string): void 
     ).get(oldName) as { name: string; type: 'table' } | undefined;
     if (!object) throw new Error(`Unknown table: ${oldName}`);
     db.prepare(
-      `ALTER TABLE ${quoteIdentifier(object.name)} RENAME TO ${quoteIdentifier(newName)}`
+      `ALTER TABLE ${quoteIdentifier(object.name)} RENAME TO ${quoteIdentifier(resolvedNew)}`
     ).run();
-    rewriteTableComments(db, object.name, newName);
+    rewriteTableComments(db, object.name, resolvedNew);
   } finally {
     db.close();
   }
 }
 
 export function renameColumn(id: string, tableName: string, oldColName: string, newColName: string): void {
+  const resolvedNew = validateUserObjectName(newColName, 'column');
   const db = openDB(id, false);
   try {
     const object = db.prepare(
@@ -1286,9 +1302,9 @@ export function renameColumn(id: string, tableName: string, oldColName: string, 
     if (!targetCol) throw new Error(`Unknown column: ${oldColName}`);
     // SQLite 3.25.0+ supports RENAME COLUMN
     db.prepare(
-      `ALTER TABLE ${quoteIdentifier(object.name)} RENAME COLUMN ${quoteIdentifier(targetCol.name)} TO ${quoteIdentifier(newColName)}`
+      `ALTER TABLE ${quoteIdentifier(object.name)} RENAME COLUMN ${quoteIdentifier(targetCol.name)} TO ${quoteIdentifier(resolvedNew)}`
     ).run();
-    rewriteColumnComment(db, object.name, targetCol.name, newColName);
+    rewriteColumnComment(db, object.name, targetCol.name, resolvedNew);
   } finally {
     db.close();
   }
