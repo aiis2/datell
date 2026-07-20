@@ -468,10 +468,32 @@ export function dropTable(id: string, tableName: string): void {
 }
 
 export function addColumn(id: string, tableName: string, colName: string, colType: string): void {
+  if (typeof colName !== 'string' || colName.trim().length === 0) {
+    throw new Error('Column name cannot be empty or blank');
+  }
+  if (typeof colType !== 'string' || colType.trim().length === 0) {
+    throw new Error('Column type cannot be empty');
+  }
+  const trimmedName = colName.trim();
+  const trimmedType = colType.trim();
+  // Managed addColumn accepts a single type expression only.
+  if (/[;\n\r]/.test(trimmedType) || /--/.test(trimmedType) || /\/\*/.test(trimmedType)) {
+    throw new Error('Invalid column type');
+  }
+
   const db = openDB(id, false);
-  const safe = (s: string) => s.replace(/"/g, '""');
   try {
-    db.prepare(`ALTER TABLE "${safe(tableName)}" ADD COLUMN "${safe(colName)}" ${colType}`).run();
+    if (!tableName || /^sqlite_/i.test(tableName) || tableName === '__col_comments') {
+      throw new Error(`Unknown table: ${tableName}`);
+    }
+    const object = db.prepare(
+      `SELECT name, type FROM sqlite_master WHERE name = ? COLLATE NOCASE AND type = 'table'`
+    ).get(tableName) as { name: string; type: 'table' } | undefined;
+    if (!object) throw new Error(`Unknown table: ${tableName}`);
+
+    db.prepare(
+      `ALTER TABLE ${quoteIdentifier(object.name)} ADD COLUMN ${quoteIdentifier(trimmedName)} ${trimmedType}`
+    ).run();
   } finally {
     db.close();
   }
