@@ -596,8 +596,81 @@ function extractSingleCreateTableSql(ddl: string): string {
 }
 
 /**
+ * Read one SQL identifier from the start of `input` (after leading trim by caller).
+ * Supports double-quoted, [bracket], `backtick`, and bare forms (SQLite).
+ * Returns the unescaped identifier text and the remainder after the identifier.
+ */
+function readSqlIdentifier(input: string): { name: string; rest: string } {
+  if (!input) throw new Error('Identifier cannot be empty or blank');
+  const ch0 = input[0]!;
+
+  // "double-quoted" with "" escape
+  if (ch0 === '"') {
+    let i = 1;
+    let name = '';
+    while (i < input.length) {
+      if (input[i] === '"' && input[i + 1] === '"') {
+        name += '"';
+        i += 2;
+        continue;
+      }
+      if (input[i] === '"') {
+        return { name, rest: input.slice(i + 1) };
+      }
+      name += input[i];
+      i += 1;
+    }
+    throw new Error('Unterminated quoted identifier');
+  }
+
+  // [bracket-quoted] with ]] escape
+  if (ch0 === '[') {
+    let i = 1;
+    let name = '';
+    while (i < input.length) {
+      if (input[i] === ']' && input[i + 1] === ']') {
+        name += ']';
+        i += 2;
+        continue;
+      }
+      if (input[i] === ']') {
+        return { name, rest: input.slice(i + 1) };
+      }
+      name += input[i];
+      i += 1;
+    }
+    throw new Error('Unterminated bracket identifier');
+  }
+
+  // `backtick-quoted` with `` escape
+  if (ch0 === '`') {
+    let i = 1;
+    let name = '';
+    while (i < input.length) {
+      if (input[i] === '`' && input[i + 1] === '`') {
+        name += '`';
+        i += 2;
+        continue;
+      }
+      if (input[i] === '`') {
+        return { name, rest: input.slice(i + 1) };
+      }
+      name += input[i];
+      i += 1;
+    }
+    throw new Error('Unterminated backtick identifier');
+  }
+
+  // Bare identifier: stop at whitespace, '(', ',', or quote openers that start another token.
+  const m = input.match(/^([^\s(\[\]"`',]+)([\s\S]*)$/);
+  if (!m) throw new Error('Identifier cannot be empty or blank');
+  return { name: m[1]!, rest: m[2]! };
+}
+
+/**
  * Validate table/column identifiers in a single CREATE TABLE statement.
- * Rejects empty/blank names that SQLite would otherwise accept when quoted.
+ * Rejects empty/blank names that SQLite would otherwise accept when quoted
+ * with "", [], or `` forms.
  */
 function validateCreateTableIdentifiers(statement: string): void {
   const header = statement.match(
@@ -609,31 +682,9 @@ function validateCreateTableIdentifiers(statement: string): void {
   let rest = header[1]!.trimStart();
   if (!rest) throw new Error('Table name cannot be empty or blank');
 
-  let tableName: string;
-  if (rest[0] === '"') {
-    let i = 1;
-    let name = '';
-    while (i < rest.length) {
-      if (rest[i] === '"' && rest[i + 1] === '"') {
-        name += '"';
-        i += 2;
-        continue;
-      }
-      if (rest[i] === '"') {
-        i += 1;
-        break;
-      }
-      name += rest[i];
-      i += 1;
-    }
-    tableName = name;
-    rest = rest.slice(i).trimStart();
-  } else {
-    const m = rest.match(/^([^\s(]+)([\s\S]*)$/);
-    if (!m) throw new Error('Table name cannot be empty or blank');
-    tableName = m[1]!;
-    rest = m[2]!.trimStart();
-  }
+  const tableId = readSqlIdentifier(rest);
+  const tableName = tableId.name;
+  rest = tableId.rest.trimStart();
 
   if (tableName.trim().length === 0) {
     throw new Error('Table name cannot be empty or blank');
@@ -647,11 +698,14 @@ function validateCreateTableIdentifiers(statement: string): void {
   }
 
   // Extract top-level column-list body (balanced parentheses after the opening '(').
+  // Track ", ', `, and [] so nested commas inside string/id quotes are ignored.
   let depth = 0;
   let bodyStart = -1;
   let bodyEnd = -1;
   let inSingle = false;
   let inDouble = false;
+  let inBacktick = false;
+  let inBracket = false;
   for (let i = 0; i < rest.length; i++) {
     const ch = rest[i]!;
     const next = rest[i + 1];
@@ -665,8 +719,20 @@ function validateCreateTableIdentifiers(statement: string): void {
       if (ch === '"') inDouble = false;
       continue;
     }
+    if (inBacktick) {
+      if (ch === '`' && next === '`') { i += 1; continue; }
+      if (ch === '`') inBacktick = false;
+      continue;
+    }
+    if (inBracket) {
+      if (ch === ']' && next === ']') { i += 1; continue; }
+      if (ch === ']') inBracket = false;
+      continue;
+    }
     if (ch === "'") { inSingle = true; continue; }
     if (ch === '"') { inDouble = true; continue; }
+    if (ch === '`') { inBacktick = true; continue; }
+    if (ch === '[') { inBracket = true; continue; }
     if (ch === '(') {
       depth += 1;
       if (depth === 1) bodyStart = i + 1;
@@ -692,6 +758,8 @@ function validateCreateTableIdentifiers(statement: string): void {
     let d = 0;
     inSingle = false;
     inDouble = false;
+    inBacktick = false;
+    inBracket = false;
     for (let i = 0; i < body.length; i++) {
       const ch = body[i]!;
       const next = body[i + 1];
@@ -705,8 +773,20 @@ function validateCreateTableIdentifiers(statement: string): void {
         if (ch === '"') inDouble = false;
         continue;
       }
+      if (inBacktick) {
+        if (ch === '`' && next === '`') { i += 1; continue; }
+        if (ch === '`') inBacktick = false;
+        continue;
+      }
+      if (inBracket) {
+        if (ch === ']' && next === ']') { i += 1; continue; }
+        if (ch === ']') inBracket = false;
+        continue;
+      }
       if (ch === "'") { inSingle = true; continue; }
       if (ch === '"') { inDouble = true; continue; }
+      if (ch === '`') { inBacktick = true; continue; }
+      if (ch === '[') { inBracket = true; continue; }
       if (ch === '(') { d += 1; continue; }
       if (ch === ')') { d -= 1; continue; }
       if (ch === ',' && d === 0) {
@@ -725,26 +805,8 @@ function validateCreateTableIdentifiers(statement: string): void {
     if (!def) continue;
     if (TABLE_CONSTRAINT.test(def)) continue;
 
-    let colName: string;
-    if (def[0] === '"') {
-      let i = 1;
-      let name = '';
-      while (i < def.length) {
-        if (def[i] === '"' && def[i + 1] === '"') {
-          name += '"';
-          i += 2;
-          continue;
-        }
-        if (def[i] === '"') break;
-        name += def[i];
-        i += 1;
-      }
-      colName = name;
-    } else {
-      const m = def.match(/^([^\s(,]+)/);
-      if (!m) throw new Error('Column name cannot be empty or blank');
-      colName = m[1]!;
-    }
+    const colId = readSqlIdentifier(def);
+    const colName = colId.name;
 
     if (colName.trim().length === 0) {
       throw new Error('Column name cannot be empty or blank');
