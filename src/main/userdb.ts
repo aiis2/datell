@@ -444,10 +444,10 @@ export function executeUserDBSQL(id: string, sql: string, opts: { readOnly?: boo
   const db = openDB(id, false); // open RW even for readonly queries (to avoid lock issues)
   const t0 = Date.now();
   try {
-    // Detect if it's a SELECT-like statement to return rows, or a write statement
-    const isSelect = /^\s*(SELECT|WITH|EXPLAIN|PRAGMA)/i.test(sql.trim());
-    if (isSelect) {
-      const stmt = db.prepare(sql);
+    // Classify via the prepared statement: WITH/PRAGMA prefixes alone are not enough
+    // (WITH … INSERT and assignment PRAGMAs are writers with reader === false).
+    const stmt = db.prepare(sql);
+    if (stmt.reader) {
       const rows = stmt.all() as Record<string, unknown>[];
       const columns = rows.length > 0 ? Object.keys(rows[0]) : (stmt.columns?.() ?? []).map((c: { name: string }) => c.name);
       return {
@@ -456,16 +456,15 @@ export function executeUserDBSQL(id: string, sql: string, opts: { readOnly?: boo
         rowCount: rows.length,
         executionMs: Date.now() - t0,
       };
-    } else {
-      // DML / DDL
-      const info = db.prepare(sql).run();
-      return {
-        columns: ['changes', 'lastInsertRowid'],
-        rows: [[info.changes, String(info.lastInsertRowid)]],
-        rowCount: info.changes,
-        executionMs: Date.now() - t0,
-      };
     }
+    // DML / DDL / write PRAGMA
+    const info = stmt.run();
+    return {
+      columns: ['changes', 'lastInsertRowid'],
+      rows: [[info.changes, String(info.lastInsertRowid)]],
+      rowCount: info.changes,
+      executionMs: Date.now() - t0,
+    };
   } finally {
     db.close();
   }
