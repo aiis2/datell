@@ -1523,9 +1523,15 @@ export function exportTableData(id: string, tableName: string, format: 'csv' | '
 
     const colInfo = db.pragma(`table_info(${quoteIdentifier(object.name)})`) as Array<{ name: string }>;
     const columns = colInfo.map((c) => c.name);
+    // safeIntegers: preserve INTEGER magnitude beyond Number.MAX_SAFE_INTEGER.
     const rows = db.prepare(
       `SELECT * FROM ${quoteIdentifier(object.name)}`
-    ).all() as Record<string, unknown>[];
+    ).safeIntegers(true).all() as Record<string, unknown>[];
+
+    const normalizeCell = (value: unknown): unknown => {
+      if (value === undefined) return null;
+      return normalizeVisibleInteger(value);
+    };
 
     if (format === 'json') {
       if (!rows.length) return '[]';
@@ -1533,7 +1539,7 @@ export function exportTableData(id: string, tableName: string, format: 'csv' | '
       return JSON.stringify(
         rows.map((row) => {
           const ordered: Record<string, unknown> = {};
-          for (const col of columns) ordered[col] = row[col] ?? null;
+          for (const col of columns) ordered[col] = normalizeCell(row[col]);
           return ordered;
         }),
         null,
@@ -1553,7 +1559,7 @@ export function exportTableData(id: string, tableName: string, format: 'csv' | '
     if (!rows.length) return header;
     const lines = [
       header,
-      ...rows.map((r) => columns.map((c) => escape(r[c])).join(',')),
+      ...rows.map((r) => columns.map((c) => escape(normalizeCell(r[c]))).join(',')),
     ];
     return lines.join('\n');
   } finally {
