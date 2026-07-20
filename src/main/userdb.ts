@@ -341,9 +341,215 @@ export function addColumn(id: string, tableName: string, colName: string, colTyp
   }
 }
 
+const COLUMN_CONSTRAINT_START =
+  /^(CONSTRAINT|PRIMARY|NOT|UNIQUE|CHECK|DEFAULT|COLLATE|REFERENCES|GENERATED|AS|NULL|ON)\b/i;
+
+function identifiersEqual(a: string, b: string): boolean {
+  return a.localeCompare(b, undefined, { sensitivity: 'accent' }) === 0;
+}
+
+function extractLeadingIdentifier(sql: string): { raw: string; name: string } | null {
+  const trimmed = sql.trimStart();
+  const match = trimmed.match(/^(?:"((?:[^"]|"")*)"|\[([^\]]+)\]|`([^`]+)`|([A-Za-z_][\w$]*))/);
+  if (!match) return null;
+  const raw = match[0];
+  const name = match[1] != null
+    ? match[1].replace(/""/g, '"')
+    : match[2] != null
+      ? match[2]
+      : match[3] != null
+        ? match[3]
+        : match[4];
+  return { raw, name };
+}
+
+function splitTopLevelCsv(input: string): string[] {
+  const parts: string[] = [];
+  let current = '';
+  let depth = 0;
+  let inSingle = false;
+  let inDouble = false;
+  let inBracket = false;
+
+  for (let i = 0; i < input.length; i++) {
+    const ch = input[i];
+    if (inDouble) {
+      current += ch;
+      if (ch === '"' && input[i + 1] === '"') {
+        current += input[++i];
+        continue;
+      }
+      if (ch === '"') inDouble = false;
+      continue;
+    }
+    if (inSingle) {
+      current += ch;
+      if (ch === "'" && input[i + 1] === "'") {
+        current += input[++i];
+        continue;
+      }
+      if (ch === "'") inSingle = false;
+      continue;
+    }
+    if (inBracket) {
+      current += ch;
+      if (ch === ']') inBracket = false;
+      continue;
+    }
+    if (ch === '"') {
+      inDouble = true;
+      current += ch;
+      continue;
+    }
+    if (ch === "'") {
+      inSingle = true;
+      current += ch;
+      continue;
+    }
+    if (ch === '[') {
+      inBracket = true;
+      current += ch;
+      continue;
+    }
+    if (ch === '(') {
+      depth += 1;
+      current += ch;
+      continue;
+    }
+    if (ch === ')') {
+      depth -= 1;
+      current += ch;
+      continue;
+    }
+    if (ch === ',' && depth === 0) {
+      parts.push(current);
+      current = '';
+      continue;
+    }
+    current += ch;
+  }
+  if (current.trim().length > 0) parts.push(current);
+  return parts;
+}
+
+function isTableConstraintClause(clause: string): boolean {
+  return /^(CONSTRAINT|PRIMARY\s+KEY|UNIQUE|CHECK|FOREIGN\s+KEY)\b/i.test(clause.trim());
+}
+
+function skipSqlTypeName(sql: string): string {
+  let i = 0;
+  while (i < sql.length) {
+    while (i < sql.length && /\s/.test(sql[i]!)) i += 1;
+    if (i >= sql.length) break;
+    const tail = sql.slice(i);
+    if (COLUMN_CONSTRAINT_START.test(tail)) break;
+    if (sql[i] === '(') {
+      let depth = 0;
+      for (; i < sql.length; i++) {
+        if (sql[i] === '(') depth += 1;
+        else if (sql[i] === ')') {
+          depth -= 1;
+          if (depth === 0) {
+            i += 1;
+            break;
+          }
+        }
+      }
+      continue;
+    }
+    if (!/[A-Za-z_]/.test(sql[i]!)) break;
+    while (i < sql.length && /[A-Za-z0-9_]/.test(sql[i]!)) i += 1;
+  }
+  return sql.slice(i);
+}
+
+function replaceColumnTypeInDefinition(columnDef: string, newType: string): string {
+  const leadingWs = columnDef.match(/^\s*/)?.[0] ?? '';
+  const body = columnDef.slice(leadingWs.length);
+  const ident = extractLeadingIdentifier(body);
+  if (!ident) throw new Error('Malformed column definition');
+  const afterName = body.slice(ident.raw.length);
+  const afterNameTrimStart = afterName.match(/^\s*/)?.[0] ?? '';
+  const remainder = afterName.slice(afterNameTrimStart.length);
+  const afterType = skipSqlTypeName(remainder).replace(/^\s*/, '');
+  const typePart = newType.trim();
+  return afterType.length > 0
+    ? `${leadingWs}${ident.raw} ${typePart} ${afterType}`
+    : `${leadingWs}${ident.raw} ${typePart}`;
+}
+
+function rewriteCreateTableSql(
+  createSql: string,
+  columnName: string,
+  newType: string,
+  tempTableName: string,
+): string {
+  const openParen = createSql.indexOf('(');
+  if (openParen < 0) throw new Error('Malformed CREATE TABLE statement');
+  let depth = 0;
+  let closeParen = -1;
+  let inSingle = false;
+  let inDouble = false;
+  for (let i = openParen; i < createSql.length; i++) {
+    const ch = createSql[i]!;
+    if (inDouble) {
+      if (ch === '"' && createSql[i + 1] === '"') {
+        i += 1;
+        continue;
+      }
+      if (ch === '"') inDouble = false;
+      continue;
+    }
+    if (inSingle) {
+      if (ch === "'" && createSql[i + 1] === "'") {
+        i += 1;
+        continue;
+      }
+      if (ch === "'") inSingle = false;
+      continue;
+    }
+    if (ch === '"') {
+      inDouble = true;
+      continue;
+    }
+    if (ch === "'") {
+      inSingle = true;
+      continue;
+    }
+    if (ch === '(') depth += 1;
+    else if (ch === ')') {
+      depth -= 1;
+      if (depth === 0) {
+        closeParen = i;
+        break;
+      }
+    }
+  }
+  if (closeParen < 0) throw new Error('Malformed CREATE TABLE statement');
+
+  const header = createSql.slice(0, openParen).replace(
+    /^(\s*CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:(?:"[^"]+"|\[[^\]]+\]|`[^`]+`|\w+)\s*\.\s*)?)(?:"[^"]+"|\[[^\]]+\]|`[^`]+`|\w+)/i,
+    `$1${quoteIdentifier(tempTableName)}`,
+  );
+  const body = createSql.slice(openParen + 1, closeParen);
+  const suffix = createSql.slice(closeParen + 1);
+  const parts = splitTopLevelCsv(body);
+  let found = false;
+  const rewrittenParts = parts.map((part) => {
+    if (isTableConstraintClause(part)) return part;
+    const ident = extractLeadingIdentifier(part);
+    if (!ident || !identifiersEqual(ident.name, columnName)) return part;
+    found = true;
+    return replaceColumnTypeInDefinition(part, newType);
+  });
+  if (!found) throw new Error(`Unknown column: ${columnName}`);
+  return `${header}(${rewrittenParts.join(',')})${suffix}`;
+}
+
 /**
  * Modify a column definition. SQLite doesn't support ALTER COLUMN so we
- * rebuild the table inside a transaction.
+ * rebuild the table inside a transaction while preserving the original DDL
+ * constraints and secondary indexes.
  */
 export function alterColumn(
   id: string,
@@ -353,41 +559,67 @@ export function alterColumn(
   newComment?: string,
 ): void {
   const db = openDB(id, false);
-  const safe = (s: string) => s.replace(/"/g, '""');
   try {
-    const cols = db.pragma(`table_info("${safe(tableName)}")`) as Array<{
+    if (!tableName || /^sqlite_/i.test(tableName) || tableName === '__col_comments') {
+      throw new Error(`Unknown table: ${tableName}`);
+    }
+
+    const object = db.prepare(
+      `SELECT name, type, sql FROM sqlite_master WHERE name = ? COLLATE NOCASE AND type IN ('table', 'view')`
+    ).get(tableName) as { name: string; type: 'table' | 'view'; sql: string | null } | undefined;
+    if (!object || object.type !== 'table' || !object.sql) {
+      throw new Error(`Unknown table: ${tableName}`);
+    }
+
+    const cols = db.pragma(`table_info(${quoteIdentifier(object.name)})`) as Array<{
       name: string; type: string; notnull: number; dflt_value: unknown; pk: number;
     }>;
-    if (!cols.length) throw new Error(`Table not found: ${tableName}`);
+    const targetCol = cols.find((column) => identifiersEqual(column.name, colName));
+    if (!targetCol) throw new Error(`Unknown column: ${colName}`);
 
-    const tmpName = `__tmp_${tableName}_${Date.now()}`;
-    const newCols = cols.map((c) =>
-      c.name === colName
-        ? { ...c, type: newType ?? c.type }
-        : c
-    );
-    const colDefs = newCols.map((c) => {
-      let def = `"${safe(c.name)}" ${c.type}`;
-      if (c.notnull) def += ' NOT NULL';
-      if (c.dflt_value != null) def += ` DEFAULT ${c.dflt_value}`;
-      if (c.pk) def += ' PRIMARY KEY';
-      return def;
-    }).join(', ');
-    const colNames = newCols.map((c) => `"${safe(c.name)}"`).join(', ');
+    const trimmedType = typeof newType === 'string' ? newType.trim() : undefined;
+    const typeProvided = trimmedType !== undefined && trimmedType.length > 0;
+    const typeUnchanged = !typeProvided
+      || trimmedType!.localeCompare(targetCol.type ?? '', undefined, { sensitivity: 'accent' }) === 0;
+
+    if (!typeProvided || typeUnchanged) {
+      if (newComment !== undefined) {
+        ensureColumnCommentsMeta(db);
+        db.prepare(
+          `INSERT OR REPLACE INTO __col_comments (table_name, col_name, comment) VALUES (?, ?, ?)`
+        ).run(object.name, targetCol.name, newComment);
+      }
+      return;
+    }
+
+    const indexes = db.prepare(
+      `SELECT sql FROM sqlite_master WHERE type = 'index' AND tbl_name = ? AND sql IS NOT NULL`
+    ).all(object.name) as Array<{ sql: string }>;
+    const triggers = db.prepare(
+      `SELECT sql FROM sqlite_master WHERE type = 'trigger' AND tbl_name = ? AND sql IS NOT NULL`
+    ).all(object.name) as Array<{ sql: string }>;
+
+    const tmpName = `__tmp_${object.name}_${Date.now()}`;
+    const rewrittenDdl = rewriteCreateTableSql(object.sql, targetCol.name, trimmedType!, tmpName);
+    const colNames = cols.map((column) => quoteIdentifier(column.name)).join(', ');
 
     const transaction = db.transaction(() => {
-      db.exec(`CREATE TABLE "${safe(tmpName)}" (${colDefs})`);
-      db.exec(`INSERT INTO "${safe(tmpName)}" (${colNames}) SELECT ${colNames} FROM "${safe(tableName)}"`);
-      db.exec(`DROP TABLE "${safe(tableName)}"`);
-      db.exec(`ALTER TABLE "${safe(tmpName)}" RENAME TO "${safe(tableName)}"`);
+      db.exec(rewrittenDdl);
+      db.exec(
+        `INSERT INTO ${quoteIdentifier(tmpName)} (${colNames}) SELECT ${colNames} FROM ${quoteIdentifier(object.name)}`
+      );
+      db.exec(`DROP TABLE ${quoteIdentifier(object.name)}`);
+      db.exec(`ALTER TABLE ${quoteIdentifier(tmpName)} RENAME TO ${quoteIdentifier(object.name)}`);
+      for (const index of indexes) db.exec(index.sql);
+      for (const trigger of triggers) db.exec(trigger.sql);
     });
     transaction();
-    // Store comment in a meta table (best-effort)
+
     if (newComment !== undefined) {
       ensureColumnCommentsMeta(db);
       db.prepare(
         `INSERT OR REPLACE INTO __col_comments (table_name, col_name, comment) VALUES (?, ?, ?)`
-      ).run(tableName, colName, newComment);
+      ).run(object.name, targetCol.name, newComment);
     }
   } finally {
     db.close();
