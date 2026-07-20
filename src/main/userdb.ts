@@ -1134,24 +1134,21 @@ export function batchInsert(
 ): { inserted: number } {
   if (!rows.length) return { inserted: 0 };
   const db = openDB(id, false);
-  const safe = (s: string) => s.replace(/"/g, '""');
-  const colList = columns.map((c) => `"${safe(c)}"`).join(', ');
-  const placeholders = columns.map(() => '?').join(', ');
-  const stmt = db.prepare(`INSERT INTO "${safe(tableName)}" (${colList}) VALUES (${placeholders})`);
-  let inserted = 0;
-  const BATCH = 500;
   try {
-    for (let i = 0; i < rows.length; i += BATCH) {
-      const chunk = rows.slice(i, i + BATCH);
-      const transaction = db.transaction((batch: unknown[][]) => {
-        for (const row of batch) {
-          stmt.run(row as any[]);
-          inserted++;
-        }
-      });
-      transaction(chunk);
-    }
-    return { inserted };
+    const safe = (s: string) => s.replace(/"/g, '""');
+    const colList = columns.map((c) => `"${safe(c)}"`).join(', ');
+    const placeholders = columns.map(() => '?').join(', ');
+    const stmt = db.prepare(`INSERT INTO "${safe(tableName)}" (${colList}) VALUES (${placeholders})`);
+    // One outer transaction for the entire payload: partial success is not allowed.
+    const runAll = db.transaction((allRows: unknown[][]) => {
+      let inserted = 0;
+      for (const row of allRows) {
+        stmt.run(row as any[]);
+        inserted += 1;
+      }
+      return { inserted };
+    });
+    return runAll(rows);
   } finally {
     db.close();
   }
