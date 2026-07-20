@@ -1109,6 +1109,7 @@ export const zhCN = {
     dataPreviewLoading: '加载中...',
     dataPreviewEmpty: '表中暂无数据',
     dataPreviewDblClickHint: '双击单元格可编辑',
+    dataPreviewReadOnlyHint: '只读：无法确定稳定的行身份',
     dataPreviewRowCount: '共 {n} 行',
     dataPreviewFetchError: '加载数据失败: ',
     // Pagination

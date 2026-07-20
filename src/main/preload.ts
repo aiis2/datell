@@ -205,8 +205,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('userdb:renameColumn', id, tableName, oldColName, newColName),
   userdbDropColumn: (id: string, tableName: string, colName: string): Promise<void> =>
     ipcRenderer.invoke('userdb:dropColumn', id, tableName, colName),
-  userdbUpdateRow: (id: string, tableName: string, updates: Record<string, unknown>, whereCol: string, whereVal: unknown): Promise<void> =>
-    ipcRenderer.invoke('userdb:updateRow', id, tableName, updates, whereCol, whereVal),
+  userdbUpdateRow: (
+    id: string,
+    tableName: string,
+    locator: import('../main/userdb').UserDBRowLocator,
+    updates: Record<string, unknown>,
+  ): Promise<{ changes: 1 }> =>
+    ipcRenderer.invoke('userdb:updateRow', id, tableName, locator, updates),
 
   // ===== File Picker =====
   fsSelectFile: (extensions: string[]): Promise<string | null> =>

@@ -86,6 +86,7 @@ import {
   renameColumn as userDBRenameColumn,
   dropColumn as userDBDropColumn,
   updateRow as userDBUpdateRow,
+  type UserDBRowLocator,
 } from './userdb';
 import {
   listCollections, createCollection, deleteCollection,
@@ -773,9 +774,11 @@ ipcMain.handle('userdb:renameColumn', (_e, id: string, tableName: string, oldCol
 ipcMain.handle('userdb:dropColumn', (_e, id: string, tableName: string, colName: string) => {
   userDBDropColumn(id, tableName, colName);
 });
-ipcMain.handle('userdb:updateRow', (_e, id: string, tableName: string, updates: Record<string, unknown>, whereCol: string, whereVal: unknown) => {
-  userDBUpdateRow(id, tableName, updates, whereCol, whereVal);
-});
+ipcMain.handle(
+  'userdb:updateRow',
+  (_e, id: string, tableName: string, locator: UserDBRowLocator, updates: Record<string, unknown>) =>
+    userDBUpdateRow(id, tableName, locator, updates)
+);
 
 /* ======== System Identity IPC Handlers ======== */
 

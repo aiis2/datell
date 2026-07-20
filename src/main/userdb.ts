@@ -51,8 +51,37 @@ export interface UserDBSchemaInfo {
 export interface UserDBTableDataResult {
   columns: string[];
   rows: unknown[][];
+  rowLocators: Array<UserDBRowLocator | null>;
+  editable: boolean;
   rowCount: number;
   totalCount: number;
+}
+
+export type UserDBRowLocator =
+  | { kind: 'rowid'; value: string }
+  | { kind: 'primary-key'; values: Record<string, unknown> };
+
+interface UserDBTableColumnInfo {
+  cid: number;
+  name: string;
+  type: string;
+  notnull: number;
+  dflt_value: unknown;
+  pk: number;
+  hidden: number;
+}
+
+interface UserDBTableIdentity {
+  objectType: 'table' | 'view';
+  columns: UserDBTableColumnInfo[];
+  primaryKeyColumns: UserDBTableColumnInfo[];
+  rowidAlias: 'rowid' | '_rowid_' | 'oid' | null;
+}
+
+interface UserDBTableListEntry {
+  schema: string;
+  name: string;
+  wr: number;
 }
 
 // ─── Registry helpers ────────────────────────────────────────────────────────
@@ -100,6 +129,46 @@ function openDB(id: string, readonly = false): Database.Database {
   db.pragma('journal_mode = WAL');
   db.pragma('foreign_keys = ON');
   return db;
+}
+
+const quoteIdentifier = (identifier: string): string => `"${identifier.replace(/"/g, '""')}"`;
+
+const SQLITE_ROWID_MIN = BigInt('-9223372036854775808');
+const SQLITE_ROWID_MAX = BigInt('9223372036854775807');
+
+function normalizeVisibleInteger(value: unknown): unknown {
+  if (typeof value !== 'bigint') return value;
+  const numberValue = Number(value);
+  return Number.isSafeInteger(numberValue) ? numberValue : value.toString();
+}
+
+function normalizePrimaryKeyValue(value: unknown): unknown {
+  if (typeof value !== 'bigint') return value;
+  const numberValue = Number(value);
+  return Number.isSafeInteger(numberValue) ? numberValue : value;
+}
+
+function inspectTableIdentity(db: Database.Database, tableName: string): UserDBTableIdentity {
+  const object = db.prepare(
+    `SELECT name, type FROM sqlite_master WHERE name = ? COLLATE NOCASE AND type IN ('table', 'view')`
+  ).get(tableName) as { name: string; type: 'table' | 'view' } | undefined;
+  if (!object) throw new Error(`Unknown table: ${tableName}`);
+
+  const allColumns = db.pragma(`table_xinfo(${quoteIdentifier(object.name)})`) as UserDBTableColumnInfo[];
+  const columns = allColumns.filter((column) => column.hidden !== 1);
+  const primaryKeyColumns = columns
+    .filter((column) => column.pk > 0)
+    .sort((a, b) => a.pk - b.pk);
+  const columnNames = new Set(columns.map((column) => column.name.toLowerCase()));
+  const tableListEntry = (db.pragma('table_list') as UserDBTableListEntry[])
+    .find((entry) => entry.schema === 'main' && entry.name === object.name);
+  if (!tableListEntry) throw new Error(`Unable to inspect table identity: ${tableName}`);
+  const withoutRowid = object.type !== 'table' || tableListEntry.wr === 1;
+  const rowidAlias = withoutRowid
+    ? null
+    : (['rowid', '_rowid_', 'oid'] as const).find((alias) => !columnNames.has(alias)) ?? null;
+
+  return { objectType: object.type, columns, primaryKeyColumns, rowidAlias };
 }
 
 // ─── CRUD ─────────────────────────────────────────────────────────────────
@@ -399,20 +468,43 @@ export function exportTableData(id: string, tableName: string, format: 'csv' | '
 
 export function getUserDBTableData(id: string, tableName: string, limit = 200, offset = 0): UserDBTableDataResult {
   const db = openDB(id, true);
-  const safe = (s: string) => s.replace(/"/g, '""');
   try {
+    const identity = inspectTableIdentity(db, tableName);
     const totalRow = db.prepare(
-      `SELECT COUNT(*) AS cnt FROM "${safe(tableName)}"`
+      `SELECT COUNT(*) AS cnt FROM ${quoteIdentifier(tableName)}`
     ).get() as { cnt: number };
-    const rows = db.prepare(
-      `SELECT * FROM "${safe(tableName)}" LIMIT ? OFFSET ?`
-    ).all(limit, offset) as Record<string, unknown>[];
-    const columns = rows.length > 0
-      ? Object.keys(rows[0])
-      : (db.pragma(`table_info("${safe(tableName)}")`) as Array<{ name: string }>).map((c) => c.name);
+    const identityColumns = identity.rowidAlias
+      ? [`CAST(${quoteIdentifier(identity.rowidAlias)} AS TEXT)`]
+      : identity.primaryKeyColumns.map((column) => quoteIdentifier(column.name));
+    const identitySelection = identityColumns.length > 0 ? `${identityColumns.join(', ')}, ` : '';
+    const selectedRows = db.prepare(
+      `SELECT ${identitySelection}* FROM ${quoteIdentifier(tableName)} LIMIT ? OFFSET ?`
+    ).safeIntegers(true).raw(true).all(limit, offset) as unknown[][];
+    const columns = identity.columns.map((column) => column.name);
+    const identityOffset = identityColumns.length;
+    const rows = selectedRows.map((row) => row.slice(identityOffset).map(normalizeVisibleInteger));
+    const rowLocators = selectedRows.map((selectedRow): UserDBRowLocator | null => {
+      if (identity.rowidAlias) {
+        const value = selectedRow[0];
+        return typeof value === 'string' ? { kind: 'rowid', value } : null;
+      }
+      if (identity.primaryKeyColumns.length > 0) {
+        const entries: Array<[string, unknown]> = [];
+        for (const [index, column] of identity.primaryKeyColumns.entries()) {
+          const value = selectedRow[index];
+          if (value === undefined || value === null) return null;
+          entries.push([column.name, normalizePrimaryKeyValue(value)]);
+        }
+        return { kind: 'primary-key', values: Object.fromEntries(entries) };
+      }
+      return null;
+    });
     return {
       columns,
-      rows: rows.map((r) => columns.map((c) => r[c] ?? null)),
+      rows,
+      rowLocators,
+      editable: identity.objectType === 'table'
+        && (identity.rowidAlias !== null || identity.primaryKeyColumns.length > 0),
       rowCount: rows.length,
       totalCount: totalRow?.cnt ?? 0,
     };
@@ -458,17 +550,73 @@ export function dropColumn(id: string, tableName: string, colName: string): void
 export function updateRow(
   id: string,
   tableName: string,
+  locator: UserDBRowLocator,
   updates: Record<string, unknown>,
-  whereCol: string,
-  whereVal: unknown,
-): void {
-  if (!Object.keys(updates).length) return;
+): { changes: 1 } {
+  if (!updates || typeof updates !== 'object' || Array.isArray(updates)) {
+    throw new Error('Malformed row updates');
+  }
+  const updateEntries = Object.entries(updates);
+  if (updateEntries.length === 0) throw new Error('Empty row update');
+  if (!locator || typeof locator !== 'object' || Array.isArray(locator)) {
+    throw new Error('Malformed row locator');
+  }
   const db = openDB(id, false);
-  const safe = (s: string) => s.replace(/"/g, '""');
   try {
-    const setClauses = Object.keys(updates).map((k) => `"${safe(k)}" = ?`).join(', ');
-    const values: unknown[] = [...Object.values(updates), whereVal];
-    db.prepare(`UPDATE "${safe(tableName)}" SET ${setClauses} WHERE "${safe(whereCol)}" = ?`).run(...values as any[]);
+    const identity = inspectTableIdentity(db, tableName);
+    if (identity.objectType !== 'table') throw new Error(`Table is not editable: ${tableName}`);
+
+    const columnByName = new Map(identity.columns.map((column) => [column.name, column]));
+    for (const [columnName] of updateEntries) {
+      const column = columnByName.get(columnName);
+      if (!column) throw new Error(`Unknown column: ${columnName}`);
+      if (column.hidden !== 0) throw new Error(`Generated column is read-only: ${columnName}`);
+    }
+
+    let whereClause: string;
+    let whereValues: unknown[];
+    if (locator.kind === 'rowid') {
+      if (!identity.rowidAlias) throw new Error('Rowid locator is not valid for this table');
+      if (typeof locator.value !== 'string' || locator.value.length > 20 || !/^-?\d+$/.test(locator.value)) {
+        throw new Error('Malformed rowid locator');
+      }
+      const rowidValue = BigInt(locator.value);
+      if (rowidValue < SQLITE_ROWID_MIN || rowidValue > SQLITE_ROWID_MAX) {
+        throw new Error('Malformed rowid locator');
+      }
+      whereClause = `${quoteIdentifier(identity.rowidAlias)} = ?`;
+      whereValues = [rowidValue];
+    } else if (locator.kind === 'primary-key') {
+      if (!locator.values || typeof locator.values !== 'object' || Array.isArray(locator.values)) {
+        throw new Error('Malformed primary key locator');
+      }
+      const expectedColumns = identity.primaryKeyColumns.map((column) => column.name);
+      const suppliedColumns = Object.keys(locator.values);
+      if (
+        expectedColumns.length === 0
+        || suppliedColumns.length !== expectedColumns.length
+        || expectedColumns.some((column) => !Object.prototype.hasOwnProperty.call(locator.values, column))
+      ) {
+        throw new Error('Primary key locator does not match the live table primary key');
+      }
+      whereClause = expectedColumns.map((column) => `${quoteIdentifier(column)} IS ?`).join(' AND ');
+      whereValues = expectedColumns.map((column) => locator.values[column]);
+    } else {
+      throw new Error('Unknown row locator');
+    }
+
+    const setClauses = updateEntries.map(([column]) => `${quoteIdentifier(column)} = ?`).join(', ');
+    const statement = db.prepare(
+      `UPDATE ${quoteIdentifier(tableName)} SET ${setClauses} WHERE ${whereClause}`
+    );
+    const runUpdate = db.transaction(() => {
+      const result = statement.run(...([...updateEntries.map(([, value]) => value), ...whereValues] as any[]));
+      if (result.changes !== 1) {
+        throw new Error(`Stale or ambiguous row locator: expected exactly one row, changed ${result.changes}`);
+      }
+      return { changes: 1 as const };
+    });
+    return runUpdate();
   } finally {
     db.close();
   }
