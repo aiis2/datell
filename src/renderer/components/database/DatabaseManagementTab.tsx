@@ -1275,23 +1275,27 @@ const ImportDataDialog: React.FC<{
       }
 
       setProgress({ inserted: 0, total: allRows.length });
-      const colNames = importColumns.map((c) => c.name);
-      const colDefs = importColumns.map((c) => `"${c.name.replace(/"/g, '""')}" ${c.type}`).join(', ');
-      const ddl = `CREATE TABLE IF NOT EXISTS "${tableName.replace(/"/g, '""')}" (${colDefs})`;
-      await api().userdbCreateTable(sourceId, ddl);
-
-      const BATCH = 500;
-      let inserted = 0;
-      for (let i = 0; i < allRows.length; i += BATCH) {
-        const chunk = allRows.slice(i, i + BATCH);
-        const res = await api().userdbBatchInsert(sourceId, tableName, colNames, chunk);
-        inserted += res.inserted;
-        setProgress({ inserted, total: allRows.length });
-      }
+      // Atomic import: create + insert in one main-process transaction.
+      // Default ifExists:'error' refuses silent re-import into an existing table.
+      const res = await api().userdbImportTable(
+        sourceId,
+        tableName,
+        importColumns.map((c) => ({ name: c.name, type: c.type })),
+        allRows,
+        { ifExists: 'error' },
+      );
+      setProgress({ inserted: res.inserted, total: allRows.length });
       onDone();
       onClose();
     } catch (err) {
-      setError(t.dbManagement.importError + (err instanceof Error ? err.message : String(err)));
+      const msg = err instanceof Error ? err.message : String(err);
+      if (/already exists/i.test(msg)) {
+        setError(t.dbManagement.importTableExistsError + msg);
+      } else if (/column name|empty|blank|duplicate|width|length|row/i.test(msg)) {
+        setError(t.dbManagement.importValidationError + msg);
+      } else {
+        setError(t.dbManagement.importError + msg);
+      }
     } finally {
       setImporting(false);
     }

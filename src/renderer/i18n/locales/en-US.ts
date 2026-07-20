@@ -1092,6 +1092,8 @@ export const enUS: Locale = {
     importingBtn: 'Importing...',
     parseError: 'Failed to parse file: ',
     importError: 'Import failed: ',
+    importTableExistsError: 'Table already exists. Rename the target or remove the existing table before importing: ',
+    importValidationError: 'Import validation failed: ',
     llmTitle: 'AI Smart Parse',
     llmDesc: 'Upload any text file; AI will detect structure and import it',
     llmHint: 'Select this user database in the chat window, upload a text file and type: "Please structure this file\'s data into the current user database". AI will handle the LLM streaming parse.',

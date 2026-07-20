@@ -61,6 +61,16 @@ export type UserDBRowLocator =
   | { kind: 'rowid'; value: string }
   | { kind: 'primary-key'; values: Record<string, unknown> };
 
+export interface UserDBImportColumn {
+  name: string;
+  type: string;
+}
+
+export interface UserDBImportOptions {
+  /** Default: 'error' — refuse if the table already exists. */
+  ifExists?: 'error' | 'replace';
+}
+
 interface UserDBTableColumnInfo {
   cid: number;
   name: string;
@@ -444,6 +454,112 @@ export function createTable(id: string, ddl: string): void {
   const db = openDB(id, false);
   try {
     db.prepare(statement).run();
+  } finally {
+    db.close();
+  }
+}
+
+function validateImportTableName(tableName: string): string {
+  if (typeof tableName !== 'string' || tableName.trim().length === 0) {
+    throw new Error('Table name cannot be empty or blank');
+  }
+  const trimmed = tableName.trim();
+  if (/^sqlite_/i.test(trimmed) || trimmed === '__col_comments') {
+    throw new Error(`Unknown table: ${trimmed}`);
+  }
+  return trimmed;
+}
+
+function validateImportColumns(columns: UserDBImportColumn[]): Array<{ name: string; type: string }> {
+  if (!Array.isArray(columns) || columns.length === 0) {
+    throw new Error('Import requires at least one column');
+  }
+  const seen = new Set<string>();
+  return columns.map((column, index) => {
+    if (!column || typeof column !== 'object') {
+      throw new Error(`Invalid column definition at index ${index}`);
+    }
+    if (typeof column.name !== 'string' || column.name.trim().length === 0) {
+      throw new Error('Column name cannot be empty or blank');
+    }
+    if (typeof column.type !== 'string' || column.type.trim().length === 0) {
+      throw new Error('Column type cannot be empty');
+    }
+    const name = column.name.trim();
+    const type = column.type.trim();
+    if (/[;\n\r]/.test(type) || /--/.test(type) || /\/\*/.test(type)) {
+      throw new Error('Invalid column type');
+    }
+    const key = name.toLowerCase();
+    if (seen.has(key)) {
+      throw new Error(`Duplicate column name: ${name}`);
+    }
+    seen.add(key);
+    return { name, type };
+  });
+}
+
+/**
+ * Managed file import: create one table and insert all rows atomically.
+ * Default policy refuses an existing table name (no silent append).
+ */
+export function importTable(
+  id: string,
+  tableName: string,
+  columns: UserDBImportColumn[],
+  rows: unknown[][],
+  options: UserDBImportOptions = {},
+): { inserted: number } {
+  const resolvedTable = validateImportTableName(tableName);
+  const resolvedColumns = validateImportColumns(columns);
+  const ifExists = options.ifExists ?? 'error';
+  if (ifExists !== 'error' && ifExists !== 'replace') {
+    throw new Error(`Unknown ifExists policy: ${String(ifExists)}`);
+  }
+  if (!Array.isArray(rows)) {
+    throw new Error('Import rows must be an array');
+  }
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    if (!Array.isArray(row) || row.length !== resolvedColumns.length) {
+      throw new Error(`Row ${i} width does not match column count`);
+    }
+  }
+
+  const db = openDB(id, false);
+  try {
+    const existing = db.prepare(
+      `SELECT name FROM sqlite_master WHERE name = ? COLLATE NOCASE AND type = 'table'`
+    ).get(resolvedTable) as { name: string } | undefined;
+
+    if (existing && ifExists === 'error') {
+      throw new Error(`Table already exists: ${existing.name}`);
+    }
+
+    const colDefs = resolvedColumns
+      .map((column) => `${quoteIdentifier(column.name)} ${column.type}`)
+      .join(', ');
+    const createSql = `CREATE TABLE ${quoteIdentifier(resolvedTable)} (${colDefs})`;
+    const colList = resolvedColumns.map((column) => quoteIdentifier(column.name)).join(', ');
+    const placeholders = resolvedColumns.map(() => '?').join(', ');
+    const insertSql = `INSERT INTO ${quoteIdentifier(resolvedTable)} (${colList}) VALUES (${placeholders})`;
+
+    const runImport = db.transaction(() => {
+      if (existing && ifExists === 'replace') {
+        db.prepare(`DROP TABLE ${quoteIdentifier(existing.name)}`).run();
+        deleteTableComments(db, existing.name);
+      }
+      db.prepare(createSql).run();
+      if (rows.length === 0) return { inserted: 0 };
+      const stmt = db.prepare(insertSql);
+      let inserted = 0;
+      for (const row of rows) {
+        stmt.run(row as any[]);
+        inserted += 1;
+      }
+      return { inserted };
+    });
+    return runImport();
   } finally {
     db.close();
   }
