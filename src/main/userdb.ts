@@ -325,7 +325,16 @@ export function createTable(id: string, ddl: string): void {
 export function dropTable(id: string, tableName: string): void {
   const db = openDB(id, false);
   try {
-    db.prepare(`DROP TABLE IF EXISTS "${tableName.replace(/"/g, '""')}"`).run();
+    const object = db.prepare(
+      `SELECT name, type FROM sqlite_master WHERE name = ? COLLATE NOCASE AND type = 'table'`
+    ).get(tableName) as { name: string; type: 'table' } | undefined;
+    if (!object) {
+      // Preserve previous IF EXISTS behavior for missing tables.
+      db.prepare(`DROP TABLE IF EXISTS ${quoteIdentifier(tableName)}`).run();
+      return;
+    }
+    db.prepare(`DROP TABLE IF EXISTS ${quoteIdentifier(object.name)}`).run();
+    deleteTableComments(db, object.name);
   } finally {
     db.close();
   }
@@ -784,6 +793,51 @@ function ensureColumnCommentsMeta(db: Database.Database): void {
   `);
 }
 
+function hasColumnCommentsMeta(db: Database.Database): boolean {
+  const row = db.prepare(
+    `SELECT 1 AS ok FROM sqlite_master WHERE type = 'table' AND name = '__col_comments'`
+  ).get() as { ok: number } | undefined;
+  return Boolean(row);
+}
+
+function rewriteTableComments(db: Database.Database, oldTable: string, newTable: string): void {
+  if (!hasColumnCommentsMeta(db)) return;
+  db.prepare(
+    `UPDATE __col_comments SET table_name = ? WHERE table_name = ? COLLATE NOCASE`
+  ).run(newTable, oldTable);
+}
+
+function rewriteColumnComment(
+  db: Database.Database,
+  tableName: string,
+  oldColName: string,
+  newColName: string,
+): void {
+  if (!hasColumnCommentsMeta(db)) return;
+  db.prepare(
+    `UPDATE __col_comments
+     SET col_name = ?
+     WHERE table_name = ? COLLATE NOCASE
+       AND col_name = ? COLLATE NOCASE`
+  ).run(newColName, tableName, oldColName);
+}
+
+function deleteColumnComment(db: Database.Database, tableName: string, colName: string): void {
+  if (!hasColumnCommentsMeta(db)) return;
+  db.prepare(
+    `DELETE FROM __col_comments
+     WHERE table_name = ? COLLATE NOCASE
+       AND col_name = ? COLLATE NOCASE`
+  ).run(tableName, colName);
+}
+
+function deleteTableComments(db: Database.Database, tableName: string): void {
+  if (!hasColumnCommentsMeta(db)) return;
+  db.prepare(
+    `DELETE FROM __col_comments WHERE table_name = ? COLLATE NOCASE`
+  ).run(tableName);
+}
+
 // ─── Batch insert ──────────────────────────────────────────────────────────
 
 export function batchInsert(
@@ -896,9 +950,15 @@ export function getUserDBTableData(id: string, tableName: string, limit = 200, o
 
 export function renameTable(id: string, oldName: string, newName: string): void {
   const db = openDB(id, false);
-  const safe = (s: string) => s.replace(/"/g, '""');
   try {
-    db.prepare(`ALTER TABLE "${safe(oldName)}" RENAME TO "${safe(newName)}"`).run();
+    const object = db.prepare(
+      `SELECT name, type FROM sqlite_master WHERE name = ? COLLATE NOCASE AND type = 'table'`
+    ).get(oldName) as { name: string; type: 'table' } | undefined;
+    if (!object) throw new Error(`Unknown table: ${oldName}`);
+    db.prepare(
+      `ALTER TABLE ${quoteIdentifier(object.name)} RENAME TO ${quoteIdentifier(newName)}`
+    ).run();
+    rewriteTableComments(db, object.name, newName);
   } finally {
     db.close();
   }
@@ -906,10 +966,19 @@ export function renameTable(id: string, oldName: string, newName: string): void 
 
 export function renameColumn(id: string, tableName: string, oldColName: string, newColName: string): void {
   const db = openDB(id, false);
-  const safe = (s: string) => s.replace(/"/g, '""');
   try {
+    const object = db.prepare(
+      `SELECT name, type FROM sqlite_master WHERE name = ? COLLATE NOCASE AND type = 'table'`
+    ).get(tableName) as { name: string; type: 'table' } | undefined;
+    if (!object) throw new Error(`Unknown table: ${tableName}`);
+    const cols = db.pragma(`table_info(${quoteIdentifier(object.name)})`) as Array<{ name: string }>;
+    const targetCol = cols.find((column) => identifiersEqual(column.name, oldColName));
+    if (!targetCol) throw new Error(`Unknown column: ${oldColName}`);
     // SQLite 3.25.0+ supports RENAME COLUMN
-    db.prepare(`ALTER TABLE "${safe(tableName)}" RENAME COLUMN "${safe(oldColName)}" TO "${safe(newColName)}"`).run();
+    db.prepare(
+      `ALTER TABLE ${quoteIdentifier(object.name)} RENAME COLUMN ${quoteIdentifier(targetCol.name)} TO ${quoteIdentifier(newColName)}`
+    ).run();
+    rewriteColumnComment(db, object.name, targetCol.name, newColName);
   } finally {
     db.close();
   }
@@ -960,6 +1029,7 @@ export function dropColumn(id: string, tableName: string, colName: string): void
 
     try {
       tryNativeDrop();
+      deleteColumnComment(db, object.name, targetCol.name);
       return;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -990,6 +1060,7 @@ export function dropColumn(id: string, tableName: string, colName: string): void
       db.exec(`ALTER TABLE ${quoteIdentifier(tmpName)} RENAME TO ${quoteIdentifier(object.name)}`);
       for (const index of retainedIndexes) db.exec(index.sql);
       for (const trigger of retainedTriggers) db.exec(trigger.sql);
+      deleteColumnComment(db, object.name, targetCol.name);
     });
     rebuild();
   } finally {
