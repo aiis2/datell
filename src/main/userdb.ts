@@ -880,6 +880,25 @@ function validateImportColumns(columns: UserDBImportColumn[]): Array<{ name: str
 }
 
 /**
+ * Build a coerceUpdateValue-compatible column descriptor from an import
+ * column declaration (type string may include NOT NULL / PRIMARY KEY).
+ */
+function importColumnDescriptor(column: { name: string; type: string }, cid: number): UserDBTableColumnInfo {
+  const typeUpper = column.type.toUpperCase();
+  const notnull = /\bNOT\s+NULL\b/.test(typeUpper) ? 1 : 0;
+  const pk = /\bPRIMARY\s+KEY\b/.test(typeUpper) ? 1 : 0;
+  return {
+    cid,
+    name: column.name,
+    type: column.type,
+    notnull,
+    dflt_value: null,
+    pk,
+    hidden: 0,
+  };
+}
+
+/**
  * Managed file import: create one table and insert all rows atomically.
  * Default policy refuses an existing table name (no silent append).
  */
@@ -905,6 +924,8 @@ export function importTable(
       throw new Error(`Row ${i} width does not match column count`);
     }
   }
+
+  const bindColumns = resolvedColumns.map((column, index) => importColumnDescriptor(column, index));
 
   const db = openDB(id, false);
   try {
@@ -934,7 +955,8 @@ export function importTable(
       const stmt = db.prepare(insertSql);
       let inserted = 0;
       for (const row of rows) {
-        stmt.run(row as any[]);
+        const bound = row.map((value, index) => coerceUpdateValue(bindColumns[index]!, value));
+        stmt.run(bound as any[]);
         inserted += 1;
       }
       return { inserted };
