@@ -1,6 +1,6 @@
 {
   "name": "datell",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "main": "dist-electron/main/main.js",
   "scripts": {
     "dev": "concurrently \"vite\" \"wait-on tcp:5173 && tsc -p src/main/tsconfig.json && electron .\"",
@@ -146,6 +146,8 @@
   },
   "devDependencies": {
     "@duckdb/duckdb-wasm": "^1.33.1-dev20.0",
+    "@emnapi/core": "^1.11.2",
+    "@emnapi/runtime": "^1.11.2",
     "@tabler/icons": "^3.41.0",
     "@tailwindcss/postcss": "^4.2.1",
     "@types/better-sqlite3": "^7.6.13",
