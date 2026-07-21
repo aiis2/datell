@@ -1400,8 +1400,17 @@ export function alterColumn(
     const targetCol = cols.find((column) => identifiersEqual(column.name, colName));
     if (!targetCol) throw new Error(`Unknown column: ${colName}`);
 
-    const trimmedType = typeof newType === 'string' ? newType.trim() : undefined;
-    const typeProvided = trimmedType !== undefined && trimmedType.length > 0;
+    // Distinguish omitted type (comment-only) from provided-but-blank (invalid).
+    let trimmedType: string | undefined;
+    if (typeof newType === 'string') {
+      trimmedType = newType.trim();
+      if (trimmedType.length === 0) {
+        throw new Error('Column type cannot be empty');
+      }
+    } else {
+      trimmedType = undefined;
+    }
+    const typeProvided = trimmedType !== undefined;
     const typeUnchanged = !typeProvided
       || trimmedType!.localeCompare(targetCol.type ?? '', undefined, { sensitivity: 'accent' }) === 0;
 
