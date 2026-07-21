@@ -968,6 +968,9 @@ export function importTable(
 }
 
 export function dropTable(id: string, tableName: string): void {
+  if (!tableName || /^sqlite_/i.test(tableName) || tableName === '__col_comments') {
+    throw new Error(`Unknown table: ${tableName}`);
+  }
   const db = openDB(id, false);
   try {
     const object = db.prepare(
@@ -977,6 +980,9 @@ export function dropTable(id: string, tableName: string): void {
       // Preserve previous IF EXISTS behavior for missing tables.
       db.prepare(`DROP TABLE IF EXISTS ${quoteIdentifier(tableName)}`).run();
       return;
+    }
+    if (/^sqlite_/i.test(object.name) || object.name === '__col_comments') {
+      throw new Error(`Unknown table: ${tableName}`);
     }
     db.prepare(`DROP TABLE IF EXISTS ${quoteIdentifier(object.name)}`).run();
     deleteTableComments(db, object.name);
@@ -1691,6 +1697,9 @@ function validateUserObjectName(name: string, kind: 'table' | 'column'): string 
 }
 
 export function renameTable(id: string, oldName: string, newName: string): void {
+  if (!oldName || /^sqlite_/i.test(oldName) || oldName === '__col_comments') {
+    throw new Error(`Unknown table: ${oldName}`);
+  }
   const resolvedNew = validateUserObjectName(newName, 'table');
   const db = openDB(id, false);
   try {
@@ -1698,6 +1707,9 @@ export function renameTable(id: string, oldName: string, newName: string): void 
       `SELECT name, type FROM sqlite_master WHERE name = ? COLLATE NOCASE AND type = 'table'`
     ).get(oldName) as { name: string; type: 'table' } | undefined;
     if (!object) throw new Error(`Unknown table: ${oldName}`);
+    if (/^sqlite_/i.test(object.name) || object.name === '__col_comments') {
+      throw new Error(`Unknown table: ${oldName}`);
+    }
     db.prepare(
       `ALTER TABLE ${quoteIdentifier(object.name)} RENAME TO ${quoteIdentifier(resolvedNew)}`
     ).run();
