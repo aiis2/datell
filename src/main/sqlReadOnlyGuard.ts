@@ -58,3 +58,58 @@ export function isReadOnlyDatasourceSql(sql: string): boolean {
 export function isReadOnlyUserDBSql(sql: string): boolean {
   return isSafeReadOnlySql(sql, USERDB_READ_ONLY_PREFIXES, true);
 }
+
+const RESERVED_META_TABLE = '__col_comments';
+
+/** Unquoted / quoted SQL identifier → bare name (no schema). */
+function unquoteSqlIdentifier(raw: string): string {
+  const t = raw.trim();
+  if (t.length >= 2) {
+    const a = t[0];
+    const b = t[t.length - 1];
+    if ((a === '"' && b === '"') || (a === '`' && b === '`')) {
+      const q = a;
+      return t.slice(1, -1).split(q + q).join(q);
+    }
+    if (a === '[' && b === ']') {
+      return t.slice(1, -1);
+    }
+  }
+  return t;
+}
+
+function isReservedMetaTableName(ident: string): boolean {
+  return unquoteSqlIdentifier(ident).toLowerCase() === RESERVED_META_TABLE;
+}
+
+const IDENT =
+  '(?:"[^"]*(?:""[^"]*)*"|`[^`]*(?:``[^`]*)*`|\\[[^\\]]*\\]|[A-Za-z_][\\w$]*)';
+
+/**
+ * Refuse SQL that would drop or rename-from the reserved column-comment meta table.
+ * Call before prepare/run on the UserDB SQL console path.
+ */
+export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
+  if (typeof sql !== 'string' || !sql.trim()) return;
+
+  const stripped = stripSqlComments(sql).replace(/;\s*$/, '').trim();
+  if (!stripped) return;
+
+  const dropRe = new RegExp(
+    `^\\s*DROP\\s+TABLE\\s+(?:IF\\s+EXISTS\\s+)?(?:${IDENT}\\s*\\.\\s*)?(${IDENT})\\s*$`,
+    'i',
+  );
+  const dropMatch = stripped.match(dropRe);
+  if (dropMatch && isReservedMetaTableName(dropMatch[1]!)) {
+    throw new Error(`Cannot drop or rename reserved table ${RESERVED_META_TABLE}`);
+  }
+
+  const renameRe = new RegExp(
+    `^\\s*ALTER\\s+TABLE\\s+(?:${IDENT}\\s*\\.\\s*)?(${IDENT})\\s+RENAME\\s+TO\\s+${IDENT}\\s*$`,
+    'i',
+  );
+  const renameMatch = stripped.match(renameRe);
+  if (renameMatch && isReservedMetaTableName(renameMatch[1]!)) {
+    throw new Error(`Cannot drop or rename reserved table ${RESERVED_META_TABLE}`);
+  }
+}
