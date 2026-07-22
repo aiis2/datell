@@ -186,27 +186,9 @@ async function runAgentWithModel(
   const requiresApiKey = model ? CLOUD_PROVIDERS.has(model.provider) : true;
   const apiKey = model?.apiKey?.trim() || '';
 
-  if (!model || (requiresApiKey && !apiKey)) {
-    set((s) => ({
-      isStreaming: false,
-      conversations: s.conversations.map((c) =>
-        c.id === convId
-          ? {
-              ...c,
-              messages: c.messages.map((m) =>
-                m.id === assistantMsgId
-                  ? { ...m, content: '\u26a0\ufe0f \u8bf7\u5148\u5728\u8bbe\u7f6e\u4e2d\u914d\u7f6e\u6a21\u578b API Key\u3002' }
-                  : m
-              ),
-            }
-          : c
-      ),
-    }));
-    return;
-  }
-
   const ctrl = new AbortController();
   abortControllers.set(convId, ctrl);
+  let agentRunStarted = false;
 
   const onAskUser = (callId: string, question: string, _context?: string, options?: string[]): Promise<string> => {
     return new Promise((resolve) => {
@@ -216,8 +198,27 @@ async function runAgentWithModel(
   };
 
   try {
+    if (!model || (requiresApiKey && !apiKey)) {
+      set((s) => ({
+        conversations: s.conversations.map((c) =>
+          c.id === convId
+            ? {
+                ...c,
+                messages: c.messages.map((m) =>
+                  m.id === assistantMsgId
+                    ? { ...m, content: '\u26a0\ufe0f \u8bf7\u5148\u5728\u8bbe\u7f6e\u4e2d\u914d\u7f6e\u6a21\u578b API Key\u3002' }
+                    : m
+                ),
+              }
+            : c
+        ),
+      }));
+      return;
+    }
+
     // Diagnostic: log the model being used so we can trace provider-specific errors
     console.log('[chatStore] runAgentWithModel: model=', model.id, 'provider=', model.provider, 'baseUrl=', model.baseUrl);
+    agentRunStarted = true;
     const agentEvents = runReactAgent(messagesForAgent, model, ctrl.signal, onAskUser);
 
     for await (const event of agentEvents) {
@@ -426,9 +427,8 @@ async function runAgentWithModel(
       return { isStreaming, streamingConversationIds, pendingQuestion, agentTurnInfo, agentStatusMessage: null };
     });
 
-    // Fire-and-forget: let Agent consolidate session memory asynchronously.
-    // Skip if the session was manually aborted by the user.
-    if (!wasAborted) {
+    // Fire-and-forget only after a real agent run; validation failures and aborts skip it.
+    if (!wasAborted && agentRunStarted) {
       const configState = useConfigStore.getState();
       const model = configState.models.find((m) => m.id === configState.activeModelId);
       const finalConvMessages = get().conversations.find((c) => c.id === convId)?.messages ?? [];
