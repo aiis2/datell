@@ -34,6 +34,7 @@ async function withChatStore({ ids, runReactAgent, upsertMessage = async () => {
   const originalLoad = Module._load;
   const originalLocalStorage = global.localStorage;
   const deletedConversationIds = [];
+  const configWrites = [];
   let memoryCalls = 0;
 
   global.localStorage = {
@@ -74,7 +75,9 @@ async function withChatStore({ ids, runReactAgent, upsertMessage = async () => {
     getConversations: async () => [],
     getMessages: async () => [],
     getConfig: async () => null,
-    setConfig: async () => {},
+    setConfig: async (key, value) => {
+      configWrites.push([key, value]);
+    },
     upsertConversation: async () => {},
     upsertMessage,
     updateConversationTitle: async () => {},
@@ -114,6 +117,7 @@ async function withChatStore({ ids, runReactAgent, upsertMessage = async () => {
     const { useChatStore } = require(chatStorePath);
     await run({
       useChatStore,
+      configWrites,
       deletedConversationIds,
       getMemoryCalls: () => memoryCalls,
     });
@@ -263,7 +267,7 @@ test('deleting before agent startup prevents a late run', async () => {
         }
       },
     },
-    async ({ useChatStore, deletedConversationIds, getMemoryCalls }) => {
+    async ({ useChatStore, configWrites, deletedConversationIds, getMemoryCalls }) => {
       const sendPromise = useChatStore.getState().sendMessage('go', []);
       await waitFor(() => userPersistenceStarted, 'user persistence did not start');
 
@@ -275,6 +279,7 @@ test('deleting before agent startup prevents a late run', async () => {
       assert.equal(agentCalls, 0);
       assert.equal(getMemoryCalls(), 0);
       assert.deepEqual(deletedConversationIds, ['conv-before-start']);
+      assert.deepEqual(configWrites.at(-1), ['activeConversationId', '']);
       assert.deepEqual(state.conversations, []);
       assert.deepEqual(state.streamingConversationIds, []);
       assert.equal(state.isStreaming, false);
