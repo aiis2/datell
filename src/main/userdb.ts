@@ -265,10 +265,16 @@ function coerceUpdateValue(column: UserDBTableColumnInfo, value: unknown): unkno
 }
 
 function inspectTableIdentity(db: Database.Database, tableName: string): UserDBTableIdentity {
+  if (!tableName || /^sqlite_/i.test(tableName) || tableName === '__col_comments') {
+    throw new Error(`Unknown table: ${tableName}`);
+  }
   const object = db.prepare(
     `SELECT name, type FROM sqlite_master WHERE name = ? COLLATE NOCASE AND type IN ('table', 'view')`
   ).get(tableName) as { name: string; type: 'table' | 'view' } | undefined;
   if (!object) throw new Error(`Unknown table: ${tableName}`);
+  if (/^sqlite_/i.test(object.name) || object.name === '__col_comments') {
+    throw new Error(`Unknown table: ${tableName}`);
+  }
 
   const allColumns = db.pragma(`table_xinfo(${quoteIdentifier(object.name)})`) as UserDBTableColumnInfo[];
   const columns = allColumns.filter((column) => column.hidden !== 1);
@@ -1722,6 +1728,9 @@ export function renameTable(id: string, oldName: string, newName: string): void 
 }
 
 export function renameColumn(id: string, tableName: string, oldColName: string, newColName: string): void {
+  if (!tableName || /^sqlite_/i.test(tableName) || tableName === '__col_comments') {
+    throw new Error(`Unknown table: ${tableName}`);
+  }
   const resolvedNew = validateUserObjectName(newColName, 'column');
   const db = openDB(id, false);
   try {
@@ -1729,6 +1738,9 @@ export function renameColumn(id: string, tableName: string, oldColName: string, 
       `SELECT name, type FROM sqlite_master WHERE name = ? COLLATE NOCASE AND type = 'table'`
     ).get(tableName) as { name: string; type: 'table' } | undefined;
     if (!object) throw new Error(`Unknown table: ${tableName}`);
+    if (/^sqlite_/i.test(object.name) || object.name === '__col_comments') {
+      throw new Error(`Unknown table: ${tableName}`);
+    }
     const cols = db.pragma(`table_info(${quoteIdentifier(object.name)})`) as Array<{ name: string }>;
     const targetCol = cols.find((column) => identifiersEqual(column.name, oldColName));
     if (!targetCol) throw new Error(`Unknown column: ${oldColName}`);
