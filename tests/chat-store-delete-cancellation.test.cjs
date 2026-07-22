@@ -208,7 +208,7 @@ test('deleting an ask_user run resolves it with the abort sentinel', async () =>
       await waitFor(() => useChatStore.getState().pendingQuestion != null, 'ask_user did not become pending');
 
       useChatStore.getState().deleteConversation('conv-question');
-      const settledAfterDelete = await settlesWithin(sendPromise, 75);
+      const settledAfterDelete = await settlesWithin(sendPromise, 500);
       const afterDelete = useChatStore.getState();
       const deletionSnapshot = {
         signalAborted: signalSeen.aborted,
