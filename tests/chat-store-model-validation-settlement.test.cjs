@@ -69,8 +69,9 @@ test('settles and persists a missing cloud API key warning', async () => {
     './configStore': { useConfigStore: { getState: () => configState } },
     './subagentStore': { useSubagentStore: { getState: () => ({ clearTodos: () => {} }) } },
     '../services/reactAgent': {
-      runReactAgent: async function* runReactAgent() {
+      runReactAgent: () => {
         agentCalls += 1;
+        return (async function* emptyAgentRun() {})();
       },
     },
     '../services/memoryService': {
