@@ -29,7 +29,7 @@ async function settlesWithin(promise, timeoutMs) {
   }
 }
 
-async function withChatStore({ ids, runReactAgent }, run) {
+async function withChatStore({ ids, runReactAgent, upsertMessage = async () => {} }, run) {
   const originalTsLoader = require.extensions['.ts'];
   const originalLoad = Module._load;
   const originalLocalStorage = global.localStorage;
@@ -76,7 +76,7 @@ async function withChatStore({ ids, runReactAgent }, run) {
     getConfig: async () => null,
     setConfig: async () => {},
     upsertConversation: async () => {},
-    upsertMessage: async () => {},
+    upsertMessage,
     updateConversationTitle: async () => {},
     deleteConversation: async (id) => {
       deletedConversationIds.push(id);
@@ -235,6 +235,49 @@ test('deleting an ask_user run resolves it with the abort sentinel', async () =>
         streamingConversationIds: [],
       });
       assert.equal(getMemoryCalls(), 0);
+    },
+  );
+});
+
+test('deleting before agent startup prevents a late run', async () => {
+  let releaseUserPersistence;
+  let userPersistenceStarted = false;
+  let agentCalls = 0;
+  const userPersistenceGate = new Promise((resolve) => {
+    releaseUserPersistence = resolve;
+  });
+
+  const runReactAgent = () => {
+    agentCalls += 1;
+    return (async function* emptyAgentRun() {})();
+  };
+
+  await withChatStore(
+    {
+      ids: ['conv-before-start', 'user-before-start', 'assistant-before-start'],
+      runReactAgent,
+      upsertMessage: async (message) => {
+        if (message.id === 'user-before-start') {
+          userPersistenceStarted = true;
+          await userPersistenceGate;
+        }
+      },
+    },
+    async ({ useChatStore, deletedConversationIds, getMemoryCalls }) => {
+      const sendPromise = useChatStore.getState().sendMessage('go', []);
+      await waitFor(() => userPersistenceStarted, 'user persistence did not start');
+
+      useChatStore.getState().deleteConversation('conv-before-start');
+      releaseUserPersistence();
+      await sendPromise;
+
+      const state = useChatStore.getState();
+      assert.equal(agentCalls, 0);
+      assert.equal(getMemoryCalls(), 0);
+      assert.deepEqual(deletedConversationIds, ['conv-before-start']);
+      assert.deepEqual(state.conversations, []);
+      assert.deepEqual(state.streamingConversationIds, []);
+      assert.equal(state.isStreaming, false);
     },
   );
 });
