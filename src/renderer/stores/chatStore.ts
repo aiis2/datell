@@ -165,6 +165,15 @@ const abortControllers = new Map<string, AbortController>();
 /** Per-conversation ask-user resolvers */
 const askUserResolvers = new Map<string, (answer: string) => void>();
 
+function cancelConversationRun(convId: string): void {
+  const resolver = askUserResolvers.get(convId);
+  if (resolver) {
+    resolver('__ABORT__');
+    askUserResolvers.delete(convId);
+  }
+  abortControllers.get(convId)?.abort();
+}
+
 async function runAgentWithModel(
   convId: string,
   assistantMsgId: string,
@@ -505,16 +514,28 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   deleteConversation: (id) => {
+    cancelConversationRun(id);
     set((s) => {
       const conversations = s.conversations.filter((c) => c.id !== id);
       const activeConversationId =
         s.activeConversationId === id
           ? (conversations[0]?.id ?? null)
           : s.activeConversationId;
+      const streamingConversationIds = s.streamingConversationIds.filter((convId) => convId !== id);
+      const isStreaming = activeConversationId
+        ? streamingConversationIds.includes(activeConversationId)
+        : false;
       if (activeConversationId) {
         dbAPI.setConfig('activeConversationId', activeConversationId).catch(console.error);
       }
-      return { conversations, activeConversationId };
+      return {
+        conversations,
+        activeConversationId,
+        isStreaming,
+        streamingConversationIds,
+        pendingQuestion: s.pendingQuestion?.convId === id ? null : s.pendingQuestion,
+        agentTurnInfo: s.agentTurnInfo?.convId === id ? null : s.agentTurnInfo,
+      };
     });
     dbAPI.deleteConversation(id).catch(console.error);
   },
@@ -594,7 +615,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
 
     const updatedConv = get().conversations.find((c) => c.id === convId);
-    const messagesForAgent = updatedConv ? updatedConv.messages.slice(0, -1) : [userMsg];
+    if (!updatedConv) return;
+    const messagesForAgent = updatedConv.messages.slice(0, -1);
 
     await runAgentWithModel(convId!, assistantMsg.id, messagesForAgent, set, get);
   },
@@ -690,17 +712,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   stopStreaming: () => {
     const { activeConversationId, pendingQuestion } = get();
-    // If there's a pending AG2U question, resolve it with __ABORT__ so the agent loop unblocks
-    if (activeConversationId && pendingQuestion?.convId === activeConversationId) {
-      const resolver = askUserResolvers.get(activeConversationId);
-      if (resolver) {
-        resolver('__ABORT__');
-        askUserResolvers.delete(activeConversationId);
-      }
-      set({ pendingQuestion: null });
-    }
     if (activeConversationId) {
-      abortControllers.get(activeConversationId)?.abort();
+      cancelConversationRun(activeConversationId);
+    }
+    // Clear the active conversation's pending AG2UI question after unblocking its agent.
+    if (pendingQuestion?.convId === activeConversationId) {
+      set({ pendingQuestion: null });
     }
     // isStreaming/streamingConversationIds will be cleaned up in runAgentWithModel's finally block
   },
