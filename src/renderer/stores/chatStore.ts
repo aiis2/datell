@@ -525,9 +525,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const isStreaming = activeConversationId
         ? streamingConversationIds.includes(activeConversationId)
         : false;
-      if (activeConversationId) {
-        dbAPI.setConfig('activeConversationId', activeConversationId).catch(console.error);
-      }
+      dbAPI.setConfig('activeConversationId', activeConversationId ?? '').catch(console.error);
       return {
         conversations,
         activeConversationId,
