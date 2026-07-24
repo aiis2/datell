@@ -215,6 +215,66 @@ withUserDB('executeUserDBSQL refuses UPDATE/INSERT/REPLACE against __col_comment
   }
 });
 
+function metaColumnNames(db) {
+  return db.prepare("PRAGMA table_info('__col_comments')").all().map((c) => c.name);
+}
+
+withUserDB('executeUserDBSQL refuses ALTER TABLE schema changes on __col_comments', (userdb, id, tempRoot) => {
+  seedComments(userdb, id);
+
+  assert.throws(
+    () => userdb.executeUserDBSQL(id, 'ALTER TABLE __col_comments RENAME COLUMN comment TO comment2'),
+    REFUSE_RE,
+  );
+  assert.throws(
+    () => userdb.executeUserDBSQL(id, 'ALTER TABLE __col_comments ADD COLUMN x TEXT'),
+    REFUSE_RE,
+  );
+  assert.throws(
+    () => userdb.executeUserDBSQL(id, 'ALTER TABLE __col_comments DROP COLUMN comment'),
+    REFUSE_RE,
+  );
+
+  const db = openRaw(tempRoot, id);
+  try {
+    assert.equal(metaExists(db), true);
+    assert.deepEqual(metaColumnNames(db), ['table_name', 'col_name', 'comment']);
+    assert.deepEqual(listComments(db), [
+      { table_name: 'users', col_name: 'name', comment: 'display-name' },
+    ]);
+  } finally {
+    db.close();
+  }
+});
+
+withUserDB('executeUserDBSQL refuses CREATE INDEX on __col_comments', (userdb, id, tempRoot) => {
+  seedComments(userdb, id);
+
+  assert.throws(
+    () => userdb.executeUserDBSQL(id, 'CREATE INDEX idx_meta ON __col_comments(table_name)'),
+    REFUSE_RE,
+  );
+  assert.throws(
+    () => userdb.executeUserDBSQL(id, 'CREATE UNIQUE INDEX idx_meta_u ON "__col_comments"(col_name)'),
+    REFUSE_RE,
+  );
+
+  const db = openRaw(tempRoot, id);
+  try {
+    assert.equal(
+      db.prepare(
+        "SELECT 1 AS ok FROM sqlite_master WHERE type = 'index' AND name IN ('idx_meta', 'idx_meta_u')"
+      ).get()?.ok,
+      undefined,
+    );
+    assert.deepEqual(listComments(db), [
+      { table_name: 'users', col_name: 'name', comment: 'display-name' },
+    ]);
+  } finally {
+    db.close();
+  }
+});
+
 withUserDB('executeUserDBSQL still allows ordinary user-table DDL and DML', (userdb, id, tempRoot) => {
   seedComments(userdb, id);
 
@@ -223,6 +283,8 @@ withUserDB('executeUserDBSQL still allows ordinary user-table DDL and DML', (use
   const select = userdb.executeUserDBSQL(id, 'SELECT x FROM scratch');
   assert.equal(select.rows[0][0], 7);
 
+  userdb.executeUserDBSQL(id, 'ALTER TABLE scratch ADD COLUMN y TEXT');
+  userdb.executeUserDBSQL(id, 'CREATE INDEX idx_scratch_x ON scratch(x)');
   userdb.executeUserDBSQL(id, 'ALTER TABLE scratch RENAME TO scratch2');
   userdb.executeUserDBSQL(id, 'DROP TABLE scratch2');
 
@@ -233,6 +295,7 @@ withUserDB('executeUserDBSQL still allows ordinary user-table DDL and DML', (use
   const db = openRaw(tempRoot, id);
   try {
     assert.equal(metaExists(db), true);
+    assert.deepEqual(metaColumnNames(db), ['table_name', 'col_name', 'comment']);
     assert.deepEqual(listComments(db), [
       { table_name: 'users', col_name: 'name', comment: 'display-name' },
     ]);
