@@ -91,14 +91,19 @@ const RESERVED_META_ERROR = `Cannot drop, rename, or mutate reserved table ${RES
 const WITH_PREFIX = `(?:WITH\\s+(?:RECURSIVE\\s+)?[\\s\\S]+?\\)\\s+)?`;
 
 /**
- * Refuse SQL that would drop, rename-from, or DML-mutate the reserved column-comment meta table.
- * Call before prepare/run on the UserDB SQL console path.
+ * Refuse SQL that would drop, alter schema of, index, or DML-mutate the reserved
+ * column-comment meta table. Call before prepare/run on the UserDB SQL console path.
  */
 export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
   if (typeof sql !== 'string' || !sql.trim()) return;
 
   const stripped = stripSqlComments(sql).replace(/;\s*$/, '').trim();
   if (!stripped) return;
+
+  // After a captured table IDENT, require a non-identifier boundary.
+  // Do not use \b: quoted identifiers end with " / ` / ], which are non-word chars
+  // so \b fails at end-of-string (e.g. DELETE FROM "__col_comments").
+  const afterIdent = '(?=\\s|$|[^A-Za-z0-9_$])';
 
   const dropRe = new RegExp(
     `^\\s*DROP\\s+TABLE\\s+(?:IF\\s+EXISTS\\s+)?(?:${IDENT}\\s*\\.\\s*)?(${IDENT})\\s*$`,
@@ -109,19 +114,25 @@ export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
     throw new Error(RESERVED_META_ERROR);
   }
 
-  const renameRe = new RegExp(
-    `^\\s*ALTER\\s+TABLE\\s+(?:${IDENT}\\s*\\.\\s*)?(${IDENT})\\s+RENAME\\s+TO\\s+${IDENT}\\s*$`,
+  // Any ALTER TABLE targeting meta (RENAME TO/COLUMN, ADD/DROP COLUMN, etc.).
+  const alterRe = new RegExp(
+    `^\\s*ALTER\\s+TABLE\\s+(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
     'i',
   );
-  const renameMatch = stripped.match(renameRe);
-  if (renameMatch && isReservedMetaTableName(renameMatch[1]!)) {
+  const alterMatch = stripped.match(alterRe);
+  if (alterMatch && isReservedMetaTableName(alterMatch[1]!)) {
     throw new Error(RESERVED_META_ERROR);
   }
 
-  // After a captured table IDENT, require a non-identifier boundary.
-  // Do not use \b: quoted identifiers end with " / ` / ], which are non-word chars
-  // so \b fails at end-of-string (e.g. DELETE FROM "__col_comments").
-  const afterIdent = '(?=\\s|$|[^A-Za-z0-9_$])';
+  // CREATE [UNIQUE] INDEX … ON meta
+  const createIndexRe = new RegExp(
+    `^\\s*CREATE\\s+(?:UNIQUE\\s+)?INDEX\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:${IDENT}\\s*\\.\\s*)?${IDENT}\\s+ON\\s+(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
+    'i',
+  );
+  const createIndexMatch = stripped.match(createIndexRe);
+  if (createIndexMatch && isReservedMetaTableName(createIndexMatch[1]!)) {
+    throw new Error(RESERVED_META_ERROR);
+  }
 
   // INSERT [OR …] INTO / REPLACE INTO meta
   const insertRe = new RegExp(
