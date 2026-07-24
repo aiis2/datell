@@ -85,8 +85,13 @@ function isReservedMetaTableName(ident: string): boolean {
 const IDENT =
   '(?:"[^"]*(?:""[^"]*)*"|`[^`]*(?:``[^`]*)*`|\\[[^\\]]*\\]|[A-Za-z_][\\w$]*)';
 
+const RESERVED_META_ERROR = `Cannot drop, rename, or mutate reserved table ${RESERVED_META_TABLE}`;
+
+/** Optional WITH … CTE prefix before a mutating statement (console single-statement path). */
+const WITH_PREFIX = `(?:WITH\\s+(?:RECURSIVE\\s+)?[\\s\\S]+?\\)\\s+)?`;
+
 /**
- * Refuse SQL that would drop or rename-from the reserved column-comment meta table.
+ * Refuse SQL that would drop, rename-from, or DML-mutate the reserved column-comment meta table.
  * Call before prepare/run on the UserDB SQL console path.
  */
 export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
@@ -101,7 +106,7 @@ export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
   );
   const dropMatch = stripped.match(dropRe);
   if (dropMatch && isReservedMetaTableName(dropMatch[1]!)) {
-    throw new Error(`Cannot drop or rename reserved table ${RESERVED_META_TABLE}`);
+    throw new Error(RESERVED_META_ERROR);
   }
 
   const renameRe = new RegExp(
@@ -110,6 +115,41 @@ export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
   );
   const renameMatch = stripped.match(renameRe);
   if (renameMatch && isReservedMetaTableName(renameMatch[1]!)) {
-    throw new Error(`Cannot drop or rename reserved table ${RESERVED_META_TABLE}`);
+    throw new Error(RESERVED_META_ERROR);
+  }
+
+  // After a captured table IDENT, require a non-identifier boundary.
+  // Do not use \b: quoted identifiers end with " / ` / ], which are non-word chars
+  // so \b fails at end-of-string (e.g. DELETE FROM "__col_comments").
+  const afterIdent = '(?=\\s|$|[^A-Za-z0-9_$])';
+
+  // INSERT [OR …] INTO / REPLACE INTO meta
+  const insertRe = new RegExp(
+    `^\\s*${WITH_PREFIX}(?:INSERT\\s+(?:OR\\s+\\w+\\s+)?INTO|REPLACE\\s+INTO)\\s+(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
+    'i',
+  );
+  const insertMatch = stripped.match(insertRe);
+  if (insertMatch && isReservedMetaTableName(insertMatch[1]!)) {
+    throw new Error(RESERVED_META_ERROR);
+  }
+
+  // UPDATE meta …
+  const updateRe = new RegExp(
+    `^\\s*${WITH_PREFIX}UPDATE\\s+(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
+    'i',
+  );
+  const updateMatch = stripped.match(updateRe);
+  if (updateMatch && isReservedMetaTableName(updateMatch[1]!)) {
+    throw new Error(RESERVED_META_ERROR);
+  }
+
+  // DELETE FROM meta …
+  const deleteRe = new RegExp(
+    `^\\s*${WITH_PREFIX}DELETE\\s+FROM\\s+(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
+    'i',
+  );
+  const deleteMatch = stripped.match(deleteRe);
+  if (deleteMatch && isReservedMetaTableName(deleteMatch[1]!)) {
+    throw new Error(RESERVED_META_ERROR);
   }
 }

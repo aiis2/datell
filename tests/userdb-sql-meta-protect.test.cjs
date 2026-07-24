@@ -90,7 +90,7 @@ function seedComments(userdb, id) {
   userdb.alterColumn(id, 'users', 'name', undefined, 'display-name');
 }
 
-const REFUSE_RE = /reserved|cannot drop|cannot rename|unknown table|__col_comments/i;
+const REFUSE_RE = /reserved|cannot drop|cannot rename|cannot mutate|unknown table|__col_comments/i;
 
 withUserDB('executeUserDBSQL refuses DROP TABLE __col_comments and leaves meta rows', (userdb, id, tempRoot) => {
   seedComments(userdb, id);
@@ -155,6 +155,66 @@ withUserDB('executeUserDBSQL refuses ALTER TABLE __col_comments RENAME TO', (use
   }
 });
 
+withUserDB('executeUserDBSQL refuses DELETE FROM __col_comments and leaves meta rows', (userdb, id, tempRoot) => {
+  seedComments(userdb, id);
+
+  assert.throws(
+    () => userdb.executeUserDBSQL(id, 'DELETE FROM __col_comments'),
+    REFUSE_RE,
+  );
+  assert.throws(
+    () => userdb.executeUserDBSQL(id, 'DELETE FROM "__col_comments"'),
+    REFUSE_RE,
+  );
+  assert.throws(
+    () => userdb.executeUserDBSQL(id, 'WITH x AS (SELECT 1) DELETE FROM __col_comments'),
+    REFUSE_RE,
+  );
+
+  const db = openRaw(tempRoot, id);
+  try {
+    assert.equal(metaExists(db), true);
+    assert.deepEqual(listComments(db), [
+      { table_name: 'users', col_name: 'name', comment: 'display-name' },
+    ]);
+  } finally {
+    db.close();
+  }
+});
+
+withUserDB('executeUserDBSQL refuses UPDATE/INSERT/REPLACE against __col_comments', (userdb, id, tempRoot) => {
+  seedComments(userdb, id);
+
+  assert.throws(
+    () => userdb.executeUserDBSQL(id, "UPDATE __col_comments SET comment = 'x'"),
+    REFUSE_RE,
+  );
+  assert.throws(
+    () => userdb.executeUserDBSQL(
+      id,
+      "INSERT INTO __col_comments (table_name, col_name, comment) VALUES ('t','c','z')",
+    ),
+    REFUSE_RE,
+  );
+  assert.throws(
+    () => userdb.executeUserDBSQL(
+      id,
+      "REPLACE INTO __col_comments (table_name, col_name, comment) VALUES ('t','c','z')",
+    ),
+    REFUSE_RE,
+  );
+
+  const db = openRaw(tempRoot, id);
+  try {
+    assert.equal(metaExists(db), true);
+    assert.deepEqual(listComments(db), [
+      { table_name: 'users', col_name: 'name', comment: 'display-name' },
+    ]);
+  } finally {
+    db.close();
+  }
+});
+
 withUserDB('executeUserDBSQL still allows ordinary user-table DDL and DML', (userdb, id, tempRoot) => {
   seedComments(userdb, id);
 
@@ -165,6 +225,10 @@ withUserDB('executeUserDBSQL still allows ordinary user-table DDL and DML', (use
 
   userdb.executeUserDBSQL(id, 'ALTER TABLE scratch RENAME TO scratch2');
   userdb.executeUserDBSQL(id, 'DROP TABLE scratch2');
+
+  // Read-only access to meta remains useful for debugging; mutation is refused above.
+  const metaSelect = userdb.executeUserDBSQL(id, 'SELECT comment FROM __col_comments');
+  assert.equal(metaSelect.rows[0][0], 'display-name');
 
   const db = openRaw(tempRoot, id);
   try {
