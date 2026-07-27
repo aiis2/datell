@@ -198,8 +198,10 @@ export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
 
   // CREATE [TEMP|TEMPORARY] TRIGGER … ON [schema.]ident — refuse triggers attached to meta.
   // Body analysis of BEGIN…END is out of scope; only the ON target is matched.
+  // INSERT/UPDATE may include optional OF <column-list> before ON (SQLite syntax).
+  const ofColumnList = `(?:\\s+OF\\s+${IDENT}(?:\\s*,\\s*${IDENT})*)?`;
   const createTriggerRe = new RegExp(
-    `^\\s*CREATE\\s+(?:TEMP(?:ORARY)?\\s+)?TRIGGER\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:${IDENT}\\s*\\.\\s*)?${IDENT}\\s+(?:BEFORE|AFTER|INSTEAD\\s+OF)\\s+(?:INSERT|UPDATE|DELETE)\\s+ON\\s+(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
+    `^\\s*CREATE\\s+(?:TEMP(?:ORARY)?\\s+)?TRIGGER\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:${IDENT}\\s*\\.\\s*)?${IDENT}\\s+(?:BEFORE|AFTER|INSTEAD\\s+OF)\\s+(?:(?:INSERT|UPDATE)${ofColumnList}|DELETE)\\s+ON\\s+(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
     'i',
   );
   const createTriggerMatch = stripped.match(createTriggerRe);

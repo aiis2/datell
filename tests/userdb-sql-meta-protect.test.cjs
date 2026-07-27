@@ -530,3 +530,47 @@ withUserDB('executeUserDBSQL still allows CREATE TRIGGER on user tables', (userd
   );
   assert.equal(listed.rows[0][0], 't_user');
 });
+
+withUserDB('executeUserDBSQL refuses CREATE TRIGGER OF columns ON __col_comments', (userdb, id, tempRoot) => {
+  seedComments(userdb, id);
+
+  assert.throws(
+    () => userdb.executeUserDBSQL(
+      id,
+      'CREATE TRIGGER t_of_ins AFTER INSERT OF table_name ON __col_comments BEGIN SELECT 1; END',
+    ),
+    (err) => REFUSE_RE.test(String(err)) && /reserved/i.test(String(err)),
+  );
+  assert.throws(
+    () => userdb.executeUserDBSQL(
+      id,
+      'CREATE TRIGGER t_of_upd AFTER UPDATE OF table_name, col_name ON "__col_comments" BEGIN SELECT 1; END',
+    ),
+    (err) => REFUSE_RE.test(String(err)) && /reserved/i.test(String(err)),
+  );
+
+  const db = openRaw(tempRoot, id);
+  try {
+    assert.equal(
+      db.prepare(
+        "SELECT 1 AS ok FROM sqlite_master WHERE type = 'trigger' AND name IN ('t_of_ins', 't_of_upd')"
+      ).get()?.ok,
+      undefined,
+    );
+  } finally {
+    db.close();
+  }
+});
+
+withUserDB('executeUserDBSQL still allows CREATE TRIGGER OF columns on user tables', (userdb, id) => {
+  seedComments(userdb, id);
+  assert.doesNotThrow(() => userdb.executeUserDBSQL(
+    id,
+    'CREATE TRIGGER t_of_user AFTER UPDATE OF name ON users BEGIN SELECT 1; END',
+  ));
+  const listed = userdb.executeUserDBSQL(
+    id,
+    "SELECT name FROM sqlite_master WHERE type = 'trigger' AND name = 't_of_user'",
+  );
+  assert.equal(listed.rows[0][0], 't_of_user');
+});
