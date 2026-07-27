@@ -175,13 +175,24 @@ export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
     throw new Error(RESERVED_META_ERROR);
   }
 
-  // CREATE VIEW [IF NOT EXISTS] [schema.]ident … — refuse occupying the reserved name.
+  // CREATE [TEMP|TEMPORARY] VIEW [IF NOT EXISTS] [schema.]ident …
+  // Also covers WITH … CREATE VIEW … forms via WITH_PREFIX.
   const createViewRe = new RegExp(
-    `^\\s*CREATE\\s+VIEW\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
+    `^\\s*${WITH_PREFIX}CREATE\\s+(?:TEMP(?:ORARY)?\\s+)?VIEW\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
     'i',
   );
   const createViewMatch = stripped.match(createViewRe);
   if (createViewMatch && isReservedMetaTableName(createViewMatch[1]!)) {
+    throw new Error(RESERVED_META_ERROR);
+  }
+
+  // CREATE VIRTUAL TABLE [IF NOT EXISTS] [schema.]ident … — distinct from CREATE TABLE.
+  const createVirtualRe = new RegExp(
+    `^\\s*${WITH_PREFIX}CREATE\\s+VIRTUAL\\s+TABLE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
+    'i',
+  );
+  const createVirtualMatch = stripped.match(createVirtualRe);
+  if (createVirtualMatch && isReservedMetaTableName(createVirtualMatch[1]!)) {
     throw new Error(RESERVED_META_ERROR);
   }
 
