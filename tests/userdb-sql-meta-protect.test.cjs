@@ -574,3 +574,61 @@ withUserDB('executeUserDBSQL still allows CREATE TRIGGER OF columns on user tabl
   );
   assert.equal(listed.rows[0][0], 't_of_user');
 });
+
+withUserDB('executeUserDBSQL refuses CREATE TRIGGER body that mutates __col_comments', (userdb, id, tempRoot) => {
+  seedComments(userdb, id);
+
+  assert.throws(
+    () => userdb.executeUserDBSQL(
+      id,
+      'CREATE TRIGGER t_wipe AFTER INSERT ON users BEGIN DELETE FROM __col_comments; END',
+    ),
+    (err) => REFUSE_RE.test(String(err)) && /reserved/i.test(String(err)),
+  );
+  assert.throws(
+    () => userdb.executeUserDBSQL(
+      id,
+      "CREATE TRIGGER t_upd_body AFTER UPDATE ON users BEGIN UPDATE __col_comments SET comment = 'x'; END",
+    ),
+    (err) => REFUSE_RE.test(String(err)) && /reserved/i.test(String(err)),
+  );
+
+  const db = openRaw(tempRoot, id);
+  try {
+    assert.equal(
+      db.prepare(
+        "SELECT 1 AS ok FROM sqlite_master WHERE type = 'trigger' AND name IN ('t_wipe', 't_upd_body')"
+      ).get()?.ok,
+      undefined,
+    );
+    assert.deepEqual(listComments(db), [
+      { table_name: 'users', col_name: 'name', comment: 'display-name' },
+    ]);
+  } finally {
+    db.close();
+  }
+});
+
+withUserDB('executeUserDBSQL still allows CREATE TRIGGER body without meta mutation', (userdb, id, tempRoot) => {
+  seedComments(userdb, id);
+  assert.doesNotThrow(() => userdb.executeUserDBSQL(
+    id,
+    'CREATE TRIGGER t_ok AFTER INSERT ON users BEGIN SELECT 1; END',
+  ));
+  userdb.executeUserDBSQL(id, "INSERT INTO users (name) VALUES ('kept')");
+
+  const db = openRaw(tempRoot, id);
+  try {
+    assert.equal(
+      db.prepare(
+        "SELECT 1 AS ok FROM sqlite_master WHERE type = 'trigger' AND name = 't_ok'"
+      ).get()?.ok,
+      1,
+    );
+    assert.deepEqual(listComments(db), [
+      { table_name: 'users', col_name: 'name', comment: 'display-name' },
+    ]);
+  } finally {
+    db.close();
+  }
+});
