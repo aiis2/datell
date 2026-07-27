@@ -97,6 +97,7 @@ interface DatasourceState {
   saveDatasource: (config: DatasourceConfig) => Promise<void>;
   deleteDatasource: (id: string) => Promise<void>;
   testDatasource: (id: string) => Promise<{ ok: boolean; message: string }>;
+  testDatasourceConfig: (config: DatasourceConfig) => Promise<{ ok: boolean; message: string }>;
   queryDatasource: (id: string, sql: string, params?: unknown[]) => Promise<QueryResult>;
   getDatasourceSchema: (id: string, opts?: { limit?: number; search?: string }) => Promise<SchemaInfo>;
   getTableData: (id: string, tableName: string) => Promise<TableDataResult>;
@@ -120,6 +121,7 @@ const api = () => window.electronAPI as typeof window.electronAPI & {
   datasourceSave: (c: DatasourceConfig) => Promise<DatasourceConfig>;
   datasourceDelete: (id: string) => Promise<void>;
   datasourceTest: (id: string) => Promise<{ ok: boolean; message: string }>;
+  datasourceTestConfig: (config: DatasourceConfig) => Promise<{ ok: boolean; message: string }>;
   datasourceQuery: (id: string, sql: string, params?: unknown[]) => Promise<QueryResult>;
   datasourceGetSchema: (id: string, opts?: { limit?: number; search?: string }) => Promise<SchemaInfo>;
   datasourceGetTableData: (id: string, tableName: string) => Promise<TableDataResult>;
@@ -166,6 +168,8 @@ export const useDatasourceStore = create<DatasourceState>((set, get) => ({
   },
 
   testDatasource: (id) => api().datasourceTest(id),
+
+  testDatasourceConfig: (config) => api().datasourceTestConfig(config),
 
   queryDatasource: (id, sql, params) => api().datasourceQuery(id, sql, params),
 

@@ -3218,7 +3218,7 @@ const EMPTY_DS = (): DatasourceConfig => ({
 
 const DatasourcesTab: React.FC = () => {
   const { t } = useI18n();
-  const { datasources, loading, error, loadDatasources, saveDatasource, deleteDatasource, testDatasource } = useDatasourceStore();
+  const { datasources, loading, error, loadDatasources, saveDatasource, deleteDatasource, testDatasourceConfig } = useDatasourceStore();
   const [selected, setSelected] = useState<DatasourceConfig | null>(null);
   const [buf, setBuf] = useState<DatasourceConfig>(EMPTY_DS());
   const [isNew, setIsNew] = useState(false);
@@ -3296,9 +3296,7 @@ const DatasourcesTab: React.FC = () => {
     setTesting(true);
     setTestResult(null);
     try {
-      const idToTest = isNew ? buf.id : (selected?.id ?? buf.id);
-      if (isNew) { await saveDatasource(buf); await loadDatasources(); setIsNew(false); setSelected(buf); setViewMode('view'); }
-      const res = await testDatasource(idToTest);
+      const res = await testDatasourceConfig(buf);
       setTestResult(res);
     } catch (err) {
       setTestResult({ ok: false, message: err instanceof Error ? err.message : String(err) });

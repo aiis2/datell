@@ -1030,6 +1030,7 @@ export interface ElectronAPI {
   datasourceSave: (config: DatasourceConfigPublic) => Promise<DatasourceConfigPublic>;
   datasourceDelete: (id: string) => Promise<void>;
   datasourceTest: (id: string) => Promise<{ ok: boolean; message: string }>;
+  datasourceTestConfig: (config: DatasourceConfigPublic) => Promise<{ ok: boolean; message: string }>;
   datasourceQuery: (id: string, sql: string, params?: unknown[]) => Promise<{ columns: string[]; rows: unknown[][]; rowCount: number; executionMs: number }>;
   datasourceGetSchema: (id: string) => Promise<{ tables: Array<{ name: string; columns: Array<{ name: string; type: string; nullable: boolean; comment?: string }> }> }>;
 
