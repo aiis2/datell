@@ -163,4 +163,25 @@ export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
   if (deleteMatch && isReservedMetaTableName(deleteMatch[1]!)) {
     throw new Error(RESERVED_META_ERROR);
   }
+
+  // CREATE TABLE [IF NOT EXISTS] [schema.]ident … — refuse creating the reserved name.
+  const createTableRe = new RegExp(
+    `^\\s*CREATE\\s+TABLE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
+    'i',
+  );
+  const createTableMatch = stripped.match(createTableRe);
+  if (createTableMatch && isReservedMetaTableName(createTableMatch[1]!)) {
+    throw new Error(RESERVED_META_ERROR);
+  }
+
+  // ALTER TABLE … RENAME TO [schema.]ident — refuse renaming *into* the reserved name.
+  // Deliberately require RENAME TO (not RENAME COLUMN) so column renames stay unaffected.
+  const renameToRe = new RegExp(
+    `^\\s*ALTER\\s+TABLE\\s+(?:${IDENT}\\s*\\.\\s*)?${IDENT}\\s+RENAME\\s+TO\\s+(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
+    'i',
+  );
+  const renameToMatch = stripped.match(renameToRe);
+  if (renameToMatch && isReservedMetaTableName(renameToMatch[1]!)) {
+    throw new Error(RESERVED_META_ERROR);
+  }
 }
