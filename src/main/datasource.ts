@@ -368,19 +368,47 @@ async function pgTableData(cfg: DatasourceConfig, tableName: string): Promise<Ta
 
 // ─── Public API ─────────────────────────────────────────────────────────────
 
-export async function testDatasource(id: string): Promise<{ ok: boolean; message: string }> {
-  const cfg = readDatasources().find((c) => c.id === id);
-  if (!cfg) return { ok: false, message: '找不到数据源' };
+/**
+ * Shared connection probe used by both ID-based and draft-based test APIs.
+ * Never reads or writes datasources.json — callers supply a fully-resolved config.
+ */
+async function testDatasourceConnection(cfg: DatasourceConfig): Promise<{ ok: boolean; message: string }> {
   try {
     if (cfg.type === 'mysql' || cfg.type === 'doris' || cfg.type === 'presto') {
       await mysqlQuery(cfg, 'SELECT 1');
     } else if (cfg.type === 'postgresql') {
       await pgQuery(cfg, 'SELECT 1');
+    } else {
+      return { ok: false, message: `不支持的数据源类型: ${cfg.type}` };
     }
     return { ok: true, message: '连接成功' };
   } catch (err) {
     return { ok: false, message: err instanceof Error ? err.message : String(err) };
   }
+}
+
+/** Resolve `__MASKED__` password from stored config; other draft fields stay authoritative. */
+function resolveDraftCredentials(config: DatasourceConfig): DatasourceConfig {
+  const draft: DatasourceConfig = { ...config, options: config.options ? { ...config.options } : config.options };
+  if (draft.password === MASKED_PW) {
+    const stored = readDatasources().find((c) => c.id === draft.id);
+    draft.password = stored?.password ?? '';
+  }
+  return draft;
+}
+
+/**
+ * Test the current form draft without reading host/port/etc. from disk or writing
+ * datasources.json. Masked passwords are resolved from the stored record with the same ID.
+ */
+export async function testDatasourceConfig(config: DatasourceConfig): Promise<{ ok: boolean; message: string }> {
+  return testDatasourceConnection(resolveDraftCredentials(config));
+}
+
+export async function testDatasource(id: string): Promise<{ ok: boolean; message: string }> {
+  const cfg = readDatasources().find((c) => c.id === id);
+  if (!cfg) return { ok: false, message: '找不到数据源' };
+  return testDatasourceConnection(cfg);
 }
 
 export async function queryDatasource(

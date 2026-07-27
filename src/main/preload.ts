@@ -163,6 +163,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('datasource:delete', id),
   datasourceTest: (id: string): Promise<{ ok: boolean; message: string }> =>
     ipcRenderer.invoke('datasource:test', id),
+  datasourceTestConfig: (config: import('../main/datasource').DatasourceConfig): Promise<{ ok: boolean; message: string }> =>
+    ipcRenderer.invoke('datasource:testConfig', config),
   datasourceQuery: (id: string, sql: string, params?: unknown[]): Promise<import('../main/datasource').QueryResult> =>
     ipcRenderer.invoke('datasource:query', id, sql, params),
   datasourceGetSchema: (id: string, opts?: { limit?: number; search?: string }): Promise<import('../main/datasource').SchemaInfo> =>

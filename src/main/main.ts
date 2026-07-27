@@ -64,6 +64,7 @@ import {
   saveDatasource,
   deleteDatasource,
   testDatasource,
+  testDatasourceConfig,
   queryDatasource,
   getDatasourceSchema,
   getTableData,
@@ -734,6 +735,7 @@ ipcMain.handle('datasource:getAll', () => getMaskedDatasources());
 ipcMain.handle('datasource:save', (_e, config) => saveDatasource(config));
 ipcMain.handle('datasource:delete', (_e, id: string) => { deleteDatasource(id); });
 ipcMain.handle('datasource:test', (_e, id: string) => testDatasource(id));
+ipcMain.handle('datasource:testConfig', (_e, config) => testDatasourceConfig(config));
 ipcMain.handle('datasource:query', (_e, id: string, sql: string, params?: unknown[]) =>
   queryDatasource(id, sql, params)
 );
