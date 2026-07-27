@@ -164,13 +164,24 @@ export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
     throw new Error(RESERVED_META_ERROR);
   }
 
-  // CREATE TABLE [IF NOT EXISTS] [schema.]ident … — refuse creating the reserved name.
+  // CREATE [TEMP|TEMPORARY] TABLE [IF NOT EXISTS] [schema.]ident …
+  // Also covers WITH … CREATE TABLE … AS SELECT forms via WITH_PREFIX.
   const createTableRe = new RegExp(
-    `^\\s*CREATE\\s+TABLE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
+    `^\\s*${WITH_PREFIX}CREATE\\s+(?:TEMP(?:ORARY)?\\s+)?TABLE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
     'i',
   );
   const createTableMatch = stripped.match(createTableRe);
   if (createTableMatch && isReservedMetaTableName(createTableMatch[1]!)) {
+    throw new Error(RESERVED_META_ERROR);
+  }
+
+  // CREATE VIEW [IF NOT EXISTS] [schema.]ident … — refuse occupying the reserved name.
+  const createViewRe = new RegExp(
+    `^\\s*CREATE\\s+VIEW\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
+    'i',
+  );
+  const createViewMatch = stripped.match(createViewRe);
+  if (createViewMatch && isReservedMetaTableName(createViewMatch[1]!)) {
     throw new Error(RESERVED_META_ERROR);
   }
 
