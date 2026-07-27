@@ -196,6 +196,17 @@ export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
     throw new Error(RESERVED_META_ERROR);
   }
 
+  // CREATE [TEMP|TEMPORARY] TRIGGER … ON [schema.]ident — refuse triggers attached to meta.
+  // Body analysis of BEGIN…END is out of scope; only the ON target is matched.
+  const createTriggerRe = new RegExp(
+    `^\\s*CREATE\\s+(?:TEMP(?:ORARY)?\\s+)?TRIGGER\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:${IDENT}\\s*\\.\\s*)?${IDENT}\\s+(?:BEFORE|AFTER|INSTEAD\\s+OF)\\s+(?:INSERT|UPDATE|DELETE)\\s+ON\\s+(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
+    'i',
+  );
+  const createTriggerMatch = stripped.match(createTriggerRe);
+  if (createTriggerMatch && isReservedMetaTableName(createTriggerMatch[1]!)) {
+    throw new Error(RESERVED_META_ERROR);
+  }
+
   // ALTER TABLE … RENAME TO [schema.]ident — refuse renaming *into* the reserved name.
   // Deliberately require RENAME TO (not RENAME COLUMN) so column renames stay unaffected.
   const renameToRe = new RegExp(

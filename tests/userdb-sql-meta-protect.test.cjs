@@ -476,3 +476,57 @@ withUserDB('executeUserDBSQL still allows non-reserved virtual tables and temp v
   assert.doesNotThrow(() => userdb.executeUserDBSQL(id, 'CREATE VIRTUAL TABLE ok_fts USING fts5(x)'));
   assert.doesNotThrow(() => userdb.executeUserDBSQL(id, 'CREATE TEMP VIEW ok_temp_view AS SELECT 1 AS n'));
 });
+
+withUserDB('executeUserDBSQL refuses CREATE TRIGGER ON __col_comments', (userdb, id, tempRoot) => {
+  seedComments(userdb, id);
+
+  assert.throws(
+    () => userdb.executeUserDBSQL(
+      id,
+      'CREATE TRIGGER t_ins AFTER INSERT ON __col_comments BEGIN SELECT 1; END',
+    ),
+    (err) => REFUSE_RE.test(String(err)) && /reserved/i.test(String(err)),
+  );
+  assert.throws(
+    () => userdb.executeUserDBSQL(
+      id,
+      'CREATE TRIGGER t_upd BEFORE UPDATE ON "__col_comments" BEGIN SELECT 1; END',
+    ),
+    (err) => REFUSE_RE.test(String(err)) && /reserved/i.test(String(err)),
+  );
+  assert.throws(
+    () => userdb.executeUserDBSQL(
+      id,
+      'CREATE TEMP TRIGGER t_del AFTER DELETE ON __col_comments BEGIN SELECT 1; END',
+    ),
+    (err) => REFUSE_RE.test(String(err)) && /reserved/i.test(String(err)),
+  );
+
+  const db = openRaw(tempRoot, id);
+  try {
+    assert.equal(
+      db.prepare(
+        "SELECT 1 AS ok FROM sqlite_master WHERE type = 'trigger' AND name IN ('t_ins', 't_upd', 't_del')"
+      ).get()?.ok,
+      undefined,
+    );
+    assert.deepEqual(listComments(db), [
+      { table_name: 'users', col_name: 'name', comment: 'display-name' },
+    ]);
+  } finally {
+    db.close();
+  }
+});
+
+withUserDB('executeUserDBSQL still allows CREATE TRIGGER on user tables', (userdb, id) => {
+  seedComments(userdb, id);
+  assert.doesNotThrow(() => userdb.executeUserDBSQL(
+    id,
+    'CREATE TRIGGER t_user AFTER INSERT ON users BEGIN SELECT 1; END',
+  ));
+  const listed = userdb.executeUserDBSQL(
+    id,
+    "SELECT name FROM sqlite_master WHERE type = 'trigger' AND name = 't_user'",
+  );
+  assert.equal(listed.rows[0][0], 't_user');
+});
