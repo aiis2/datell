@@ -309,3 +309,88 @@ withUserDB('executeUserDBSQL still allows ordinary user-table DDL and DML', (use
     db.close();
   }
 });
+
+withUserDB('executeUserDBSQL refuses CREATE TABLE __col_comments', (userdb, id, tempRoot) => {
+  // No product meta yet — CREATE must still be refused so the reserved name cannot be occupied.
+  assert.throws(
+    () => userdb.executeUserDBSQL(id, 'CREATE TABLE __col_comments (id INTEGER PRIMARY KEY)'),
+    REFUSE_RE,
+  );
+  assert.throws(
+    () => userdb.executeUserDBSQL(id, 'CREATE TABLE IF NOT EXISTS "__col_comments" (x TEXT)'),
+    REFUSE_RE,
+  );
+
+  // After product seeds meta, CREATE of the reserved name remains refused and comments stay intact.
+  seedComments(userdb, id);
+  assert.throws(
+    () => userdb.executeUserDBSQL(id, 'CREATE TABLE __col_comments (id INTEGER)'),
+    REFUSE_RE,
+  );
+
+  const db = openRaw(tempRoot, id);
+  try {
+    assert.equal(metaExists(db), true);
+    assert.deepEqual(metaColumnNames(db), ['table_name', 'col_name', 'comment']);
+    assert.deepEqual(listComments(db), [
+      { table_name: 'users', col_name: 'name', comment: 'display-name' },
+    ]);
+  } finally {
+    db.close();
+  }
+});
+
+withUserDB('executeUserDBSQL refuses ALTER TABLE RENAME TO __col_comments', (userdb, id, tempRoot) => {
+  // Rename into the reserved name before product meta exists — SQLite would otherwise allow it.
+  userdb.createTable(id, 'CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT)');
+
+  assert.throws(
+    () => userdb.executeUserDBSQL(id, 'ALTER TABLE users RENAME TO __col_comments'),
+    (err) => REFUSE_RE.test(String(err)) && /reserved/i.test(String(err)),
+  );
+  assert.throws(
+    () => userdb.executeUserDBSQL(id, 'ALTER TABLE users RENAME TO "__col_comments"'),
+    (err) => REFUSE_RE.test(String(err)) && /reserved/i.test(String(err)),
+  );
+
+  const db = openRaw(tempRoot, id);
+  try {
+    assert.equal(
+      db.prepare(
+        "SELECT 1 AS ok FROM sqlite_master WHERE type = 'table' AND name = 'users'"
+      ).get()?.ok,
+      1,
+    );
+    assert.equal(metaExists(db), false);
+    assert.equal(
+      db.prepare(
+        "SELECT 1 AS ok FROM sqlite_master WHERE type = 'table' AND name = '__col_comments'"
+      ).get()?.ok,
+      undefined,
+    );
+  } finally {
+    db.close();
+  }
+
+  // After product seeds meta, rename-into remains refused and comments stay intact.
+  userdb.alterColumn(id, 'users', 'name', undefined, 'display-name');
+  assert.throws(
+    () => userdb.executeUserDBSQL(id, 'ALTER TABLE users RENAME TO __col_comments'),
+    (err) => REFUSE_RE.test(String(err)) && /reserved/i.test(String(err)),
+  );
+  const db2 = openRaw(tempRoot, id);
+  try {
+    assert.deepEqual(listComments(db2), [
+      { table_name: 'users', col_name: 'name', comment: 'display-name' },
+    ]);
+  } finally {
+    db2.close();
+  }
+});
+
+withUserDB('executeUserDBSQL still allows CREATE and RENAME TO non-reserved names', (userdb, id) => {
+  userdb.executeUserDBSQL(id, 'CREATE TABLE ok_tbl (id INTEGER)');
+  userdb.executeUserDBSQL(id, 'ALTER TABLE ok_tbl RENAME TO ok_tbl2');
+  const select = userdb.executeUserDBSQL(id, 'SELECT name FROM sqlite_master WHERE type = \'table\' AND name = \'ok_tbl2\'');
+  assert.equal(select.rows[0][0], 'ok_tbl2');
+});
