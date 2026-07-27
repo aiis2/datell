@@ -87,8 +87,26 @@ const IDENT =
 
 const RESERVED_META_ERROR = `Cannot drop, rename, or mutate reserved table ${RESERVED_META_TABLE}`;
 
+const ATTACH_DETACH_ERROR = 'ATTACH/DETACH is not permitted in the UserDB SQL console';
+
 /** Optional WITH … CTE prefix before a mutating statement (console single-statement path). */
 const WITH_PREFIX = `(?:WITH\\s+(?:RECURSIVE\\s+)?[\\s\\S]+?\\)\\s+)?`;
+
+/**
+ * Console-wide SQL policy for the UserDB management path (not chat read-only).
+ * Refuses ATTACH/DETACH so the console cannot open arbitrary database files.
+ * Call before prepare/run on `executeUserDBSQL`.
+ */
+export function assertUserDBSqlConsolePolicy(sql: string): void {
+  if (typeof sql !== 'string' || !sql.trim()) return;
+
+  const stripped = stripSqlComments(sql).replace(/;\s*$/, '').trim();
+  if (!stripped) return;
+
+  if (/^\s*ATTACH\b/i.test(stripped) || /^\s*DETACH\b/i.test(stripped)) {
+    throw new Error(ATTACH_DETACH_ERROR);
+  }
+}
 
 /**
  * Refuse SQL that would drop, alter schema of, index, or DML-mutate the reserved

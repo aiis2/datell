@@ -17,7 +17,11 @@ import Database from 'better-sqlite3';
 import * as fs from 'fs';
 import * as path from 'path';
 import { getDataDir } from './dataDir';
-import { assertUserDBSqlDoesNotMutateMeta, isReadOnlyUserDBSql } from './sqlReadOnlyGuard';
+import {
+  assertUserDBSqlConsolePolicy,
+  assertUserDBSqlDoesNotMutateMeta,
+  isReadOnlyUserDBSql,
+} from './sqlReadOnlyGuard';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -447,6 +451,8 @@ export function executeUserDBSQL(id: string, sql: string, opts: { readOnly?: boo
   if (opts.readOnly && !isReadOnlyUserDBSql(sql)) {
     throw new Error('聊天模式下仅支持单条 SELECT/WITH/EXPLAIN/安全 PRAGMA 只读查询');
   }
+  // Fail closed: console must not ATTACH/DETACH arbitrary database files.
+  assertUserDBSqlConsolePolicy(sql);
   // Fail closed: SQL console must not drop/rename the column-comment meta table.
   assertUserDBSqlDoesNotMutateMeta(sql);
   const db = openDB(id, false); // open RW even for readonly queries (to avoid lock issues)
