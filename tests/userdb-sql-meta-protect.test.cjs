@@ -394,3 +394,48 @@ withUserDB('executeUserDBSQL still allows CREATE and RENAME TO non-reserved name
   const select = userdb.executeUserDBSQL(id, 'SELECT name FROM sqlite_master WHERE type = \'table\' AND name = \'ok_tbl2\'');
   assert.equal(select.rows[0][0], 'ok_tbl2');
 });
+
+withUserDB('executeUserDBSQL refuses TEMP/VIEW/WITH create of __col_comments', (userdb, id, tempRoot) => {
+  assert.throws(
+    () => userdb.executeUserDBSQL(id, 'CREATE TEMP TABLE __col_comments (x INTEGER)'),
+    (err) => REFUSE_RE.test(String(err)) && /reserved/i.test(String(err)),
+  );
+  assert.throws(
+    () => userdb.executeUserDBSQL(id, 'CREATE TEMPORARY TABLE "__col_comments" (x INTEGER)'),
+    (err) => REFUSE_RE.test(String(err)) && /reserved/i.test(String(err)),
+  );
+  assert.throws(
+    () => userdb.executeUserDBSQL(id, 'CREATE VIEW __col_comments AS SELECT 1 AS n'),
+    (err) => REFUSE_RE.test(String(err)) && /reserved/i.test(String(err)),
+  );
+  assert.throws(
+    () => userdb.executeUserDBSQL(
+      id,
+      'WITH x AS (SELECT 1 AS n) CREATE TABLE __col_comments AS SELECT * FROM x',
+    ),
+    (err) => REFUSE_RE.test(String(err)) && /reserved/i.test(String(err)),
+  );
+
+  const db = openRaw(tempRoot, id);
+  try {
+    assert.equal(metaExists(db), false);
+    assert.equal(
+      db.prepare(
+        "SELECT 1 AS ok FROM sqlite_master WHERE name = '__col_comments'"
+      ).get()?.ok,
+      undefined,
+    );
+  } finally {
+    db.close();
+  }
+});
+
+withUserDB('executeUserDBSQL still allows non-reserved TEMP tables and views', (userdb, id) => {
+  // TEMP objects are connection-local; each executeUserDBSQL opens a new connection,
+  // so only assert CREATE does not throw for a non-reserved temp name.
+  assert.doesNotThrow(() => userdb.executeUserDBSQL(id, 'CREATE TEMP TABLE ok_tmp (x INTEGER)'));
+
+  userdb.executeUserDBSQL(id, 'CREATE VIEW ok_view AS SELECT 9 AS n');
+  const viewSelect = userdb.executeUserDBSQL(id, 'SELECT n FROM ok_view');
+  assert.equal(viewSelect.rows[0][0], 9);
+});
