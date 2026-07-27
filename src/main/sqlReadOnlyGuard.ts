@@ -108,20 +108,18 @@ export function assertUserDBSqlConsolePolicy(sql: string): void {
   }
 }
 
-/**
- * Refuse SQL that would drop, alter schema of, index, or DML-mutate the reserved
- * column-comment meta table. Call before prepare/run on the UserDB SQL console path.
- */
-export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
-  if (typeof sql !== 'string' || !sql.trim()) return;
+/** After a captured table IDENT, require a non-identifier boundary (not \b). */
+const AFTER_IDENT = '(?=\\s|$|[^A-Za-z0-9_$])';
 
-  const stripped = stripSqlComments(sql).replace(/;\s*$/, '').trim();
+/**
+ * Refuse a single statement (or fragment) that would mutate reserved `__col_comments`.
+ * Used for top-level console SQL and for each statement inside CREATE TRIGGER bodies.
+ */
+function assertStatementDoesNotMutateMeta(statement: string): void {
+  const stripped = statement.replace(/;\s*$/, '').trim();
   if (!stripped) return;
 
-  // After a captured table IDENT, require a non-identifier boundary.
-  // Do not use \b: quoted identifiers end with " / ` / ], which are non-word chars
-  // so \b fails at end-of-string (e.g. DELETE FROM "__col_comments").
-  const afterIdent = '(?=\\s|$|[^A-Za-z0-9_$])';
+  const afterIdent = AFTER_IDENT;
 
   const dropRe = new RegExp(
     `^\\s*DROP\\s+TABLE\\s+(?:IF\\s+EXISTS\\s+)?(?:${IDENT}\\s*\\.\\s*)?(${IDENT})\\s*$`,
@@ -132,7 +130,6 @@ export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
     throw new Error(RESERVED_META_ERROR);
   }
 
-  // Any ALTER TABLE targeting meta (RENAME TO/COLUMN, ADD/DROP COLUMN, etc.).
   const alterRe = new RegExp(
     `^\\s*ALTER\\s+TABLE\\s+(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
     'i',
@@ -142,7 +139,6 @@ export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
     throw new Error(RESERVED_META_ERROR);
   }
 
-  // CREATE [UNIQUE] INDEX … ON meta
   const createIndexRe = new RegExp(
     `^\\s*CREATE\\s+(?:UNIQUE\\s+)?INDEX\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:${IDENT}\\s*\\.\\s*)?${IDENT}\\s+ON\\s+(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
     'i',
@@ -152,7 +148,6 @@ export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
     throw new Error(RESERVED_META_ERROR);
   }
 
-  // INSERT [OR …] INTO / REPLACE INTO meta
   const insertRe = new RegExp(
     `^\\s*${WITH_PREFIX}(?:INSERT\\s+(?:OR\\s+\\w+\\s+)?INTO|REPLACE\\s+INTO)\\s+(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
     'i',
@@ -162,7 +157,6 @@ export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
     throw new Error(RESERVED_META_ERROR);
   }
 
-  // UPDATE meta …
   const updateRe = new RegExp(
     `^\\s*${WITH_PREFIX}UPDATE\\s+(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
     'i',
@@ -172,7 +166,6 @@ export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
     throw new Error(RESERVED_META_ERROR);
   }
 
-  // DELETE FROM meta …
   const deleteRe = new RegExp(
     `^\\s*${WITH_PREFIX}DELETE\\s+FROM\\s+(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
     'i',
@@ -182,8 +175,6 @@ export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
     throw new Error(RESERVED_META_ERROR);
   }
 
-  // CREATE [TEMP|TEMPORARY] TABLE [IF NOT EXISTS] [schema.]ident …
-  // Also covers WITH … CREATE TABLE … AS SELECT forms via WITH_PREFIX.
   const createTableRe = new RegExp(
     `^\\s*${WITH_PREFIX}CREATE\\s+(?:TEMP(?:ORARY)?\\s+)?TABLE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
     'i',
@@ -193,8 +184,6 @@ export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
     throw new Error(RESERVED_META_ERROR);
   }
 
-  // CREATE [TEMP|TEMPORARY] VIEW [IF NOT EXISTS] [schema.]ident …
-  // Also covers WITH … CREATE VIEW … forms via WITH_PREFIX.
   const createViewRe = new RegExp(
     `^\\s*${WITH_PREFIX}CREATE\\s+(?:TEMP(?:ORARY)?\\s+)?VIEW\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
     'i',
@@ -204,7 +193,6 @@ export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
     throw new Error(RESERVED_META_ERROR);
   }
 
-  // CREATE VIRTUAL TABLE [IF NOT EXISTS] [schema.]ident … — distinct from CREATE TABLE.
   const createVirtualRe = new RegExp(
     `^\\s*${WITH_PREFIX}CREATE\\s+VIRTUAL\\s+TABLE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
     'i',
@@ -214,9 +202,6 @@ export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
     throw new Error(RESERVED_META_ERROR);
   }
 
-  // CREATE [TEMP|TEMPORARY] TRIGGER … ON [schema.]ident — refuse triggers attached to meta.
-  // Body analysis of BEGIN…END is out of scope; only the ON target is matched.
-  // INSERT/UPDATE may include optional OF <column-list> before ON (SQLite syntax).
   const ofColumnList = `(?:\\s+OF\\s+${IDENT}(?:\\s*,\\s*${IDENT})*)?`;
   const createTriggerRe = new RegExp(
     `^\\s*CREATE\\s+(?:TEMP(?:ORARY)?\\s+)?TRIGGER\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:${IDENT}\\s*\\.\\s*)?${IDENT}\\s+(?:BEFORE|AFTER|INSTEAD\\s+OF)\\s+(?:(?:INSERT|UPDATE)${ofColumnList}|DELETE)\\s+ON\\s+(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
@@ -227,8 +212,6 @@ export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
     throw new Error(RESERVED_META_ERROR);
   }
 
-  // ALTER TABLE … RENAME TO [schema.]ident — refuse renaming *into* the reserved name.
-  // Deliberately require RENAME TO (not RENAME COLUMN) so column renames stay unaffected.
   const renameToRe = new RegExp(
     `^\\s*ALTER\\s+TABLE\\s+(?:${IDENT}\\s*\\.\\s*)?${IDENT}\\s+RENAME\\s+TO\\s+(?:${IDENT}\\s*\\.\\s*)?(${IDENT})${afterIdent}`,
     'i',
@@ -236,5 +219,73 @@ export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
   const renameToMatch = stripped.match(renameToRe);
   if (renameToMatch && isReservedMetaTableName(renameToMatch[1]!)) {
     throw new Error(RESERVED_META_ERROR);
+  }
+}
+
+/**
+ * Extract CREATE TRIGGER BEGIN…END body statements (best-effort for console SQL).
+ * Returns null when the statement is not a CREATE TRIGGER with a body.
+ */
+function extractTriggerBodyStatements(strippedSql: string): string[] | null {
+  if (!/^\s*CREATE\s+(?:TEMP(?:ORARY)?\s+)?TRIGGER\b/i.test(strippedSql)) {
+    return null;
+  }
+  const beginIdx = strippedSql.search(/\bBEGIN\b/i);
+  if (beginIdx < 0) return null;
+  const afterBegin = strippedSql.slice(beginIdx + 5);
+  const endMatch = afterBegin.match(/\bEND\s*$/i);
+  if (!endMatch || endMatch.index === undefined) return null;
+  const body = afterBegin.slice(0, endMatch.index).trim();
+  if (!body) return [];
+  // Trigger bodies are small product SQL; split on semicolons outside quotes.
+  const parts: string[] = [];
+  let current = '';
+  let inSingle = false;
+  let inDouble = false;
+  for (let i = 0; i < body.length; i++) {
+    const ch = body[i]!;
+    if (ch === "'" && !inDouble) {
+      inSingle = !inSingle;
+      current += ch;
+      continue;
+    }
+    if (ch === '"' && !inSingle) {
+      inDouble = !inDouble;
+      current += ch;
+      continue;
+    }
+    if (ch === ';' && !inSingle && !inDouble) {
+      const piece = current.trim();
+      if (piece) parts.push(piece);
+      current = '';
+      continue;
+    }
+    current += ch;
+  }
+  const tail = current.trim();
+  if (tail) parts.push(tail);
+  return parts;
+}
+
+/**
+ * Refuse SQL that would drop, alter schema of, index, or DML-mutate the reserved
+ * column-comment meta table. Call before prepare/run on the UserDB SQL console path.
+ * Also refuses CREATE TRIGGER bodies whose statements would mutate meta.
+ */
+export function assertUserDBSqlDoesNotMutateMeta(sql: string): void {
+  if (typeof sql !== 'string' || !sql.trim()) return;
+
+  const stripped = stripSqlComments(sql).replace(/;\s*$/, '').trim();
+  if (!stripped) return;
+
+  // Top-level statement checks (DROP/ALTER/DML/CREATE/RENAME TO/TRIGGER ON meta).
+  assertStatementDoesNotMutateMeta(stripped);
+
+  // CREATE TRIGGER on a user table can still mutate meta inside BEGIN…END.
+  const bodyStatements = extractTriggerBodyStatements(stripped);
+  if (bodyStatements) {
+    for (const bodySql of bodyStatements) {
+      assertStatementDoesNotMutateMeta(bodySql);
+    }
   }
 }
