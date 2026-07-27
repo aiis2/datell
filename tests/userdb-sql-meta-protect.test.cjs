@@ -439,3 +439,40 @@ withUserDB('executeUserDBSQL still allows non-reserved TEMP tables and views', (
   const viewSelect = userdb.executeUserDBSQL(id, 'SELECT n FROM ok_view');
   assert.equal(viewSelect.rows[0][0], 9);
 });
+
+withUserDB('executeUserDBSQL refuses VIRTUAL TABLE and TEMP/WITH VIEW of __col_comments', (userdb, id, tempRoot) => {
+  assert.throws(
+    () => userdb.executeUserDBSQL(id, 'CREATE VIRTUAL TABLE __col_comments USING fts5(x)'),
+    (err) => REFUSE_RE.test(String(err)) && /reserved/i.test(String(err)),
+  );
+  assert.throws(
+    () => userdb.executeUserDBSQL(id, 'CREATE TEMP VIEW __col_comments AS SELECT 1 AS n'),
+    (err) => REFUSE_RE.test(String(err)) && /reserved/i.test(String(err)),
+  );
+  assert.throws(
+    () => userdb.executeUserDBSQL(id, 'CREATE TEMPORARY VIEW "__col_comments" AS SELECT 1 AS n'),
+    (err) => REFUSE_RE.test(String(err)) && /reserved/i.test(String(err)),
+  );
+  assert.throws(
+    () => userdb.executeUserDBSQL(
+      id,
+      'WITH x AS (SELECT 1 AS n) CREATE VIEW __col_comments AS SELECT * FROM x',
+    ),
+    (err) => REFUSE_RE.test(String(err)) && /reserved/i.test(String(err)),
+  );
+
+  const db = openRaw(tempRoot, id);
+  try {
+    assert.equal(
+      db.prepare("SELECT 1 AS ok FROM sqlite_master WHERE name = '__col_comments'").get()?.ok,
+      undefined,
+    );
+  } finally {
+    db.close();
+  }
+});
+
+withUserDB('executeUserDBSQL still allows non-reserved virtual tables and temp views', (userdb, id) => {
+  assert.doesNotThrow(() => userdb.executeUserDBSQL(id, 'CREATE VIRTUAL TABLE ok_fts USING fts5(x)'));
+  assert.doesNotThrow(() => userdb.executeUserDBSQL(id, 'CREATE TEMP VIEW ok_temp_view AS SELECT 1 AS n'));
+});
