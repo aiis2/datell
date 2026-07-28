@@ -116,7 +116,33 @@ export function getMaskedDatasources(): DatasourceConfig[] {
   }));
 }
 
+function requireNonBlankField(value: unknown, field: 'name' | 'host' | 'database'): string {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new Error(`Datasource ${field} cannot be empty or blank`);
+  }
+  return value.trim();
+}
+
+function requireDatasourcePort(port: unknown): number {
+  if (
+    typeof port !== 'number'
+    || !Number.isFinite(port)
+    || !Number.isInteger(port)
+    || port < 1
+    || port > 65535
+  ) {
+    throw new Error('Datasource port must be an integer between 1 and 65535');
+  }
+  return port;
+}
+
 export function saveDatasource(config: DatasourceConfig): DatasourceConfig {
+  const name = requireNonBlankField(config.name, 'name');
+  const host = requireNonBlankField(config.host, 'host');
+  const database = requireNonBlankField(config.database, 'database');
+  const port = requireDatasourcePort(config.port);
+  const username = typeof config.username === 'string' ? config.username.trim() : '';
+
   const all = readDatasources();
   const idx = all.findIndex((c) => c.id === config.id);
   const now = new Date().toISOString();
@@ -124,7 +150,16 @@ export function saveDatasource(config: DatasourceConfig): DatasourceConfig {
   const realPassword = config.password === MASKED_PW
     ? (all[idx]?.password ?? '')
     : config.password;
-  const updated: DatasourceConfig = { ...config, password: realPassword, updatedAt: now };
+  const updated: DatasourceConfig = {
+    ...config,
+    name,
+    host,
+    database,
+    port,
+    username,
+    password: realPassword,
+    updatedAt: now,
+  };
   if (idx >= 0) {
     all[idx] = updated;
   } else {
