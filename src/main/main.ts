@@ -56,6 +56,7 @@ import { inlineBuiltInRuntimes, needsVTableRuntime } from './exportRuntime';
 import { DatabaseService } from './database';
 import { getDataDir, ensureDataDirs, setDataDir } from './dataDir';
 import { createTextFileReadGuard } from './fileReadGuard';
+import { resolveMemoryFilePath } from './memoryPaths';
 import { createSkillsManager, listLegacyDirectorySkills } from './skillsManager';
 import { installSkillFromUrl } from './skillsInstallFromUrl';
 import {
@@ -1787,34 +1788,30 @@ function ensureMemoryDir(): void {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 }
 
-function getMemoryFilePath(type: 'long_term' | 'short_term'): string {
-  return path.join(getMemoryDir(), `${type}.md`);
-}
-
-ipcMain.handle('memory:read', (_e, type: 'long_term' | 'short_term'): string => {
+ipcMain.handle('memory:read', (_e, type: unknown): string => {
   ensureMemoryDir();
-  const filePath = getMemoryFilePath(type);
+  const filePath = resolveMemoryFilePath(getMemoryDir(), type);
   if (!fs.existsSync(filePath)) return '';
   return fs.readFileSync(filePath, 'utf-8');
 });
 
-ipcMain.handle('memory:write', (_e, type: 'long_term' | 'short_term', content: string): void => {
+ipcMain.handle('memory:write', (_e, type: unknown, content: string): void => {
   ensureMemoryDir();
-  const filePath = getMemoryFilePath(type);
+  const filePath = resolveMemoryFilePath(getMemoryDir(), type);
   fs.writeFileSync(filePath, content, 'utf-8');
 });
 
-ipcMain.handle('memory:append', (_e, type: 'long_term' | 'short_term', entry: string): void => {
+ipcMain.handle('memory:append', (_e, type: unknown, entry: string): void => {
   ensureMemoryDir();
-  const filePath = getMemoryFilePath(type);
+  const filePath = resolveMemoryFilePath(getMemoryDir(), type);
   const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
   const block = `\n## [${timestamp}]\n${entry}\n`;
   fs.appendFileSync(filePath, block, 'utf-8');
 });
 
-ipcMain.handle('memory:clear', (_e, type: 'long_term' | 'short_term'): void => {
+ipcMain.handle('memory:clear', (_e, type: unknown): void => {
   ensureMemoryDir();
-  const filePath = getMemoryFilePath(type);
+  const filePath = resolveMemoryFilePath(getMemoryDir(), type);
   fs.writeFileSync(filePath, '', 'utf-8');
 });
 
