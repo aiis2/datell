@@ -116,11 +116,27 @@ export function getMaskedDatasources(): DatasourceConfig[] {
   }));
 }
 
-function requireNonBlankField(value: unknown, field: 'name' | 'host' | 'database'): string {
+function requireNonBlankField(value: unknown, field: 'id' | 'name' | 'host' | 'database'): string {
   if (typeof value !== 'string' || value.trim().length === 0) {
     throw new Error(`Datasource ${field} cannot be empty or blank`);
   }
   return value.trim();
+}
+
+const SUPPORTED_DATASOURCE_TYPES: readonly DatasourceType[] = [
+  'mysql',
+  'doris',
+  'postgresql',
+  'presto',
+];
+
+function requireDatasourceType(type: unknown): DatasourceType {
+  if (typeof type !== 'string' || !(SUPPORTED_DATASOURCE_TYPES as readonly string[]).includes(type)) {
+    throw new Error(
+      `Datasource type must be one of: ${SUPPORTED_DATASOURCE_TYPES.join(', ')}`,
+    );
+  }
+  return type as DatasourceType;
 }
 
 function requireDatasourcePort(port: unknown): number {
@@ -137,14 +153,16 @@ function requireDatasourcePort(port: unknown): number {
 }
 
 export function saveDatasource(config: DatasourceConfig): DatasourceConfig {
+  const id = requireNonBlankField(config.id, 'id');
   const name = requireNonBlankField(config.name, 'name');
   const host = requireNonBlankField(config.host, 'host');
   const database = requireNonBlankField(config.database, 'database');
+  const type = requireDatasourceType(config.type);
   const port = requireDatasourcePort(config.port);
   const username = typeof config.username === 'string' ? config.username.trim() : '';
 
   const all = readDatasources();
-  const idx = all.findIndex((c) => c.id === config.id);
+  const idx = all.findIndex((c) => c.id === id);
   const now = new Date().toISOString();
   // Preserve the stored password when the renderer sent back the masked sentinel
   const realPassword = config.password === MASKED_PW
@@ -152,9 +170,11 @@ export function saveDatasource(config: DatasourceConfig): DatasourceConfig {
     : config.password;
   const updated: DatasourceConfig = {
     ...config,
+    id,
     name,
     host,
     database,
+    type,
     port,
     username,
     password: realPassword,
