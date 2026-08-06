@@ -53,13 +53,37 @@ function buildExternalSkillFromParsed(file: string, parsed: Record<string, unkno
   };
 }
 
+/** Stable error for IPC/tests when an id is not a safe path basename. */
+export const INVALID_REGISTRY_SKILL_ID = 'Registry skill id is invalid';
+
+/**
+ * Fail-closed registry skill id used as a path segment under registry/user.
+ * Aligns with renderer slugifySkillId output: [A-Za-z0-9._-]+ after trim.
+ */
+export function assertSafeRegistrySkillId(id: unknown): string {
+  if (typeof id !== 'string') {
+    throw new Error(INVALID_REGISTRY_SKILL_ID);
+  }
+  const trimmed = id.trim();
+  if (
+    !trimmed ||
+    trimmed === '.' ||
+    trimmed === '..' ||
+    !/^[A-Za-z0-9._-]+$/.test(trimmed)
+  ) {
+    throw new Error(INVALID_REGISTRY_SKILL_ID);
+  }
+  return trimmed;
+}
+
 function registryFileName(id: string): string {
-  return `${id}.skill.json`;
+  return `${assertSafeRegistrySkillId(id)}.skill.json`;
 }
 
 function sanitizeRegistryManifest(manifest: RegistrySkillManifest): RegistrySkillManifest {
+  const safeId = assertSafeRegistrySkillId(manifest.id);
   return {
-    id: manifest.id,
+    id: safeId,
     name: manifest.name,
     description: manifest.description || '',
     version: manifest.version || '1.0.0',
