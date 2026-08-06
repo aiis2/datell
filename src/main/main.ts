@@ -56,6 +56,7 @@ import { inlineBuiltInRuntimes, needsVTableRuntime } from './exportRuntime';
 import { DatabaseService } from './database';
 import { getDataDir, ensureDataDirs, setDataDir } from './dataDir';
 import { assertAuthorizedTextFileRead, createTextFileReadGuard } from './fileReadGuard';
+import { assertAuthorizedDirectory, createDirectorySelectGuard } from './directorySelectGuard';
 import { resolveMemoryFilePath } from './memoryPaths';
 import { createSkillsManager, listLegacyDirectorySkills } from './skillsManager';
 import { installSkillFromUrl } from './skillsInstallFromUrl';
@@ -173,6 +174,7 @@ function _hasEnterprisePlugin(): boolean { return _enterprisePlugin !== null; }
 const DATA_DIR = getDataDir();
 ensureDataDirs(DATA_DIR);
 const textFileReadGuard = createTextFileReadGuard(DATA_DIR);
+const directorySelectGuard = createDirectorySelectGuard();
 const DB_PATH = path.join(DATA_DIR, 'app.db');
 let db: DatabaseService = new DatabaseService(DB_PATH);
 const skillsManager = createSkillsManager(DATA_DIR);
@@ -935,7 +937,8 @@ ipcMain.handle('fs:readStyleFile', (_e, filename: string): string | null => {
 });
 
 ipcMain.handle('fs:setDataDir', (_e, newDir: string) => {
-  setDataDir(newDir);
+  const authorizedDir = assertAuthorizedDirectory(directorySelectGuard, newDir);
+  setDataDir(authorizedDir);
   // Reinitialize DB in new location on next launch
 });
 
@@ -1990,6 +1993,7 @@ ipcMain.handle('fs:selectDirectory', async (): Promise<string | null> => {
     title: '选择数据存储目录',
   });
   if (canceled || filePaths.length === 0) return null;
+  directorySelectGuard.rememberSelectedDirectory(filePaths[0]);
   return filePaths[0];
 });
 
@@ -2069,13 +2073,18 @@ ipcMain.handle('fs:migrateDataDir', async (_e, newDir: string): Promise<{ ok: bo
     if (!newDir || typeof newDir !== 'string') {
       return { ok: false, message: '目录路径无效' };
     }
-    const resolvedNew = path.resolve(newDir);
+    let resolvedNew: string;
+    try {
+      resolvedNew = assertAuthorizedDirectory(directorySelectGuard, newDir);
+    } catch (authErr) {
+      return { ok: false, message: authErr instanceof Error ? authErr.message : String(authErr) };
+    }
     const resolvedOld = path.resolve(DATA_DIR);
     if (resolvedNew === resolvedOld) {
       return { ok: false, message: '新目录与当前目录相同' };
     }
 
-    // Ensure new directory exists
+    // Ensure new directory exists (already verified as a selected directory)
     fs.mkdirSync(resolvedNew, { recursive: true });
 
     // Copy all files recursively from old dir to new dir
