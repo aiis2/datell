@@ -146,7 +146,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   skillsRegistryList: (): Promise<RegistrySkillManifest[]> => ipcRenderer.invoke('skills:registry:list'),
   skillsRegistrySave: (manifest: RegistrySkillManifest): Promise<{ ok: boolean; id: string }> => ipcRenderer.invoke('skills:registry:save', manifest),
   skillsRegistryDelete: (id: string): Promise<{ ok: boolean }> => ipcRenderer.invoke('skills:registry:delete', id),
-  skillsRegistryExport: (id: string, targetPath: string): Promise<{ ok: boolean; path: string }> => ipcRenderer.invoke('skills:registry:export', id, targetPath),
+  skillsRegistryExport: (id: string): Promise<{ ok: boolean; path?: string; canceled?: boolean }> => ipcRenderer.invoke('skills:registry:export', id),
   skillsRegistryImport: (sourcePath: string): Promise<{ ok: boolean; id: string }> => ipcRenderer.invoke('skills:registry:import', sourcePath),
 
   // ===== Data Directory Migration =====

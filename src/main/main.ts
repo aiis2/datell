@@ -55,7 +55,7 @@ import { EXPORT_SCHEME, createExportDocumentJob, type ExportDocumentJob } from '
 import { inlineBuiltInRuntimes, needsVTableRuntime } from './exportRuntime';
 import { DatabaseService } from './database';
 import { getDataDir, ensureDataDirs, setDataDir } from './dataDir';
-import { createTextFileReadGuard } from './fileReadGuard';
+import { assertAuthorizedTextFileRead, createTextFileReadGuard } from './fileReadGuard';
 import { resolveMemoryFilePath } from './memoryPaths';
 import { createSkillsManager, listLegacyDirectorySkills } from './skillsManager';
 import { installSkillFromUrl } from './skillsInstallFromUrl';
@@ -1926,13 +1926,24 @@ ipcMain.handle('skills:registry:delete', (_e, id: string): { ok: boolean } => {
   return { ok: true };
 });
 
-ipcMain.handle('skills:registry:export', (_e, id: string, targetPath: string): { ok: boolean; path: string } => {
-  const exportedPath = skillsManager.exportRegistrySkill(id, targetPath);
+ipcMain.handle('skills:registry:export', async (_e, id: string): Promise<{ ok: boolean; path?: string; canceled?: boolean }> => {
+  if (typeof id !== 'string' || !id.trim()) {
+    throw new Error('Registry skill id is required');
+  }
+  const { canceled, filePath } = await dialog.showSaveDialog({
+    defaultPath: `${id.trim()}.skill.json`,
+    filters: [{ name: 'Skill Manifest', extensions: ['json'] }],
+  });
+  if (canceled || !filePath) {
+    return { ok: false, canceled: true };
+  }
+  const exportedPath = skillsManager.exportRegistrySkill(id.trim(), filePath);
   return { ok: true, path: exportedPath };
 });
 
 ipcMain.handle('skills:registry:import', (_e, sourcePath: string): { ok: boolean; id: string } => {
-  const imported = skillsManager.importRegistrySkill(sourcePath);
+  const authorizedPath = assertAuthorizedTextFileRead(textFileReadGuard, sourcePath);
+  const imported = skillsManager.importRegistrySkill(authorizedPath);
   return { ok: true, id: imported.id };
 });
 
