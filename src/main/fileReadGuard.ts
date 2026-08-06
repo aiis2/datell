@@ -41,3 +41,23 @@ export function createTextFileReadGuard(dataDir: string): TextFileReadGuard {
     },
   };
 }
+
+export const UNAUTHORIZED_TEXT_FILE_READ = '文件未通过选择器授权，无法读取';
+
+/**
+ * Fail-closed path authorization for IPC import-style reads.
+ * Returns a canonical path only when the guard allows the file.
+ */
+export function assertAuthorizedTextFileRead(
+  guard: TextFileReadGuard,
+  filePath: unknown,
+): string {
+  if (!filePath || typeof filePath !== 'string') {
+    throw new Error(UNAUTHORIZED_TEXT_FILE_READ);
+  }
+  const resolved = path.resolve(filePath);
+  if (!guard.canReadTextFile(resolved)) {
+    throw new Error(UNAUTHORIZED_TEXT_FILE_READ);
+  }
+  return resolveExistingFile(resolved) ?? resolved;
+}

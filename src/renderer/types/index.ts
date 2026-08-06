@@ -1002,7 +1002,7 @@ export interface ElectronAPI {
   skillsRegistryList: () => Promise<RegistrySkillManifest[]>;
   skillsRegistrySave: (manifest: RegistrySkillManifest) => Promise<{ ok: boolean; id: string }>;
   skillsRegistryDelete: (id: string) => Promise<{ ok: boolean }>;
-  skillsRegistryExport: (id: string, targetPath: string) => Promise<{ ok: boolean; path: string }>;
+  skillsRegistryExport: (id: string) => Promise<{ ok: boolean; path?: string; canceled?: boolean }>;
   skillsRegistryImport: (sourcePath: string) => Promise<{ ok: boolean; id: string }>;
 
   // MCP HTTP Transport
